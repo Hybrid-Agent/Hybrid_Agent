@@ -7,7 +7,7 @@ function transport() {
     _transport = nodemailer.createTransport({
       host: config.email.smtpHost,
       port: config.email.smtpPort,
-      secure: false, // STARTTLS on 587
+      secure: Number(config.email.smtpPort) === 465, // Implicit SSL on 465, STARTTLS otherwise
       auth: { user: config.email.smtpUser, pass: config.email.smtpPass },
     });
   }

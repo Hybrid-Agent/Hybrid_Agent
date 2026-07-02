@@ -8,6 +8,9 @@ export type RootStackParamList = {
   KYC: undefined;
   EscrowConfirm: { listingId: string };
   OwnerWithdraw: { escrowId?: string };
+  Notifications: undefined;
+  PersonalDetails: undefined;
+  Chat: { conversationId: string };
 };
 
 export type ListingsStackParamList = {
@@ -18,7 +21,7 @@ export type ListingsStackParamList = {
 export type TabParamList = {
   Home: undefined;
   ListingsTab: undefined;
-  Notifications: undefined;
+  Activity: undefined;
   Leaderboard: undefined;
   Profile: undefined;
 };

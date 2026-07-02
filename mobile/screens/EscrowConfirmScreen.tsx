@@ -322,7 +322,7 @@ export default function EscrowConfirmScreen() {
 
             {/* Gas note */}
             <View style={styles.gasNote}>
-              <Ionicons name={"logo-ethereum" as any} size={14} color="#9ca3af" />
+              <Ionicons name={"diamond-outline" as any} size={14} color="#9ca3af" />
               <Text style={styles.gasNoteText}>Two transactions required · ~0.0008 ETH in gas · ensure your wallet has ETH</Text>
             </View>
 

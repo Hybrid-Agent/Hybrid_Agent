@@ -18,7 +18,10 @@ import ListingsScreen from '../screens/ListingsScreen';
 import ListingDetailScreen from '../screens/ListingDetailScreen';
 import LeaderboardScreen from '../screens/LeaderboardScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
+import ActivityScreen from '../screens/ActivityScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import PersonalDetailsScreen from '../screens/PersonalDetailsScreen';
+import ChatScreen from '../screens/ChatScreen';
 
 import type { RootStackParamList, ListingsStackParamList, TabParamList } from './types';
 
@@ -58,7 +61,7 @@ function MainTabs() {
           const icons: Record<string, { outline: string; solid: string }> = {
             Home:          { outline: 'home-outline',              solid: 'home' },
             ListingsTab:   { outline: 'list-outline',              solid: 'list' },
-            Notifications: { outline: 'notifications-outline',     solid: 'notifications' },
+            Activity:      { outline: 'pulse-outline',             solid: 'pulse' },
             Leaderboard:   { outline: 'trophy-outline',            solid: 'trophy' },
             Profile:       { outline: 'person-outline',            solid: 'person' },
           };
@@ -73,7 +76,7 @@ function MainTabs() {
     >
       <Tab.Screen name="Home"          component={DashboardScreen} />
       <Tab.Screen name="ListingsTab"   component={ListingsStack}        options={{ title: 'Listings' }} />
-      <Tab.Screen name="Notifications" component={NotificationsScreen}  options={{ title: 'Activity' }} />
+      <Tab.Screen name="Activity"      component={ActivityScreen}       options={{ title: 'Activity' }} />
       <Tab.Screen name="Leaderboard"   component={LeaderboardScreen} />
       <Tab.Screen name="Profile"       component={ProfileScreen} />
     </Tab.Navigator>
@@ -93,6 +96,9 @@ export default function Navigation() {
         <RootStack.Screen name="KYC"           component={KYCScreen}         options={{ animation: 'slide_from_right' }} />
         <RootStack.Screen name="EscrowConfirm"   component={EscrowConfirmScreen}   options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <RootStack.Screen name="OwnerWithdraw"   component={OwnerWithdrawScreen}   options={{ animation: 'slide_from_right' }} />
+        <RootStack.Screen name="Notifications"   component={NotificationsScreen}   options={{ animation: 'slide_from_right' }} />
+        <RootStack.Screen name="PersonalDetails" component={PersonalDetailsScreen} options={{ animation: 'slide_from_right' }} />
+        <RootStack.Screen name="Chat"            component={ChatScreen}            options={{ animation: 'slide_from_right' }} />
       </RootStack.Navigator>
     </NavigationContainer>
   );

@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import {
-  View, Text, TouchableOpacity, ScrollView, StyleSheet, StatusBar, Image,
+  View, Text, TouchableOpacity, ScrollView, StyleSheet, StatusBar, Image, Alert
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -43,6 +44,31 @@ export default function ProfileScreen() {
     nav.reset({ index: 0, routes: [{ name: 'Cover' }] });
   };
 
+  const handleChangeAvatar = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (result.canceled || !result.assets.length) return;
+      
+      const uri = result.assets[0].uri;
+      const name = uri.split('/').pop() ?? 'avatar.jpg';
+      const type = name.endsWith('.png') ? 'image/png' : 'image/jpeg';
+      
+      const form = new FormData();
+      form.append('avatar', { uri, name, type } as any);
+      
+      const { user: updated } = await api.updateAvatar(form);
+      setUser(updated);
+      storage.setUser(updated);
+    } catch (e: any) {
+      Alert.alert('Upload failed', e.message || 'Could not update profile picture.');
+    }
+  };
+
   const isVerified = user?.kyc_status === 'verified';
   const initials   = (user?.full_name ?? user?.user_name ?? 'U')[0].toUpperCase();
 
@@ -54,7 +80,7 @@ export default function ProfileScreen() {
           icon: 'person-outline',
           label: 'Personal Details',
           sub: user ? `${user.full_name} · @${user.user_name}` : 'Name, email, phone',
-          route: null,
+          route: 'PersonalDetails',
         },
         {
           icon: 'shield-outline',
@@ -84,7 +110,7 @@ export default function ProfileScreen() {
     {
       title: 'Settings',
       items: [
-        { icon: 'notifications-outline', label: 'Notifications', sub: 'Push alerts on' },
+        { icon: 'notifications-outline', label: 'Notifications', sub: 'Push alerts on', route: 'Notifications' },
         { icon: 'moon-outline',          label: 'Appearance',    sub: 'Light mode' },
         { icon: 'help-circle-outline',   label: 'Help & Support', sub: 'FAQ · Contact' },
       ],
@@ -119,7 +145,7 @@ export default function ProfileScreen() {
                 <Text style={styles.avatarText}>{initials}</Text>
               )}
             </View>
-            <TouchableOpacity style={styles.editAvatar}>
+            <TouchableOpacity style={styles.editAvatar} onPress={handleChangeAvatar}>
               <Ionicons name="camera-outline" size={13} color={NAVY} />
             </TouchableOpacity>
           </View>

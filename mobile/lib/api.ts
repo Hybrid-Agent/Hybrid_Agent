@@ -105,17 +105,38 @@ export const api = {
       method: 'POST', body: { email, password }, auth: false,
     }),
 
-  register: (body: {
-    fullName: string; userName: string; email: string;
-    phoneNumber: string; password: string; userType: UserType;
-    gender?: string; bio?: string;
-  }) => request<{ token: string; user: AuthUser }>('/auth/register', {
-    method: 'POST', body, auth: false,
-  }),
+    register: (body: {
+      fullName: string; userName: string; email: string;
+      phoneNumber: string; password: string; userType: UserType;
+      gender?: string; bio?: string;
+    }) => request<{ token: string; user: AuthUser }>('/auth/register', {
+      method: 'POST', body, auth: false,
+    }),
 
-  me: () => request<{ user: AuthUser }>('/auth/me'),
+    me: () => request<{ user: AuthUser }>('/auth/me'),
 
-  kycVerify: () => request<{ message: string }>('/auth/kyc/verify', { method: 'POST' }),
+    kycVerify: () => request<{ message: string }>('/auth/kyc/verify', { method: 'POST' }),
+
+    updateAvatar: (form: FormData) => {
+      return new Promise<{ user: AuthUser }>((resolve, reject) => {
+        storage.getToken().then(token => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('PATCH', `${API_URL}/auth/avatar`);
+          if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve(JSON.parse(xhr.responseText));
+            } else {
+              let err;
+              try { err = JSON.parse(xhr.responseText); } catch(e) {}
+              reject(new Error(err?.error || `Upload failed with status ${xhr.status}`));
+            }
+          };
+          xhr.onerror = () => reject(new Error('Network request failed'));
+          xhr.send(form as any);
+        }).catch(reject);
+      });
+    },
 
   // Listings
   listings: (params?: { assetType?: string; status?: string }) => {
@@ -129,8 +150,26 @@ export const api = {
 
   myListings: () => request<Listing[]>('/listings/mine'),
 
-  createListing: (form: FormData) =>
-    request<Listing>('/listings', { method: 'POST', body: form, isForm: true }),
+  createListing: (form: FormData) => {
+    return new Promise<Listing>((resolve, reject) => {
+      storage.getToken().then(token => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${API_URL}/listings`);
+        if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            let err;
+            try { err = JSON.parse(xhr.responseText); } catch(e) {}
+            reject(new Error(err?.error || `Upload failed with status ${xhr.status}`));
+          }
+        };
+        xhr.onerror = () => reject(new Error('Network request failed'));
+        xhr.send(form as any);
+      }).catch(reject);
+    });
+  },
 
   attachOwner: (id: string, ownerAddress: string) =>
     request<Listing>(`/listings/${id}/owner`, { method: 'PATCH', body: { ownerAddress } }),
@@ -154,6 +193,14 @@ export const api = {
     request<any>(`/listings/${listingId}/purchase`, { method: 'PATCH', body: { buyerId, dealId } }),
   incomingRequests: () =>
     request<any[]>('/listings/purchase-requests/incoming'),
+
+  // Chat
+  openConversation: (listingId: string) =>
+    request<{ id: string }>('/chat/conversations', { method: 'POST', body: { listingId } }),
+  conversations: () =>
+    request<any[]>('/chat/conversations'),
+  messages: (conversationId: string) =>
+    request<any[]>(`/chat/conversations/${conversationId}/messages`),
 
   // Wallet key (MVP custodial only — replaced by Privy in prod)
   walletKey: () => request<{ privateKey: string }>('/wallet/key'),

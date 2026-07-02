@@ -64,6 +64,7 @@ async function create(listing) {
     title: listing.title,
     description: listing.description || null,
     image: listing.image || null,
+    auth_docs: listing.authDocs || [],
     price_usdc: String(listing.priceUsdc),
     owner_address: listing.ownerAddress || null,
     owner_name: listing.ownerName || null,

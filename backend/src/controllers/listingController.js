@@ -65,11 +65,25 @@ const create = asyncHandler(async (req, res) => {
     ownerStatus = "self";
   }
 
-  if (req.file && !config.filebaseConfigured) {
-    throw ApiError.badRequest("image upload not available: Filebase is not configured");
+  if (req.files && !config.filebaseConfigured) {
+    // If they uploaded either image or authDocs, but filebase is not configured
+    const hasFiles = (req.files.image && req.files.image.length > 0) || (req.files.authDocs && req.files.authDocs.length > 0);
+    if (hasFiles) throw ApiError.badRequest("file upload not available: Filebase is not configured");
   }
+
   let image = b.image || null;
-  if (req.file) image = await uploadBuffer(req.file.buffer, req.file.mimetype);
+  if (req.files && req.files.image && req.files.image.length > 0) {
+    const file = req.files.image[0];
+    image = await uploadBuffer(file.buffer, file.mimetype);
+  }
+
+  const authDocsUrls = [];
+  if (req.files && req.files.authDocs && req.files.authDocs.length > 0) {
+    for (const file of req.files.authDocs) {
+      const url = await uploadBuffer(file.buffer, file.mimetype, "hybrid-agent/auth-docs");
+      authDocsUrls.push(url);
+    }
+  }
 
   // listing_ref links this off-chain row to the on-chain mandate/deal.
   const listingRef = ethers.id(`hybridagent:listing:${ethers.hexlify(ethers.randomBytes(16))}`);
@@ -81,6 +95,7 @@ const create = asyncHandler(async (req, res) => {
     title: b.title,
     description: b.description,
     image,
+    authDocs: authDocsUrls,
     priceUsdc: b.priceUsdc,
     ownerAddress,
     ownerName,

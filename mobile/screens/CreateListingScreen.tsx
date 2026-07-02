@@ -5,6 +5,7 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -119,20 +120,21 @@ export default function CreateListingScreen() {
         form.append('commissionBps', String(Math.round(Number(commission) * 100)));
         form.append('ownerName', ownerName);
         form.append('ownerEmail', ownerEmail);
-        // auth docs: send first doc as ownerContact proof (backend stores single image)
-        if (authDocs.length > 0) {
-          const uri = authDocs[0];
-          const name = uri.split('/').pop() ?? 'doc.jpg';
-          const type = name.endsWith('.png') ? 'image/png' : 'image/jpeg';
-          form.append('image', { uri, name, type } as any);
-        }
-      } else {
-        if (photos.length > 0) {
-          const uri = photos[0];
-          const name = uri.split('/').pop() ?? 'photo.jpg';
-          const type = name.endsWith('.png') ? 'image/png' : 'image/jpeg';
-          form.append('image', { uri, name, type } as any);
-        }
+        
+        // append all auth docs
+        authDocs.forEach((uri) => {
+          const name = uri.split('/').pop() ?? 'doc.pdf';
+          const isPdf = uri.toLowerCase().endsWith('.pdf');
+          const type = isPdf ? 'application/pdf' : name.endsWith('.png') ? 'image/png' : 'image/jpeg';
+          form.append('authDocs', { uri, name, type } as any);
+        });
+      }
+
+      if (photos.length > 0) {
+        const uri = photos[0];
+        const name = uri.split('/').pop() ?? 'photo.jpg';
+        const type = name.endsWith('.png') ? 'image/png' : 'image/jpeg';
+        form.append('image', { uri, name, type } as any);
       }
 
       await api.createListing(form);
@@ -166,16 +168,17 @@ export default function CreateListingScreen() {
   };
 
   const pickDocs = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') { setError('Photo library permission required.'); return; }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      quality: 0.8,
-      selectionLimit: 5 - authDocs.length,
-    });
-    if (!result.canceled) {
-      setAuthDocs(prev => [...prev, ...result.assets.map(a => a.uri)].slice(0, 5));
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['image/*', 'application/pdf'],
+        copyToCacheDirectory: true,
+        multiple: true,
+      });
+      if (!result.canceled) {
+        setAuthDocs(prev => [...prev, ...result.assets.map(a => a.uri)].slice(0, 5));
+      }
+    } catch (e: any) {
+      setError(e.message || 'Failed to pick document');
     }
   };
 
@@ -538,9 +541,17 @@ export default function CreateListingScreen() {
               </Text>
 
               <View style={styles.photoGrid}>
-                {authDocs.map((uri, i) => (
+                {authDocs.map((uri, i) => {
+                  const isPdf = uri.toLowerCase().endsWith('.pdf');
+                  return (
                   <View key={uri} style={styles.photoSlot}>
-                    <Image source={{ uri }} style={styles.photoImg} />
+                    {isPdf ? (
+                      <View style={[styles.photoImg, { backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' }]}>
+                        <Ionicons name="document-text" size={32} color="#9ca3af" />
+                      </View>
+                    ) : (
+                      <Image source={{ uri }} style={styles.photoImg} />
+                    )}
                     <View style={styles.docBadge}>
                       <Ionicons name="document-text-outline" size={10} color="#fff" />
                       <Text style={styles.docBadgeText}>DOC {i + 1}</Text>
@@ -549,7 +560,7 @@ export default function CreateListingScreen() {
                       <Ionicons name="close-circle" size={20} color="#ef4444" />
                     </TouchableOpacity>
                   </View>
-                ))}
+                )})}
                 {authDocs.length < 5 && (
                   <TouchableOpacity style={styles.addPhotoSlot} onPress={pickDocs} activeOpacity={0.8}>
                     <Ionicons name="document-outline" size={28} color="#9ca3af" />

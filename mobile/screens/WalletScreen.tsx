@@ -90,15 +90,15 @@ export default function WalletScreen() {
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="light-content" backgroundColor={NAVY} />
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
       <View style={styles.topNav}>
         <TouchableOpacity style={styles.backBtn} onPress={() => nav.goBack()}>
-          <Ionicons name="arrow-back" size={20} color="#fff" />
+          <Ionicons name="arrow-back" size={20} color={NAVY} />
         </TouchableOpacity>
         <Text style={styles.topTitle}>Wallet</Text>
         <TouchableOpacity style={styles.backBtn}>
-          <Ionicons name="ellipsis-horizontal" size={20} color="#fff" />
+          <Ionicons name="ellipsis-horizontal" size={20} color={NAVY} />
         </TouchableOpacity>
       </View>
 
@@ -123,7 +123,7 @@ export default function WalletScreen() {
               <Text style={styles.balanceUnit}>USDC</Text>
 
               <View style={styles.ethRow}>
-                <Ionicons name={"logo-ethereum" as any} size={14} color="#94a3b8" />
+                <Ionicons name={"diamond-outline" as any} size={14} color="#94a3b8" />
                 <Text style={styles.ethBal}>{ethBal} ETH</Text>
               </View>
 
@@ -334,11 +334,11 @@ function ActionBtn({ icon, label, onPress, active, badge }: { icon: string; labe
 }
 
 const styles = StyleSheet.create({
-  root:   { flex: 1, backgroundColor: NAVY },
+  root:   { flex: 1, backgroundColor: '#f9fafb' },
 
-  topNav:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12 },
-  backBtn:    { width: 38, height: 38, borderRadius: 12, backgroundColor: '#ffffff15', alignItems: 'center', justifyContent: 'center' },
-  topTitle:   { fontSize: 17, fontWeight: '800', color: '#fff' },
+  topNav:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
+  backBtn:    { width: 38, height: 38, borderRadius: 12, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
+  topTitle:   { fontSize: 17, fontWeight: '800', color: NAVY },
 
   scroll:     { paddingBottom: 20 },
 
@@ -346,23 +346,23 @@ const styles = StyleSheet.create({
   gasWarning:  { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#fbbf2420', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, marginBottom: 16 },
   gasWarningText: { fontSize: 12, color: '#fbbf24', fontWeight: '500' },
   balanceLabel: { fontSize: 12, color: '#94a3b8', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 },
-  balanceAmount: { fontSize: 52, fontWeight: '900', color: GOLD, letterSpacing: -1, lineHeight: 60 },
-  balanceUnit:   { fontSize: 16, color: '#94a3b8', fontWeight: '600', marginBottom: 12 },
+  balanceAmount: { fontSize: 52, fontWeight: '900', color: NAVY, letterSpacing: -1, lineHeight: 60 },
+  balanceUnit:   { fontSize: 16, color: '#64748b', fontWeight: '600', marginBottom: 12 },
   ethRow:        { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 20 },
-  ethBal:        { fontSize: 13, color: '#94a3b8', fontWeight: '600' },
-  addressStrip:  { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#ffffff10', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, width: '100%', marginBottom: 12 },
+  ethBal:        { fontSize: 13, color: '#64748b', fontWeight: '600' },
+  addressStrip:  { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#fff', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, width: '100%', marginBottom: 12, borderWidth: 1, borderColor: '#e5e7eb' },
   addressPill:   { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 7 },
-  addressText:   { fontSize: 14, color: '#cbd5e1', fontFamily: 'monospace' },
+  addressText:   { fontSize: 14, color: '#374151', fontFamily: 'monospace' },
   copyBtn:       { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  copyText:      { fontSize: 12, color: '#94a3b8', fontWeight: '600' },
+  copyText:      { fontSize: 12, color: '#64748b', fontWeight: '600' },
 
-  breakdownRow:     { flexDirection: 'row', width: '100%', backgroundColor: '#ffffff0a', borderRadius: 12, padding: 12 },
+  breakdownRow:     { flexDirection: 'row', width: '100%', backgroundColor: '#fff', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#e5e7eb' },
   breakdownItem:    { flex: 1, alignItems: 'center', gap: 3 },
   breakdownLabel:   { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5 },
-  breakdownVal:     { fontSize: 13, fontWeight: '700', color: '#cbd5e1' },
-  breakdownDivider: { width: 1, backgroundColor: '#ffffff15', alignSelf: 'stretch', marginHorizontal: 4 },
+  breakdownVal:     { fontSize: 13, fontWeight: '700', color: NAVY },
+  breakdownDivider: { width: 1, backgroundColor: '#e5e7eb', alignSelf: 'stretch', marginHorizontal: 4 },
 
-  actions:    { flexDirection: 'row', backgroundColor: '#fff', borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingTop: 20, paddingBottom: 16, paddingHorizontal: 20, gap: 8 },
+  actions:    { flexDirection: 'row', backgroundColor: '#fff', borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingTop: 20, paddingBottom: 16, paddingHorizontal: 20, gap: 8, borderTopWidth: 1, borderTopColor: '#e5e7eb' },
   actionBtn:  { flex: 1, alignItems: 'center', gap: 7 },
   actionIcon: { width: 52, height: 52, borderRadius: 16, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
   actionIconActive: { backgroundColor: NAVY },

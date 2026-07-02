@@ -144,7 +144,7 @@ export default function DashboardScreen() {
           <Text style={styles.balanceLabel}>USDC Balance</Text>
           <Text style={styles.balanceValue}>${fmtUsdc(wallet?.balanceUsdc ?? '0')}</Text>
           <View style={styles.ethRow}>
-            <Ionicons name={'logo-ethereum' as any} size={12} color="#64748b" />
+            <Ionicons name={'diamond-outline' as any} size={12} color="#64748b" />
             <Text style={styles.ethText}>
               {Number(wallet?.balanceBase ?? 0).toFixed(4)} ETH gas
             </Text>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, ScrollView, StyleSheet, StatusBar,
-  TextInput, Modal, Pressable, ActivityIndicator, Image,
+  TextInput, Modal, Pressable, ActivityIndicator, Image, Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -71,6 +71,7 @@ export default function ListingDetailScreen() {
   const [pendingReqs, setPendingReqs]  = useState<PurchaseRequest[]>([]);
   const [activeDeals, setActiveDeals]  = useState<PurchaseRequest[]>([]);
   const [creatingDealId, setCreatingDealId] = useState<string | null>(null);
+  const [openingChat, setOpeningChat] = useState(false);
 
   useEffect(() => {
     if (isOwner && listing) {
@@ -137,6 +138,19 @@ export default function ListingDetailScreen() {
   // For agent_brokered, owner must have confirmed via email before deals can be created.
   const canCreateDeal =
     listing.listing_type !== 'agent_brokered' || ownerStatus === 'confirmed';
+
+  const handleChat = async () => {
+    if (!listing) return;
+    try {
+      setOpeningChat(true);
+      const res = await api.openConversation(listing.id);
+      nav.navigate('Chat', { conversationId: res.id });
+    } catch (e: any) {
+      Alert.alert('Error', e.message || 'Could not start chat.');
+    } finally {
+      setOpeningChat(false);
+    }
+  };
 
   return (
     <View style={styles.root}>
@@ -515,8 +529,8 @@ export default function ListingDetailScreen() {
               </View>
               <Text style={styles.agentSub}>Licensed HybridAgent broker</Text>
             </View>
-            <TouchableOpacity style={styles.contactBtn}>
-              <Ionicons name="chatbubble-outline" size={16} color={NAVY} />
+            <TouchableOpacity style={styles.contactBtn} onPress={handleChat} disabled={openingChat}>
+              {openingChat ? <ActivityIndicator size="small" color={NAVY} /> : <Ionicons name="chatbubble-outline" size={16} color={NAVY} />}
             </TouchableOpacity>
           </View>
         </View>
@@ -581,8 +595,8 @@ export default function ListingDetailScreen() {
               <Ionicons name="lock-closed-outline" size={16} color="#fff" style={{ marginRight: 6 }} />
               <Text style={styles.fundBtnText}>Fund Escrow · ${listing.price_usdc} USDC</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.chatBtnRow}>
-              <Ionicons name="chatbubble-outline" size={15} color={NAVY} style={{ marginRight: 6 }} />
+            <TouchableOpacity style={styles.chatBtnRow} onPress={handleChat} disabled={openingChat}>
+              {openingChat ? <ActivityIndicator size="small" color={NAVY} style={{ marginRight: 6 }} /> : <Ionicons name="chatbubble-outline" size={15} color={NAVY} style={{ marginRight: 6 }} />}
               <Text style={styles.chatBtnRowText}>Chat with agent</Text>
             </TouchableOpacity>
           </View>
@@ -595,8 +609,8 @@ export default function ListingDetailScreen() {
               <Ionicons name="time-outline" size={15} color="#6b7280" />
               <Text style={styles.waitCtaText}>Waiting for the agent to set up your escrow deal</Text>
             </View>
-            <TouchableOpacity style={styles.chatBtnRow}>
-              <Ionicons name="chatbubble-outline" size={15} color={NAVY} style={{ marginRight: 6 }} />
+            <TouchableOpacity style={styles.chatBtnRow} onPress={handleChat} disabled={openingChat}>
+              {openingChat ? <ActivityIndicator size="small" color={NAVY} style={{ marginRight: 6 }} /> : <Ionicons name="chatbubble-outline" size={15} color={NAVY} style={{ marginRight: 6 }} />}
               <Text style={styles.chatBtnRowText}>Chat with agent</Text>
             </TouchableOpacity>
           </View>
@@ -610,8 +624,8 @@ export default function ListingDetailScreen() {
                 <Text style={styles.ctaTotalLabel}>Total</Text>
                 <Text style={styles.ctaTotalValue}>${listing.price_usdc} USDC</Text>
               </View>
-              <TouchableOpacity style={styles.chatIconBtn}>
-                <Ionicons name="chatbubble-outline" size={18} color={NAVY} />
+              <TouchableOpacity style={styles.chatIconBtn} onPress={handleChat} disabled={openingChat}>
+                {openingChat ? <ActivityIndicator size="small" color={NAVY} /> : <Ionicons name="chatbubble-outline" size={18} color={NAVY} />}
               </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.buyBtn} activeOpacity={0.85} onPress={() => setShowBuyModal(true)}>

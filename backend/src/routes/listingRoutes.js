@@ -20,7 +20,7 @@ router.post(
   "/",
   requireAuth,
   requireKyc,
-  upload.single("image"),
+  upload.fields([{ name: 'image', maxCount: 1 }, { name: 'authDocs', maxCount: 5 }]),
   validate(createListingSchema),
   ctrl.create
 );

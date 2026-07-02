@@ -41,6 +41,7 @@ const DashboardPage = () => {
   const [tab, setTab] = useState('create');
   const [form, setForm] = useState(EMPTY);
   const [imageFile, setImageFile] = useState(null);
+  const [authDocs, setAuthDocs] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [listings, setListings] = useState([]);
   const [conversations, setConversations] = useState([]);
@@ -121,11 +122,13 @@ const DashboardPage = () => {
         fd.append('ownerEmail', form.ownerEmail);
       }
       if (imageFile) fd.append('image', imageFile);
+      authDocs.forEach((file) => fd.append('authDocs', file));
 
       const created = await api.createListing(fd);
       notifications.success('Listing published', `"${created.title}" is now live.`);
       setForm(EMPTY);
       setImageFile(null);
+      setAuthDocs([]);
       setTab('listings');
       loadAll();
     } catch (err) {
@@ -298,6 +301,19 @@ const DashboardPage = () => {
                     <input name="ownerEmail" type="email" value={form.ownerEmail} onChange={setField} required placeholder="owner@email.com" className={`${inputClass} pl-9`} />
                   </div>
                 </div>
+              </div>
+            )}
+
+            {brokered && (
+              <div>
+                <label className={label}>Authorization Documents (PDF/Images)</label>
+                <label className="flex items-center gap-3 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-4 cursor-pointer hover:border-teal-500 transition-colors">
+                  <FiUpload className="text-teal-500" />
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {authDocs.length ? `${authDocs.length} document(s) selected` : 'Upload mandate/documents'}
+                  </span>
+                  <input type="file" multiple accept="image/*,application/pdf" className="hidden" onChange={(e) => setAuthDocs(Array.from(e.target.files || []))} />
+                </label>
               </div>
             )}
 

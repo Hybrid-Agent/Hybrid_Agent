@@ -1,26 +1,32 @@
-const nodemailer = require("nodemailer");
+// Sends email via Brevo transactional API (works on any host — no SMTP ports needed).
 const config = require("../config");
 
-let _transport = null;
-function transport() {
-  if (!_transport) {
-    _transport = nodemailer.createTransport({
-      host: config.email.smtpHost,
-      port: config.email.smtpPort,
-      secure: Number(config.email.smtpPort) === 465, // Implicit SSL on 465, STARTTLS otherwise
-      auth: { user: config.email.smtpUser, pass: config.email.smtpPass },
-    });
-  }
-  return _transport;
-}
-
 async function send({ to, subject, text }) {
-  if (config.email.configured) {
-    await transport().sendMail({ from: config.email.from, to, subject, text });
-    return { ok: true, channel: "brevo" };
+  if (!config.email.configured) {
+    console.log(`\n──────── EMAIL ────────\nTo: ${to}\nSubject: ${subject}\n\n${text}\n───────────────────────\n`);
+    return { ok: true, channel: "console" };
   }
-  console.log(`\n──────── EMAIL ────────\nTo: ${to}\nSubject: ${subject}\n\n${text}\n───────────────────────\n`);
-  return { ok: true, channel: "console" };
+
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "api-key": config.email.brevoApiKey,
+    },
+    body: JSON.stringify({
+      sender: { name: "HybridAgent", email: config.email.from.replace(/.*<(.+)>/, "$1") },
+      to: [{ email: to }],
+      subject,
+      textContent: text,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Brevo API error ${res.status}: ${err}`);
+  }
+
+  return { ok: true, channel: "brevo" };
 }
 
 const claimLink = (listingId) => `${config.appBaseUrl}/claim?listingId=${listingId}`;

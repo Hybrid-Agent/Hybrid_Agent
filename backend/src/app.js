@@ -8,6 +8,10 @@ const routes = require("./routes");
 
 const app = express();
 
+// Trust the first proxy hop (Render, Heroku, etc.) so that
+// express-rate-limit reads the real client IP from X-Forwarded-For.
+app.set("trust proxy", 1);
+
 app.disable("x-powered-by");
 app.use(helmet());
 app.use(cors({ origin: config.corsOrigin }));

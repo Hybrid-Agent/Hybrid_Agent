@@ -12,6 +12,7 @@ import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useAuth } from '../components/Atoms/AuthProvider';
 import { useNotifications } from '../components/Atoms/NotificationProvider';
 import { Spinner, Skeleton, PageLoader } from '../components/Atoms/Loaders';
+import PaymentActivity from '../components/Molecules/PaymentActivity';
 import { api } from '@/lib/api';
 import { withdrawUsdc, pickEmbeddedWallet } from '@/lib/wallet';
 import { shortAddress, formatUsdc, tierInfo, TIERS } from '@/lib/format';
@@ -316,6 +317,8 @@ const ProfilePage = () => {
             </p>
           )}
         </div>
+
+        <PaymentActivity />
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

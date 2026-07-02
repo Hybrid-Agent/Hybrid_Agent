@@ -141,4 +141,28 @@ const attachOwner = asyncHandler(async (req, res) => {
   res.json(updated);
 });
 
-module.exports = { list, mine, getOne, create, attachOwner };
+// POST /listings/:id/resend-notice (auth required; must be the listing's creator)
+// Re-sends the owner notification email — useful when the first one was lost or email was down.
+const resendOwnerNotice = asyncHandler(async (req, res) => {
+  const me = req.user;
+  const listing = await listingModel.getById(req.params.id);
+  if (!listing) throw ApiError.notFound("listing not found");
+  if (String(listing.created_by) !== String(me.id)) {
+    throw ApiError.forbidden("only the listing agent can resend the notice");
+  }
+  if (!listing.owner_email) {
+    throw ApiError.badRequest("this listing has no owner email on record");
+  }
+
+  await mailer.sendListingNotice({
+    to: listing.owner_email,
+    ownerName: listing.owner_name,
+    agentName: me.full_name,
+    title: listing.title,
+    listingId: listing.id,
+  });
+
+  res.json({ ok: true, message: "notification email resent" });
+});
+
+module.exports = { list, mine, getOne, create, attachOwner, resendOwnerNotice };

@@ -8,7 +8,7 @@ import { useWallets, usePrivy } from '@privy-io/react-auth';
 import {
   FiHome, FiTruck, FiDollarSign, FiShield, FiPhone, FiMessageSquare,
   FiShoppingCart, FiX, FiCheck, FiAlertTriangle, FiUser, FiStar,
-  FiClock, FiArrowRight, FiExternalLink,
+  FiClock, FiArrowRight, FiExternalLink, FiMail,
 } from 'react-icons/fi';
 import { useAuth } from '../../components/Atoms/AuthProvider';
 import { useNotifications } from '../../components/Atoms/NotificationProvider';
@@ -490,11 +490,42 @@ const ItemDetailsPage = () => {
 const AgentActions = ({ item, prList, buyStep, wallet, onConnectWallet, onCreateDeal, onDone, notifications }) => {
   const pending = prList.filter((r) => r.status === 'requested');
   const active = prList.filter((r) => r.status === 'deal_created');
+  const [resending, setResending] = React.useState(false);
+
+  const handleResend = async () => {
+    setResending(true);
+    try {
+      await api.resendOwnerNotice(item.id);
+      notifications.success('Email resent', `Notification sent again to ${item.owner_email}.`);
+    } catch (err) {
+      notifications.error('Resend failed', err.message);
+    } finally {
+      setResending(false);
+    }
+  };
 
   return (
     <div className="space-y-3">
       <div className="bg-teal-50 dark:bg-teal-900/15 border border-teal-100 dark:border-teal-900/40 rounded-xl p-4 text-sm text-gray-600 dark:text-gray-300">
         This is your listing.
+        {item.listing_type === 'agent_brokered' && item.owner_status !== 'confirmed' && (
+          <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800 rounded-lg">
+            <p className="text-xs font-semibold text-amber-800 dark:text-amber-300 mb-1 flex items-center gap-1.5">
+              <FiClock size={12} /> Waiting for owner to confirm
+            </p>
+            <p className="text-xs text-amber-700 dark:text-amber-400 mb-2">
+              A notification was sent to <span className="font-mono font-semibold">{item.owner_email}</span>. If they didn't receive it, resend it below.
+            </p>
+            <button
+              onClick={handleResend}
+              disabled={resending}
+              className="flex items-center gap-1.5 text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-60"
+            >
+              {resending ? <Spinner size={12} /> : <FiMail size={12} />}
+              {resending ? 'Sending…' : 'Resend Email to Owner'}
+            </button>
+          </div>
+        )}
         {item.listing_type === 'agent_brokered' && item.owner_status === 'pending' && (
           <AttachOwner id={item.id} onDone={onDone} notifications={notifications} />
         )}

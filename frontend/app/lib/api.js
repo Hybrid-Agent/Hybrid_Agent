@@ -66,6 +66,7 @@ export const api = {
   withdraw: (to) => request('/wallet/withdraw', { method: 'POST', body: { to } }),
   createListing: (formData) => request('/listings', { method: 'POST', body: formData, isForm: true }),
   attachOwner: (id, ownerAddress) => request(`/listings/${id}/owner`, { method: 'PATCH', body: { ownerAddress } }),
+  resendOwnerNotice: (id) => request(`/listings/${id}/resend-notice`, { method: 'POST' }),
   // purchase request lifecycle
   requestPurchase: (listingId) => request(`/listings/${listingId}/purchase`, { method: 'POST' }),
   getPurchaseRequest: (listingId) => request(`/listings/${listingId}/purchase`),

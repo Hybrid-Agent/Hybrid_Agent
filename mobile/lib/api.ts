@@ -57,6 +57,10 @@ export interface Listing {
   title: string;
   description?: string;
   image?: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  year?: number;
+  mileage?: string;
   price_usdc: string;
   owner_address?: string;
   owner_name?: string;
@@ -174,6 +178,9 @@ export const api = {
   attachOwner: (id: string, ownerAddress: string) =>
     request<Listing>(`/listings/${id}/owner`, { method: 'PATCH', body: { ownerAddress } }),
 
+  resendOwnerNotice: (id: string) =>
+    request<{ ok: boolean }>(`/listings/${id}/resend-notice`, { method: 'POST' }),
+
   // Agents / leaderboard
   agents: () => request<Agent[]>('/agents', { auth: false }),
   agent: (id: string) => request<Agent>(`/agents/${id}`, { auth: false }),
@@ -193,6 +200,8 @@ export const api = {
     request<any>(`/listings/${listingId}/purchase`, { method: 'PATCH', body: { buyerId, dealId } }),
   incomingRequests: () =>
     request<any[]>('/listings/purchase-requests/incoming'),
+  myPurchaseRequests: () =>
+    request<any[]>('/listings/purchase-requests/mine'),
 
   // Chat
   openConversation: (listingId: string) =>

@@ -34,4 +34,7 @@ router.get("/:id/purchase", requireAuth, purchaseCtrl.get);
 router.patch("/:id/purchase/approve", requireAuth, purchaseCtrl.approve);
 router.patch("/:id/purchase", requireAuth, purchaseCtrl.recordDeal);
 
+// Resend the owner notification email (agent triggers this if owner didn't receive it).
+router.post("/:id/resend-notice", requireAuth, ctrl.resendOwnerNotice);
+
 module.exports = router;

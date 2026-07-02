@@ -232,7 +232,12 @@ export default function DashboardScreen() {
             <Text style={styles.emptyRecentText}>No listings yet</Text>
           </View>
         ) : recent.map(listing => (
-          <View key={listing.id} style={styles.listingCard}>
+          <TouchableOpacity 
+            key={listing.id} 
+            style={styles.listingCard}
+            activeOpacity={0.88}
+            onPress={() => (nav as any).navigate('ListingsTab', { screen: 'ListingDetail', params: { id: listing.id } })}
+          >
             <View style={[styles.listingThumb, { backgroundColor: listing.asset_type === 'property' ? '#e8f0fe' : GOLD_L }]}>
               {listing.image ? (
                 <Image source={{ uri: listing.image }} style={styles.listingThumbImg} resizeMode="cover" />
@@ -255,7 +260,7 @@ export default function DashboardScreen() {
               <Text style={styles.listingPrice}>${Number(listing.price_usdc).toLocaleString()}</Text>
               <Text style={styles.listingUsdc}>USDC</Text>
             </View>
-          </View>
+          </TouchableOpacity>
         ))}
 
         {/* On-chain banner */}

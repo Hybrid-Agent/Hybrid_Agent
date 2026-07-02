@@ -22,6 +22,7 @@ import ActivityScreen from '../screens/ActivityScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import PersonalDetailsScreen from '../screens/PersonalDetailsScreen';
 import ChatScreen from '../screens/ChatScreen';
+import GlobalNotifier from '../components/GlobalNotifier';
 
 import type { RootStackParamList, ListingsStackParamList, TabParamList } from './types';
 
@@ -100,6 +101,7 @@ export default function Navigation() {
         <RootStack.Screen name="PersonalDetails" component={PersonalDetailsScreen} options={{ animation: 'slide_from_right' }} />
         <RootStack.Screen name="Chat"            component={ChatScreen}            options={{ animation: 'slide_from_right' }} />
       </RootStack.Navigator>
+      <GlobalNotifier />
     </NavigationContainer>
   );
 }

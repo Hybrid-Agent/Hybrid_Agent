@@ -20,6 +20,7 @@ export default function ProfileScreen() {
 
   const [user, setUser]             = useState<AuthUser | null>(null);
   const [listingCount, setListingCount] = useState(0);
+  const [purchaseRequests, setPurchaseRequests] = useState<any[]>([]);
 
   useFocusEffect(useCallback(() => {
     let active = true;
@@ -34,6 +35,10 @@ export default function ProfileScreen() {
 
     api.myListings().then(data => {
       if (active) setListingCount(data.length);
+    }).catch(() => {});
+
+    api.myPurchaseRequests().then((reqs: any[]) => {
+      if (active) setPurchaseRequests(reqs);
     }).catch(() => {});
 
     return () => { active = false; };
@@ -123,6 +128,10 @@ export default function ProfileScreen() {
     },
   ];
 
+  const toFund = purchaseRequests.filter((r) => r.status === 'deal_created');
+  const pending = purchaseRequests.filter((r) => r.status === 'requested');
+  const hasPaymentActivity = toFund.length > 0 || pending.length > 0;
+
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -194,6 +203,54 @@ export default function ProfileScreen() {
             </View>
             <Ionicons name="chevron-forward" size={18} color={GOLD} />
           </TouchableOpacity>
+        )}
+
+        {/* Payment Activity section */}
+        {hasPaymentActivity && (
+          <View style={styles.menuSection}>
+            <Text style={styles.menuSectionTitle}>Payment Activity</Text>
+            <View style={styles.menuCard}>
+              
+              {toFund.map((r, idx) => (
+                <TouchableOpacity
+                  key={r.id}
+                  style={[styles.menuItem, (idx < toFund.length - 1 || pending.length > 0) && styles.menuItemBorder]}
+                  activeOpacity={0.7}
+                  onPress={() => (nav as any).navigate('ListingDetail', { id: r.listing_id })}
+                >
+                  <View style={[styles.menuIcon, { backgroundColor: '#ccfbf1' }]}>
+                    <Ionicons name="shield-checkmark" size={18} color="#0f766e" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.menuLabel, { color: '#0f766e', textTransform: 'uppercase', fontSize: 11, fontWeight: '800' }]}>Fund escrow</Text>
+                    <Text style={styles.menuLabel}>{r.listing_title}</Text>
+                    <Text style={styles.menuSub}>Deal #{r.deal_id} · {Number(r.price_usdc).toLocaleString()} USDC ready</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color="#d1d5db" />
+                </TouchableOpacity>
+              ))}
+
+              {pending.map((r, idx) => (
+                <TouchableOpacity
+                  key={r.id}
+                  style={[styles.menuItem, idx < pending.length - 1 && styles.menuItemBorder]}
+                  activeOpacity={0.7}
+                  onPress={() => (nav as any).navigate('ListingDetail', { id: r.listing_id })}
+                >
+                  <View style={styles.menuIcon}>
+                    <Ionicons name="time-outline" size={18} color="#6b7280" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.menuLabel, { color: '#6b7280', textTransform: 'uppercase', fontSize: 11, fontWeight: '800' }]}>Awaiting agent</Text>
+                    <Text style={styles.menuLabel}>{r.listing_title}</Text>
+                    <Text style={styles.menuSub}>{Number(r.price_usdc).toLocaleString()} USDC · escrow being prepared</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color="#d1d5db" />
+                </TouchableOpacity>
+              ))}
+
+            </View>
+          </View>
         )}
 
         {MENU_SECTIONS.map(section => (

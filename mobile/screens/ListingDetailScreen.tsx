@@ -72,6 +72,7 @@ export default function ListingDetailScreen() {
   const [activeDeals, setActiveDeals]  = useState<PurchaseRequest[]>([]);
   const [creatingDealId, setCreatingDealId] = useState<string | null>(null);
   const [openingChat, setOpeningChat] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState(false);
 
   useEffect(() => {
     if (isOwner && listing) {
@@ -108,9 +109,20 @@ export default function ListingDetailScreen() {
   // ── owner actions ──
   function sendOwnerInvite() {
     if (!ownerName.trim() || !ownerEmail.trim()) return;
-    // TODO: POST /listings/:id/attach-owner { owner_name, owner_email }
-    // Backend generates custodial wallet (Privy/Magic) and emails Baba a confirmation link.
     setOwnerStatus('pending_email');
+  }
+
+  async function resendOwnerEmail() {
+    if (!listing) return;
+    setResendingEmail(true);
+    try {
+      await api.resendOwnerNotice(String(listing.id));
+      Alert.alert('Email Sent', `Notification resent to ${ownerEmail}.`);
+    } catch (e: any) {
+      Alert.alert('Failed', e.message || 'Could not resend email.');
+    } finally {
+      setResendingEmail(false);
+    }
   }
 
   async function createEscrowDeal(req: PurchaseRequest) {
@@ -315,6 +327,19 @@ export default function ListingDetailScreen() {
                     <Text style={styles.attachHint}>
                       An invitation email was sent to the owner. The listing will go live once they click the confirmation link.
                     </Text>
+                    <TouchableOpacity
+                      style={[styles.attachBtn, { backgroundColor: '#d97706', marginTop: 4 }, resendingEmail && { opacity: 0.6 }]}
+                      onPress={resendOwnerEmail}
+                      disabled={resendingEmail}
+                      activeOpacity={0.8}
+                    >
+                      {resendingEmail
+                        ? <ActivityIndicator size="small" color="#fff" style={{ marginRight: 6 }} />
+                        : <Ionicons name="mail-outline" size={14} color="#fff" style={{ marginRight: 6 }} />}
+                      <Text style={styles.attachBtnText}>
+                        {resendingEmail ? 'Sending…' : 'Resend Email to Owner'}
+                      </Text>
+                    </TouchableOpacity>
                     {/* Demo advance */}
                     <TouchableOpacity style={styles.demoBtn} onPress={() => setOwnerStatus('confirmed')}>
                       <Text style={styles.demoBtnText}>▶ Simulate: owner confirms email</Text>

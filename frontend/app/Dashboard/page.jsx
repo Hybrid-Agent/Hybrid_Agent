@@ -238,7 +238,7 @@ const DashboardPage = () => {
                 <div className="grid grid-cols-2 gap-2">
                   {[{ v: 'property', t: 'Property', Icon: FiHome }, { v: 'vehicle', t: 'Vehicle', Icon: FiTruck }].map(({ v, t, Icon }) => (
                     <button type="button" key={v} onClick={() => setForm((p) => ({ ...p, assetType: v }))}
-                      className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${form.assetType === v ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300' : 'border-gray-200 dark:border-gray-700 text-gray-500'}`}>
+                      className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${form.assetType === v ? 'border-teal-500 bg-teal-50 dark:bg-[#121212]/20 text-teal-700 dark:text-teal-300' : 'border-gray-200 dark:border-gray-700 text-gray-500'}`}>
                       <Icon size={15} /> {t}
                     </button>
                   ))}
@@ -249,7 +249,7 @@ const DashboardPage = () => {
                 <div className="grid grid-cols-2 gap-2">
                   {[{ v: 'agent_brokered', t: 'For an owner' }, { v: 'owner_direct', t: 'My own' }].map(({ v, t }) => (
                     <button type="button" key={v} onClick={() => setForm((p) => ({ ...p, listingType: v }))}
-                      className={`p-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${form.listingType === v ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300' : 'border-gray-200 dark:border-gray-700 text-gray-500'}`}>
+                      className={`p-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${form.listingType === v ? 'border-teal-500 bg-teal-50 dark:bg-[#121212]/20 text-teal-700 dark:text-teal-300' : 'border-gray-200 dark:border-gray-700 text-gray-500'}`}>
                       {t}
                     </button>
                   ))}
@@ -326,7 +326,7 @@ const DashboardPage = () => {
               </label>
             </div>
 
-            <button type="submit" disabled={submitting || !verified} className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60 transition-colors">
+            <button type="submit" disabled={submitting || !verified} className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60 transition-colors">
               {submitting ? <Spinner size={20} /> : <>Publish listing <FiCheck size={16} /></>}
             </button>
           </form>
@@ -347,7 +347,7 @@ const DashboardPage = () => {
                 const pendingCount = incoming.filter((r) => r.listing_id === l.id && r.status === 'requested').length;
                 return (
                   <Link key={l.id} href={`/Listings/${l.id}`} className="bg-white dark:bg-white/5 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-teal-500 transition-all group">
-                    {l.image ? <img src={l.image} alt={l.title} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-40 bg-teal-100 dark:bg-teal-900/30" />}
+                    {l.image ? <img src={l.image} alt={l.title} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-40 bg-teal-100 dark:bg-[#121212]/30" />}
                     <div className="p-4">
                       <h3 className="font-bold text-sm truncate">{l.title}</h3>
                       <p className="text-teal-600 dark:text-teal-400 text-sm font-semibold mt-1">{l.price_usdc} USDC</p>
@@ -396,7 +396,7 @@ const DashboardPage = () => {
                     {/* Listing thumbnail */}
                     {r.listing_image
                       ? <img src={r.listing_image} alt={r.listing_title} className="w-20 h-20 rounded-xl object-cover flex-shrink-0" />
-                      : <div className="w-20 h-20 rounded-xl bg-teal-100 dark:bg-teal-900/30 flex-shrink-0 flex items-center justify-center text-teal-400"><FiHome size={28} /></div>}
+                      : <div className="w-20 h-20 rounded-xl bg-teal-100 dark:bg-[#121212]/30 flex-shrink-0 flex items-center justify-center text-teal-400"><FiHome size={28} /></div>}
 
                     {/* Info */}
                     <div className="flex-1 min-w-0 space-y-2">
@@ -429,14 +429,14 @@ const DashboardPage = () => {
                               <Link href={`/Listings/${r.listing_id}`} className="underline font-semibold">Open listing to attach it.</Link>
                             </div>
                           ) : !wallet ? (
-                            <button onClick={connectPrivy} className="flex items-center gap-2 bg-teal-700 hover:bg-teal-600 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors">
+                            <button onClick={connectPrivy} className="flex items-center gap-2 bg-white/10 hover:bg-teal-600 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors">
                               <FiShield size={14} /> Connect wallet to create deal
                             </button>
                           ) : (
                             <button
                               onClick={() => createDeal(r)}
                               disabled={!!dealStep}
-                              className="flex items-center gap-2 bg-teal-700 hover:bg-teal-600 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors disabled:opacity-60"
+                              className="flex items-center gap-2 bg-white/10 hover:bg-teal-600 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors disabled:opacity-60"
                             >
                               {isProcessing ? <><Spinner size={14} /> Creating escrow…</> : <><FiShield size={14} /> Create escrow deal</>}
                             </button>
@@ -480,8 +480,8 @@ const DashboardPage = () => {
                   const sel = selectedConv?.id === c.id;
                   return (
                     <button key={c.id} onClick={() => setSelectedConv({ id: c.id, title: `${c.listing_title || 'Listing'} · ${other}` })}
-                      className={`w-full flex items-center gap-3 p-3 text-left border-b border-gray-100 dark:border-gray-800/60 transition-colors ${sel ? 'bg-teal-50 dark:bg-teal-900/15' : 'hover:bg-gray-100 dark:hover:bg-white/5'}`}>
-                      {c.listing_image ? <img src={c.listing_image} alt="" className="w-11 h-11 rounded-lg object-cover flex-shrink-0" /> : <div className="w-11 h-11 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex-shrink-0" />}
+                      className={`w-full flex items-center gap-3 p-3 text-left border-b border-gray-100 dark:border-gray-800/60 transition-colors ${sel ? 'bg-teal-50 dark:bg-[#121212]/15' : 'hover:bg-gray-100 dark:hover:bg-white/5'}`}>
+                      {c.listing_image ? <img src={c.listing_image} alt="" className="w-11 h-11 rounded-lg object-cover flex-shrink-0" /> : <div className="w-11 h-11 rounded-lg bg-teal-100 dark:bg-[#121212]/30 flex-shrink-0" />}
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm truncate">{c.listing_title || 'Listing'}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{other} · {c.last_message || 'No messages yet'}</p>

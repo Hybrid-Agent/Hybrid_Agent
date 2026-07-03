@@ -89,7 +89,7 @@ const FloatingChatDrawer = () => {
                   >
                     {c.listing_image
                       ? <img src={c.listing_image} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
-                      : <div className="w-10 h-10 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex-shrink-0" />}
+                      : <div className="w-10 h-10 rounded-lg bg-teal-100 dark:bg-[#121212]/30 flex-shrink-0" />}
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm truncate text-gray-900 dark:text-white">{c.listing_title || 'Listing'}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{other} · {c.last_message || 'No messages yet'}</p>

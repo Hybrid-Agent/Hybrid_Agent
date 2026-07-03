@@ -22,7 +22,7 @@ const navLinks = [
 
 const MobileNavLink = ({ href, label, icon: Icon, onClick }) => (
   <Link
-    className='group flex items-center gap-4 px-6 py-4 text-[17px] font-medium border-b border-gray-100 dark:border-gray-800/60 hover:bg-gray-50 dark:hover:bg-gray-900/40 hover:text-teal-600 dark:hover:text-teal-400 transition-all duration-200'
+    className='group flex items-center gap-4 px-6 py-4 text-[17px] font-medium border-b border-gray-100 dark:border-gray-800/60 hover:bg-gray-50 dark:hover:bg-[#121212]/40 hover:text-teal-600 dark:hover:text-teal-400 transition-all duration-200'
     href={href}
     onClick={onClick}
   >
@@ -106,7 +106,7 @@ const Navbar = () => {
             {isLoggedIn ? (
               <>
                 <NotificationBell />
-                <Link href="/Profile" onClick={closeNav} aria-label="Profile" className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <Link href="/Profile" onClick={closeNav} aria-label="Profile" className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-[#1e1e1e] transition-colors">
                   <CgProfile
                     size={26}
                     className={`${isDark ? 'text-gray-300' : 'text-gray-700'}`}
@@ -126,7 +126,7 @@ const Navbar = () => {
                 <Link
                   href="/Login"
                   className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-300 ${
-                    isDark ? 'text-gray-300 hover:text-white hover:bg-gray-800' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    isDark ? 'text-gray-300 hover:text-white hover:bg-[#1e1e1e]' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   }`}
                 >
                   <FiLogIn size={16} />
@@ -153,7 +153,7 @@ const Navbar = () => {
             <button
               onClick={() => setNavOpen(!navOpen)}
               className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-colors focus:outline-none ${
-                isDark ? 'text-white hover:bg-gray-800' : 'text-gray-900 hover:bg-gray-100'
+                isDark ? 'text-white hover:bg-[#1e1e1e]' : 'text-gray-900 hover:bg-gray-100'
               }`}
               aria-label={navOpen ? "Close navigation" : "Open navigation"}
             >
@@ -194,7 +194,7 @@ const Navbar = () => {
               {isLoggedIn ? (
                 <>
                   <Link href="/Profile" onClick={closeNav} className={`flex items-center gap-3 p-3.5 rounded-xl transition-colors ${
-                    isDark ? 'bg-gray-900/50 hover:bg-gray-800 text-gray-200' : 'bg-gray-50 hover:bg-gray-100 text-gray-800'
+                    isDark ? 'bg-[#121212]/50 hover:bg-[#1e1e1e] text-gray-200' : 'bg-gray-50 hover:bg-gray-100 text-gray-800'
                   }`}>
                     <CgProfile size={22} className="text-teal-500" />
                     <span className="font-medium">My Profile</span>
@@ -212,7 +212,7 @@ const Navbar = () => {
               ) : (
                 <>
                   <Link href="/Login" onClick={closeNav} className={`flex justify-center items-center gap-2 p-3.5 rounded-xl font-semibold transition-colors border ${
-                    isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white' : 'border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    isDark ? 'border-gray-700 text-gray-300 hover:bg-[#1e1e1e] hover:text-white' : 'border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                   }`}>
                     <FiLogIn size={20} />
                     Login

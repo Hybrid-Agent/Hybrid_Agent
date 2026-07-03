@@ -92,7 +92,7 @@ const RegistrationPage = () => {
   };
 
   const inputClass = (field) =>
-    `w-full pl-10 border bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-gray-200 outline-none p-3 rounded-xl focus:ring-2 focus:ring-teal-500 transition-all ${
+    `w-full pl-10 border bg-gray-50 dark:bg-[#121212]/50 text-gray-900 dark:text-gray-200 outline-none p-3 rounded-xl focus:ring-2 focus:ring-teal-500 transition-all ${
       errors[field] ? 'border-red-400' : 'border-gray-300 dark:border-gray-600'
     }`;
   const labelClass = 'block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1';
@@ -198,7 +198,7 @@ const RegistrationPage = () => {
                           onClick={() => setForm((p) => ({ ...p, userType: o.v }))}
                           className={`text-left p-4 rounded-xl border-2 transition-all ${
                             form.userType === o.v
-                              ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/20'
+                              ? 'border-teal-500 bg-teal-50 dark:bg-[#121212]/20'
                               : 'border-gray-200 dark:border-gray-700 hover:border-teal-300'
                           }`}
                         >
@@ -249,7 +249,7 @@ const RegistrationPage = () => {
                     </div>
                     <Err name="confirmPassword" />
                   </div>
-                  <div className="flex items-start gap-2.5 mt-2 p-3 rounded-xl bg-teal-50 dark:bg-teal-900/15 border border-teal-100 dark:border-teal-900/40">
+                  <div className="flex items-start gap-2.5 mt-2 p-3 rounded-xl bg-teal-50 dark:bg-[#121212]/15 border border-teal-100 dark:border-teal-900/40">
                     <FiShield className="text-teal-500 flex-shrink-0 mt-0.5" size={16} />
                     <p className="text-xs text-gray-600 dark:text-gray-400">
                       A secure wallet is created for you automatically — no seed phrase to manage.
@@ -274,7 +274,7 @@ const RegistrationPage = () => {
               type="button"
               onClick={next}
               disabled={submitting}
-              className="flex items-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-semibold py-2.5 px-6 rounded-xl disabled:opacity-70 transition-colors min-w-[130px] justify-center"
+              className="flex items-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-semibold py-2.5 px-6 rounded-xl disabled:opacity-70 transition-colors min-w-[130px] justify-center"
             >
               {submitting ? (
                 <Spinner size={18} />

@@ -47,7 +47,7 @@ const NotificationBell = () => {
       </button>
 
       {open && (
-        <div className="fixed top-[70px] right-4 sm:absolute sm:top-full sm:right-0 sm:mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-[360px] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-50 animate-scale-in origin-top-right overflow-hidden">
+        <div className="fixed top-[70px] right-4 sm:absolute sm:top-full sm:right-0 sm:mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-[360px] bg-white dark:bg-[#121212] border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-50 animate-scale-in origin-top-right overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
             <h4 className="text-sm font-bold text-gray-900 dark:text-white">Notifications</h4>
             {items.length > 0 && (

@@ -62,7 +62,7 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-semibold p-3 rounded-xl disabled:opacity-70 transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-semibold p-3 rounded-xl disabled:opacity-70 transition-colors"
           >
             {submitting ? <Spinner size={20} /> : 'Sign in'}
           </button>

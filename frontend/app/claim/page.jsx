@@ -35,7 +35,7 @@ function AssetHeader({ claim }) {
       {claim.image ? (
         <img src={claim.image} alt={claim.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
       ) : (
-        <div className="w-16 h-16 rounded-xl bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center flex-shrink-0">
+        <div className="w-16 h-16 rounded-xl bg-teal-100 dark:bg-[#121212]/30 flex items-center justify-center flex-shrink-0">
           <Icon className="text-teal-500" size={24} />
         </div>
       )}
@@ -318,7 +318,7 @@ function WithdrawView({ claim, listingId }) {
               <button
                 onClick={login}
                 disabled={!ready}
-                className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60 transition-colors"
+                className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60 transition-colors"
               >
                 {!ready ? <Spinner size={18} /> : <><FiMail size={16} /> Sign in to withdraw <FiArrowRight size={16} /></>}
               </button>
@@ -370,7 +370,7 @@ function WithdrawView({ claim, listingId }) {
                 <button
                   type="submit"
                   disabled={!hasFunds || withdrawing}
-                  className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-50 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-50 transition-colors"
                 >
                   {withdrawing ? <Spinner size={18} /> : <><FiLock size={15} /> {hasFunds ? 'Withdraw funds' : 'No funds to withdraw yet'}</>}
                 </button>

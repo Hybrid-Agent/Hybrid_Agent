@@ -22,6 +22,27 @@
   --color-teal-950: #02070e; /* Almost black Navy */
 }
 
+@layer base {
+  :root {
+    --color-background: #f9fafb;
+    --color-foreground: #111827;
+    --color-card: #ffffff;
+    --color-border: #e5e7eb;
+  }
+  .dark {
+    --color-background: #121212;
+    --color-foreground: #f5f5f5;
+    --color-card: #1e1e1e;
+    --color-border: #2c2c2c;
+  }
+  
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
 /* ---------------------------------------------------------------- */
 /* Animations                                                       */
 /* ---------------------------------------------------------------- */

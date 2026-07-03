@@ -13,7 +13,7 @@ export default function RootToaster() {
       toastOptions={{
         duration: 3000,
         className:
-          '!bg-white dark:!bg-gray-900 !text-gray-900 dark:!text-white !border !border-gray-200 dark:!border-gray-700 !rounded-2xl !shadow-xl !text-sm',
+          '!bg-white dark:!bg-[#121212] !text-gray-900 dark:!text-white !border !border-gray-200 dark:!border-gray-700 !rounded-2xl !shadow-xl !text-sm',
         success: { iconTheme: { primary: '#ea580c', secondary: '#fff' } },
         error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
       }}

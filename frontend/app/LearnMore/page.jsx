@@ -41,7 +41,7 @@ const LearnMorePage = () => {
         {/* Hero */}
         <div className="relative flex flex-col lg:flex-row justify-center items-center gap-16 lg:gap-20 mb-24">
           <div className='relative w-full lg:w-3/5 text-center lg:text-left animate-fade-up'>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-700/50">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6 bg-teal-50 dark:bg-[#121212]/30 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-700/50">
               <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
               About HybridAgent
             </div>
@@ -60,7 +60,7 @@ const LearnMorePage = () => {
               everywhere.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-              <Link href="/Registration" className="inline-flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-teal-900/20 transition-all">
+              <Link href="/Registration" className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-teal-900/20 transition-all">
                 Get started <FiArrowRight size={16} />
               </Link>
               <Link href="/Listings" className="inline-flex items-center justify-center gap-2 border border-gray-300 dark:border-gray-600 hover:border-teal-500 font-bold py-3 px-8 rounded-xl transition-all">
@@ -96,8 +96,8 @@ const LearnMorePage = () => {
               <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white dark:from-black to-transparent" />
 
               {/* Floating glass badge */}
-              <div className="absolute top-1/2 -translate-y-1/2 -left-4 sm:-left-6 flex items-center gap-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-xl rounded-2xl px-3.5 py-2.5 animate-float">
-                <span className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-900/40 flex items-center justify-center">
+              <div className="absolute top-1/2 -translate-y-1/2 -left-4 sm:-left-6 flex items-center gap-2 bg-white/80 dark:bg-[#121212]/80 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-xl rounded-2xl px-3.5 py-2.5 animate-float">
+                <span className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-[#121212]/40 flex items-center justify-center">
                   <FiShield className="text-teal-600 dark:text-teal-400" size={18} />
                 </span>
                 <div className="leading-tight">
@@ -128,7 +128,7 @@ const LearnMorePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {features.map(({ icon: Icon, title, description }) => (
               <div key={title} className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 hover:border-teal-500 dark:hover:border-teal-600 transition-all duration-300 hover:-translate-y-1">
-                <div className="w-12 h-12 bg-teal-100 dark:bg-teal-900/40 rounded-xl flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-teal-100 dark:bg-[#121212]/40 rounded-xl flex items-center justify-center mb-4">
                   <Icon size={24} className="text-teal-600 dark:text-teal-400" />
                 </div>
                 <h3 className="text-lg font-bold mb-2">{title}</h3>
@@ -155,7 +155,7 @@ const LearnMorePage = () => {
         </div>
 
         {/* Benefits */}
-        <div className="bg-teal-50 dark:bg-teal-900/10 border border-teal-100 dark:border-teal-900/30 rounded-3xl p-8 md:p-10 mb-16">
+        <div className="bg-teal-50 dark:bg-[#121212]/10 border border-teal-100 dark:border-teal-900/30 rounded-3xl p-8 md:p-10 mb-16">
           <h2 className="text-xl md:text-2xl font-bold mb-6">Everything you need, nothing you don't</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {benefits.map((benefit) => (
@@ -168,7 +168,7 @@ const LearnMorePage = () => {
         </div>
 
         {/* CTA */}
-        <div className="text-center bg-teal-700 dark:bg-teal-800 rounded-3xl p-10 md:p-14">
+        <div className="text-center bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-10 md:p-14">
           <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-3">Get paid what you earned.</h2>
           <p className="text-teal-50 mb-7 max-w-xl mx-auto">Join HybridAgent and let the contract guarantee your commission — locally and across borders.</p>
           <Link href="/Registration" className="inline-flex items-center gap-2 bg-white text-teal-700 font-bold py-3 px-8 rounded-xl hover:bg-teal-50 transition-colors">

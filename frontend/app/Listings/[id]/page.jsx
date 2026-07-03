@@ -229,7 +229,7 @@ const ItemDetailsPage = () => {
       <div className="text-center">
         <p className="text-7xl font-bold text-teal-500 mb-4">404</p>
         <p className="text-2xl font-semibold mb-6">Listing not found</p>
-        <Link href="/Listings" className="bg-teal-700 hover:bg-teal-600 text-white font-bold py-3 px-6 rounded-xl transition-colors">← Back to Listings</Link>
+        <Link href="/Listings" className="bg-white/10 hover:bg-teal-600 text-white font-bold py-3 px-6 rounded-xl transition-colors">← Back to Listings</Link>
       </div>
     </div>
   );
@@ -250,7 +250,7 @@ const ItemDetailsPage = () => {
               {item.image ? (
                 <img src={item.image} alt={item.title} className="w-full h-64 sm:h-80 md:h-full object-cover" style={{ maxHeight: '560px' }} />
               ) : (
-                <div className="w-full h-64 md:h-full min-h-[320px] bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center text-teal-300 dark:text-teal-700">
+                <div className="w-full h-64 md:h-full min-h-[320px] bg-teal-100 dark:bg-[#121212]/30 flex items-center justify-center text-teal-300 dark:text-teal-700">
                   {isVehicle ? <FiTruck size={64} /> : <FiHome size={64} />}
                 </div>
               )}
@@ -294,7 +294,7 @@ const ItemDetailsPage = () => {
                 ) : item.status === 'sold' ? (
                   <div className="text-center bg-gray-100 dark:bg-white/5 rounded-xl py-3 text-sm font-semibold text-gray-500">This item has been sold.</div>
                 ) : alreadyFunded ? (
-                  <div className="bg-teal-50 dark:bg-teal-900/15 border border-teal-200 dark:border-teal-800 rounded-xl p-4 text-sm text-teal-700 dark:text-teal-300 font-semibold flex items-center gap-2">
+                  <div className="bg-teal-50 dark:bg-[#121212]/15 border border-teal-200 dark:border-teal-800 rounded-xl p-4 text-sm text-teal-700 dark:text-teal-300 font-semibold flex items-center gap-2">
                     <FiCheck size={16} /> Escrow funded — your payment is secured.
                     {fundTx && <a href={`${EXPLORER}${fundTx}`} target="_blank" rel="noreferrer" className="ml-auto text-xs flex items-center gap-1 hover:underline"><FiExternalLink size={12} /> Tx</a>}
                   </div>
@@ -307,7 +307,7 @@ const ItemDetailsPage = () => {
                     {!wallet ? (
                       <button
                         onClick={connectPrivy}
-                        className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors"
+                        className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors"
                       >
                         <FiShield size={16} /> Connect wallet to pay
                       </button>
@@ -315,7 +315,7 @@ const ItemDetailsPage = () => {
                       <button
                         onClick={() => fundDeal(pr.deal_id)}
                         disabled={!!buyStep}
-                        className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
+                        className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
                       >
                         {buyStep === 'approving' ? <><Spinner size={16} /> Approving USDC…</> :
                          buyStep === 'funding' ? <><Spinner size={16} /> Funding escrow…</> :
@@ -341,7 +341,7 @@ const ItemDetailsPage = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button onClick={openBuy} className="flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-3 px-6 rounded-xl transition-colors">
+                    <button onClick={openBuy} className="flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-bold py-3 px-6 rounded-xl transition-colors">
                       <FiShoppingCart size={18} /> Buy now
                     </button>
                     <button onClick={openChat} disabled={opening} className="flex items-center justify-center gap-2 border border-gray-300 dark:border-gray-600 hover:border-teal-500 font-bold py-3 px-6 rounded-xl transition-colors disabled:opacity-60">
@@ -447,7 +447,7 @@ const ItemDetailsPage = () => {
       {/* Buy modal */}
       {buyOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in" onClick={() => setBuyOpen(false)}>
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl w-full max-w-md animate-scale-in" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl w-full max-w-md animate-scale-in" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-bold">Buy · {Number(item.price_usdc).toLocaleString()} USDC</h3>
               <button onClick={() => setBuyOpen(false)} className="text-gray-400 hover:text-gray-700 dark:hover:text-white"><FiX size={22} /></button>
@@ -464,14 +464,14 @@ const ItemDetailsPage = () => {
               ) : (
                 <div className="flex justify-center py-4"><Spinner size={22} className="text-teal-500" /></div>
               )}
-              <div className="flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400 bg-teal-50 dark:bg-teal-900/15 rounded-xl p-3">
+              <div className="flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400 bg-teal-50 dark:bg-[#121212]/15 rounded-xl p-3">
                 <FiShield className="text-teal-500 flex-shrink-0 mt-0.5" size={14} />
                 Your money is held in escrow and released only when the deal completes — protecting you, the owner, and the agent.
               </div>
               <button
                 onClick={submitRequest}
                 disabled={buyStep === 'requesting'}
-                className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
+                className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
               >
                 {buyStep === 'requesting' ? <><Spinner size={16} /> Sending request…</> : <><FiArrowRight size={16} /> Request purchase</>}
               </button>
@@ -506,7 +506,7 @@ const AgentActions = ({ item, prList, buyStep, wallet, onConnectWallet, onCreate
 
   return (
     <div className="space-y-3">
-      <div className="bg-teal-50 dark:bg-teal-900/15 border border-teal-100 dark:border-teal-900/40 rounded-xl p-4 text-sm text-gray-600 dark:text-gray-300">
+      <div className="bg-teal-50 dark:bg-[#121212]/15 border border-teal-100 dark:border-teal-900/40 rounded-xl p-4 text-sm text-gray-600 dark:text-gray-300">
         This is your listing.
         {item.listing_type === 'agent_brokered' && item.owner_status !== 'confirmed' && (
           <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800 rounded-lg">
@@ -540,7 +540,7 @@ const AgentActions = ({ item, prList, buyStep, wallet, onConnectWallet, onCreate
           {!wallet ? (
             <button
               onClick={onConnectWallet}
-              className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
+              className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
             >
               <FiShield size={14} /> Connect wallet to create deal
             </button>
@@ -548,7 +548,7 @@ const AgentActions = ({ item, prList, buyStep, wallet, onConnectWallet, onCreate
             <button
               onClick={() => onCreateDeal(r.buyer_address, r.buyer_id)}
               disabled={!!buyStep}
-              className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-2.5 rounded-xl transition-colors text-sm disabled:opacity-60"
+              className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-bold py-2.5 rounded-xl transition-colors text-sm disabled:opacity-60"
             >
               {buyStep === 'escrow' ? <><Spinner size={14} /> Creating deal…</> : <><FiShield size={14} /> Create escrow deal</>}
             </button>
@@ -575,7 +575,7 @@ const Row = ({ label, value, bold }) => (
 );
 
 const SummaryChip = ({ label, value }) => (
-  <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 px-3 py-1.5 rounded-full">
+  <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-teal-50 dark:bg-[#121212]/20 text-teal-700 dark:text-teal-300 px-3 py-1.5 rounded-full">
     {label}<span className="text-teal-900 dark:text-teal-100">{Number(value || 0).toFixed(1)}/5</span>
   </span>
 );

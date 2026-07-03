@@ -82,7 +82,7 @@ const ContactPage = () => {
     }, 1000);
   };
 
-  const inputClass = 'mt-1 block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors text-sm';
+  const inputClass = 'mt-1 block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-[#121212]/50 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors text-sm';
 
   return (
     <div className='min-h-screen bg-white dark:bg-black transition-colors duration-300 pt-28 md:pt-36 pb-20'>
@@ -101,7 +101,7 @@ const ContactPage = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder='Search FAQs...'
-              className='border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900/50 p-3 pl-11 w-full rounded-full outline-none focus:ring-2 focus:ring-teal-500 transition-all text-sm'
+              className='border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white bg-gray-50 dark:bg-[#121212]/50 p-3 pl-11 w-full rounded-full outline-none focus:ring-2 focus:ring-teal-500 transition-all text-sm'
             />
           </div>
         </div>
@@ -136,7 +136,7 @@ const ContactPage = () => {
               <p className='text-sm text-gray-600 dark:text-gray-400 flex-grow'>{desc}</p>
               <button
                 onClick={() => toast('Feature coming soon!', { icon: '🚀' })}
-                className='mt-5 text-sm bg-teal-700 hover:bg-teal-600 px-4 py-2 self-start rounded-lg text-white font-semibold transition-colors'
+                className='mt-5 text-sm bg-white/10 hover:bg-teal-600 px-4 py-2 self-start rounded-lg text-white font-semibold transition-colors'
               >
                 {btnLabel}
               </button>
@@ -184,7 +184,7 @@ const ContactPage = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex justify-center py-3 px-4 rounded-lg text-sm font-semibold text-white bg-teal-700 hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex justify-center py-3 px-4 rounded-lg text-sm font-semibold text-white bg-white/10 hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
               >
                 {isSubmitting ? 'Sending...' : 'Send Message'}
               </button>

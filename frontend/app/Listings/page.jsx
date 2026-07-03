@@ -25,7 +25,7 @@ const ListingCard = ({ item }) => (
         {item.image ? (
           <img src={item.image} alt={item.title} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
         ) : (
-          <div className="w-full h-48 bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center text-teal-300 dark:text-teal-700">
+          <div className="w-full h-48 bg-teal-100 dark:bg-[#121212]/30 flex items-center justify-center text-teal-300 dark:text-teal-700">
             {item.asset_type === 'vehicle' ? <FiTruck size={40} /> : <FiHome size={40} />}
           </div>
         )}
@@ -74,7 +74,7 @@ const ListingsPage = () => {
             <p className="text-gray-500 dark:text-gray-400 text-sm">Browse properties and vehicles from verified agents. Fixed prices — what you see is what you pay.</p>
           </div>
           {isLoggedIn && (
-            <Link href="/Dashboard" className="flex items-center gap-2 bg-teal-700 hover:bg-teal-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap">
+            <Link href="/Dashboard" className="flex items-center gap-2 bg-white/10 hover:bg-teal-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap">
               <FiPlusCircle size={16} /> List an item
             </Link>
           )}

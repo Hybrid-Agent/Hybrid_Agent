@@ -50,13 +50,13 @@ export default function PaymentActivity() {
               href={`/Listings/${r.listing_id}`}
               className={`flex items-center gap-3 rounded-xl p-3 border transition-colors group ${
                 isDark
-                  ? 'bg-teal-900/20 border-teal-800/50 hover:border-teal-600'
+                  ? 'bg-[#121212]/20 border-teal-800/50 hover:border-teal-600'
                   : 'bg-teal-50 border-teal-200 hover:border-teal-400'
               }`}
             >
               {r.listing_image
                 ? <img src={r.listing_image} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
-                : <div className="w-10 h-10 rounded-lg bg-teal-200 dark:bg-teal-800/50 flex-shrink-0 flex items-center justify-center"><FiShield className="text-teal-600 dark:text-teal-400" size={16} /></div>}
+                : <div className="w-10 h-10 rounded-lg bg-teal-200 dark:bg-white/5 backdrop-blur-md border border-white/10/50 flex-shrink-0 flex items-center justify-center"><FiShield className="text-teal-600 dark:text-teal-400" size={16} /></div>}
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-teal-700 dark:text-teal-300 uppercase tracking-wide">Fund escrow</p>
                 <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{r.listing_title}</p>

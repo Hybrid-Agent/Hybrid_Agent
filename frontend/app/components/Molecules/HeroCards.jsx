@@ -13,7 +13,7 @@ const HeroCards = () => {
     }`}>
       <div className="w-full">
         <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6 ${
-          isDark ? 'bg-teal-900/40 text-teal-300' : 'bg-teal-50 text-teal-700'
+          isDark ? 'bg-[#121212]/40 text-teal-300' : 'bg-teal-50 text-teal-700'
         }`}>
           Now live~Early access
         </div>
@@ -38,7 +38,7 @@ const HeroCards = () => {
         <div className='mt-8 flex flex-col sm:flex-row items-center md:items-start gap-3'>
           <Link
             href="/Registration"
-            className='bg-teal-700 hover:bg-teal-600 transition-all text-white font-bold py-3 px-8 w-full sm:w-auto rounded-xl shadow-lg shadow-teal-900/20 hover:shadow-teal-900/30'
+            className='bg-white/10 hover:bg-teal-600 transition-all text-white font-bold py-3 px-8 w-full sm:w-auto rounded-xl shadow-lg shadow-teal-900/20 hover:shadow-teal-900/30'
           >
             Get Started
           </Link>

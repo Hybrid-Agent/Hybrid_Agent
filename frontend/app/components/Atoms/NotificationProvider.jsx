@@ -22,7 +22,7 @@ function showToast({ type = 'info', title, message }) {
   toast.custom(
     (t) => (
       <div
-        className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-sm w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl rounded-2xl pointer-events-auto flex gap-3 p-4`}
+        className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-sm w-full bg-white dark:bg-[#121212] border border-gray-200 dark:border-gray-700 shadow-xl rounded-2xl pointer-events-auto flex gap-3 p-4`}
       >
         <Icon className={`${color} flex-shrink-0 mt-0.5`} size={20} />
         <div className="flex-1 min-w-0">

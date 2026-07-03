@@ -28,7 +28,7 @@ const ReviewPage = () => {
           <h1 className="text-4xl font-extrabold text-teal-600 dark:text-teal-500 mb-3">Agent Reviews</h1>
           <p className="text-gray-500 dark:text-gray-400 mb-6">Honest reviews of agents — rated on communication and professionalism by people they've actually dealt with.</p>
           {!loading && reviews.length > 0 && (
-            <div className="inline-flex items-center gap-3 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-2xl px-6 py-3">
+            <div className="inline-flex items-center gap-3 bg-teal-50 dark:bg-[#121212]/20 border border-teal-200 dark:border-teal-800 rounded-2xl px-6 py-3">
               <span className="text-4xl font-extrabold text-teal-600 dark:text-teal-400">{avg}</span>
               <div className="text-left">
                 <StarRating value={Math.round(parseFloat(avg))} />
@@ -75,7 +75,7 @@ const ReviewPage = () => {
 };
 
 const Chip = ({ label, value }) => (
-  <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 px-2 py-1 rounded-full">
+  <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-teal-50 dark:bg-[#121212]/20 text-teal-700 dark:text-teal-300 px-2 py-1 rounded-full">
     {label} · {value}/5
   </span>
 );

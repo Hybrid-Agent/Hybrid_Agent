@@ -5,12 +5,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { api, type AuthUser } from '../lib/api';
 import { storage } from '../lib/storage';
-
-const NAVY = '#0c2340';
+import { useAppTheme, type Theme } from '../lib/theme';
 
 export default function PersonalDetailsScreen() {
   const insets = useSafeAreaInsets();
   const nav = useNavigation();
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
 
   const [user, setUser] = useState<AuthUser | null>(null);
 
@@ -28,13 +29,13 @@ export default function PersonalDetailsScreen() {
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle={theme.background === '#121212' ? "light-content" : "dark-content"} backgroundColor={theme.background} />
       
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTitleRow}>
           <TouchableOpacity onPress={() => nav.goBack()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color={NAVY} />
+            <Ionicons name="arrow-back" size={24} color={theme.navy} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Personal Details</Text>
         </View>
@@ -97,34 +98,34 @@ export default function PersonalDetailsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#f9fafb' },
+const makeStyles = (theme: Theme) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: theme.background },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingVertical: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1, borderBottomColor: '#f3f4f6',
+    backgroundColor: theme.card,
+    borderBottomWidth: 1, borderBottomColor: theme.border,
   },
   headerTitleRow: { flexDirection: 'row', alignItems: 'center' },
   backBtn: { marginRight: 12, paddingVertical: 4, paddingRight: 8 },
-  headerTitle: { fontSize: 20, fontWeight: '800', color: NAVY },
+  headerTitle: { fontSize: 20, fontWeight: '800', color: theme.navy },
   scroll: { padding: 20 },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.card,
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: theme.border,
     marginBottom: 16,
   },
   field: { marginBottom: 16 },
-  label: { fontSize: 12, fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
+  label: { fontSize: 12, fontWeight: '700', color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
   inputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f9fafb',
+    backgroundColor: theme.background === '#121212' ? '#1e1e1e' : '#f9fafb',
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: theme.border,
     borderRadius: 12,
     paddingHorizontal: 14,
   },
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#374151',
+    color: theme.text,
     fontWeight: '500',
   },
   icon: { marginLeft: 8 },
@@ -140,14 +141,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 8,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: theme.background === '#121212' ? '#1e1e1e' : '#f3f4f6',
     padding: 14,
     borderRadius: 12,
   },
   noteText: {
     flex: 1,
     fontSize: 13,
-    color: '#4b5563',
+    color: theme.textSecondary,
     lineHeight: 18,
   }
 });

@@ -12,9 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { api } from '../lib/api';
-
-const NAVY = '#0c2340';
-const GOLD = '#c9912a';
+import { useAppTheme, type Theme } from '../lib/theme';
 
 type AssetType   = 'property' | 'vehicle';
 type ListingRole = 'owner_direct' | 'agent_brokered';
@@ -28,6 +26,8 @@ const AGENT_STEPS  = ['Type', 'Details', 'Photos', 'Role', 'Owner'];
 export default function CreateListingScreen() {
   const insets = useSafeAreaInsets();
   const nav    = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const theme  = useAppTheme();
+  const styles = makeStyles(theme);
 
   const [step, setStep]       = useState(0);
   const [loading, setLoading] = useState(false);
@@ -190,7 +190,7 @@ export default function CreateListingScreen() {
   if (pendingApproval) {
     return (
       <View style={[styles.root, { paddingTop: insets.top }]}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+        <StatusBar barStyle={theme.background === '#121212' ? "light-content" : "dark-content"} backgroundColor={theme.background} />
         <View style={styles.header}>
           <View style={{ width: 38 }} />
           <Text style={styles.headerTitle}>Submitted</Text>
@@ -200,38 +200,38 @@ export default function CreateListingScreen() {
         <ScrollView contentContainerStyle={[styles.scroll, { alignItems: 'center', paddingTop: 40 }]}>
           {/* Icon */}
           <View style={styles.pendingRing}>
-            <Ionicons name="mail-outline" size={44} color={GOLD} />
+            <Ionicons name="mail-outline" size={44} color={theme.gold} />
           </View>
 
           <Text style={styles.pendingTitle}>Waiting for owner approval</Text>
           <Text style={styles.pendingSub}>
             We've sent an approval email to{'\n'}
-            <Text style={{ fontWeight: '700', color: NAVY }}>{ownerEmail}</Text>
+            <Text style={{ fontWeight: '700', color: theme.navy }}>{ownerEmail}</Text>
           </Text>
 
           {/* Timeline */}
           <View style={styles.timelineCard}>
             {[
-              { icon: 'checkmark-circle',      color: '#22c55e', label: 'Listing submitted',          done: true },
-              { icon: 'mail-outline',           color: GOLD,      label: 'Approval email sent to owner', done: true },
+              { icon: 'checkmark-circle',      color: theme.green, label: 'Listing submitted',          done: true },
+              { icon: 'mail-outline',           color: theme.gold,      label: 'Approval email sent to owner', done: true },
               { icon: 'finger-print-outline',  color: '#9ca3af', label: 'Owner verifies & approves',  done: false },
               { icon: 'rocket-outline',        color: '#9ca3af', label: 'Listing goes live',           done: false },
             ].map((s, i, arr) => (
               <View key={s.label} style={styles.timelineRow}>
                 <View style={styles.timelineLeft}>
-                  <View style={[styles.timelineDot, { backgroundColor: s.done ? s.color : '#f3f4f6', borderColor: s.done ? s.color : '#e5e7eb' }]}>
+                  <View style={[styles.timelineDot, { backgroundColor: s.done ? s.color : theme.border, borderColor: s.done ? s.color : theme.border }]}>
                     <Ionicons name={s.icon as any} size={14} color={s.done ? '#fff' : '#d1d5db'} />
                   </View>
-                  {i < arr.length - 1 && <View style={[styles.timelineLine, { backgroundColor: s.done ? GOLD + '40' : '#e5e7eb' }]} />}
+                  {i < arr.length - 1 && <View style={[styles.timelineLine, { backgroundColor: s.done ? theme.gold + '40' : theme.border }]} />}
                 </View>
-                <Text style={[styles.timelineLabel, s.done && { color: '#111827', fontWeight: '600' }]}>{s.label}</Text>
+                <Text style={[styles.timelineLabel, s.done && { color: theme.text, fontWeight: '600' }]}>{s.label}</Text>
               </View>
             ))}
           </View>
 
           {/* Info box */}
           <View style={styles.pendingInfoBox}>
-            <Ionicons name="information-circle-outline" size={16} color={GOLD} />
+            <Ionicons name="information-circle-outline" size={16} color={theme.gold} />
             <Text style={styles.pendingInfoText}>
               The owner will receive an email with your name, the listing details, and an <Text style={{ fontWeight: '700' }}>Approve</Text> button. The listing only publishes after they click it. You'll be notified immediately.
             </Text>
@@ -263,7 +263,7 @@ export default function CreateListingScreen() {
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle={theme.background === '#121212' ? "light-content" : "dark-content"} backgroundColor={theme.background} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -271,7 +271,7 @@ export default function CreateListingScreen() {
           style={styles.closeBtn}
           onPress={() => step > 0 ? setStep(s => s - 1) : nav.goBack()}
         >
-          <Ionicons name={step > 0 ? 'arrow-back' : 'close'} size={20} color={NAVY} />
+          <Ionicons name={step > 0 ? 'arrow-back' : 'close'} size={20} color={theme.navy} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>New Listing</Text>
         <Text style={styles.headerStep}>{step + 1} / {STEPS.length}</Text>
@@ -311,10 +311,10 @@ export default function CreateListingScreen() {
                 activeOpacity={0.85}
               >
                 <View style={[styles.typeIcon, assetType === 'property' && styles.typeIconActive]}>
-                  <Ionicons name="business-outline" size={32} color={assetType === 'property' ? GOLD : '#9ca3af'} />
+                  <Ionicons name="business-outline" size={32} color={assetType === 'property' ? theme.gold : '#9ca3af'} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.typeCardTitle, assetType === 'property' && { color: NAVY }]}>Property</Text>
+                  <Text style={[styles.typeCardTitle, assetType === 'property' && { color: theme.navy }]}>Property</Text>
                   <Text style={styles.typeCardDesc}>House, duplex, apartment, land, commercial</Text>
                 </View>
                 <View style={[styles.radioOuter, assetType === 'property' && styles.radioActive]}>
@@ -328,10 +328,10 @@ export default function CreateListingScreen() {
                 activeOpacity={0.85}
               >
                 <View style={[styles.typeIcon, assetType === 'vehicle' && styles.typeIconActive]}>
-                  <Ionicons name="car-sport-outline" size={32} color={assetType === 'vehicle' ? GOLD : '#9ca3af'} />
+                  <Ionicons name="car-sport-outline" size={32} color={assetType === 'vehicle' ? theme.gold : '#9ca3af'} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.typeCardTitle, assetType === 'vehicle' && { color: NAVY }]}>Vehicle</Text>
+                  <Text style={[styles.typeCardTitle, assetType === 'vehicle' && { color: theme.navy }]}>Vehicle</Text>
                   <Text style={styles.typeCardDesc}>Car, SUV, truck, motorcycle</Text>
                 </View>
                 <View style={[styles.radioOuter, assetType === 'vehicle' && styles.radioActive]}>
@@ -456,10 +456,10 @@ export default function CreateListingScreen() {
                 activeOpacity={0.85}
               >
                 <View style={[styles.roleIcon, role === 'owner_direct' && styles.roleIconActive]}>
-                  <Ionicons name="home-outline" size={22} color={role === 'owner_direct' ? GOLD : '#9ca3af'} />
+                  <Ionicons name="home-outline" size={22} color={role === 'owner_direct' ? theme.gold : '#9ca3af'} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.roleTitle, role === 'owner_direct' && { color: NAVY }]}>I'm the owner</Text>
+                  <Text style={[styles.roleTitle, role === 'owner_direct' && { color: theme.navy }]}>I'm the owner</Text>
                   <Text style={styles.roleDesc}>Selling directly — no commission. Full sale price goes to you.</Text>
                 </View>
                 <View style={[styles.radioOuter, role === 'owner_direct' && styles.radioActive]}>
@@ -473,10 +473,10 @@ export default function CreateListingScreen() {
                 activeOpacity={0.85}
               >
                 <View style={[styles.roleIcon, role === 'agent_brokered' && styles.roleIconActive]}>
-                  <Ionicons name="briefcase-outline" size={22} color={role === 'agent_brokered' ? GOLD : '#9ca3af'} />
+                  <Ionicons name="briefcase-outline" size={22} color={role === 'agent_brokered' ? theme.gold : '#9ca3af'} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.roleTitle, role === 'agent_brokered' && { color: NAVY }]}>I'm the agent</Text>
+                  <Text style={[styles.roleTitle, role === 'agent_brokered' && { color: theme.navy }]}>I'm the agent</Text>
                   <Text style={styles.roleDesc}>Brokering on behalf of the owner — you'll invite them by email to approve.</Text>
                 </View>
                 <View style={[styles.radioOuter, role === 'agent_brokered' && styles.radioActive]}>
@@ -495,7 +495,7 @@ export default function CreateListingScreen() {
                   </View>
                   {commission !== '' && !isNaN(Number(commission)) && (
                     <View style={styles.commissionPreview}>
-                      <Ionicons name="calculator-outline" size={14} color={GOLD} />
+                      <Ionicons name="calculator-outline" size={14} color={theme.gold} />
                       <Text style={styles.commissionPreviewText}>
                         On a ${Number(price.replace(/,/g, '') || 0).toLocaleString()} listing →{' '}
                         <Text style={{ fontWeight: '700', color: '#fff' }}>
@@ -573,7 +573,7 @@ export default function CreateListingScreen() {
               {/* How approval works */}
               <View style={styles.approvalCard}>
                 <View style={styles.approvalCardHeader}>
-                  <Ionicons name="mail-outline" size={18} color={GOLD} />
+                  <Ionicons name="mail-outline" size={18} color={theme.gold} />
                   <Text style={styles.approvalCardTitle}>How owner approval works</Text>
                 </View>
                 {[
@@ -584,7 +584,7 @@ export default function CreateListingScreen() {
                 ].map(item => (
                   <View key={item.text} style={styles.approvalStep}>
                     <View style={styles.approvalStepDot}>
-                      <Ionicons name={item.icon as any} size={13} color={GOLD} />
+                      <Ionicons name={item.icon as any} size={13} color={theme.gold} />
                     </View>
                     <Text style={styles.approvalStepText}>{item.text}</Text>
                   </View>
@@ -656,12 +656,14 @@ function InputField({
   label: string; icon: string; value: string;
   onChange: (t: string) => void; placeholder?: string; keyboard?: any;
 }) {
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
   const inputRef = useRef<TextInput>(null);
   return (
     <View style={{ marginBottom: 14 }}>
       <Text style={styles.fieldLabel}>{label}</Text>
       <Pressable style={styles.inputWrap} onPress={() => inputRef.current?.focus()}>
-        <Ionicons name={icon as any} size={16} color={GOLD} style={{ marginRight: 8 }} />
+        <Ionicons name={icon as any} size={16} color={theme.gold} style={{ marginRight: 8 }} />
         <TextInput
           ref={inputRef}
           style={[styles.input, { flex: 1 }]}
@@ -678,6 +680,8 @@ function InputField({
 }
 
 const CommissionInput = ({ value, onChange }: { value: string; onChange: (t: string) => void }) => {
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
   const ref = useRef<TextInput>(null);
   return (
     <Pressable style={[styles.inputWrap, { flex: 1, backgroundColor: '#ffffff18', borderColor: '#ffffff22' }]} onPress={() => ref.current?.focus()}>
@@ -695,6 +699,8 @@ const CommissionInput = ({ value, onChange }: { value: string; onChange: (t: str
 };
 
 function SummaryRow({ label, value, last }: { label: string; value: string; last?: boolean }) {
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
   return (
     <View style={[styles.summaryRow, !last && styles.summaryRowBorder]}>
       <Text style={styles.summaryLabel}>{label}</Text>
@@ -705,51 +711,51 @@ function SummaryRow({ label, value, last }: { label: string; value: string; last
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
-  root:   { flex: 1, backgroundColor: '#f9fafb' },
+const makeStyles = (theme: Theme) => StyleSheet.create({
+  root:   { flex: 1, backgroundColor: theme.background },
 
-  header:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10, backgroundColor: '#fff' },
-  closeBtn:    { width: 38, height: 38, borderRadius: 12, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 16, fontWeight: '800', color: NAVY },
-  headerStep:  { fontSize: 13, color: '#9ca3af', fontWeight: '600' },
+  header:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10, backgroundColor: theme.card },
+  closeBtn:    { width: 38, height: 38, borderRadius: 12, backgroundColor: theme.background === '#121212' ? '#2c2c2c' : '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontSize: 16, fontWeight: '800', color: theme.navy },
+  headerStep:  { fontSize: 13, color: theme.textSecondary, fontWeight: '600' },
 
-  progressTrack: { height: 3, backgroundColor: '#e5e7eb' },
-  progressFill:  { height: 3, backgroundColor: GOLD, borderRadius: 2 },
+  progressTrack: { height: 3, backgroundColor: theme.border },
+  progressFill:  { height: 3, backgroundColor: theme.gold, borderRadius: 2 },
 
-  stepLabels:      { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 8, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
+  stepLabels:      { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 8, backgroundColor: theme.card, borderBottomWidth: 1, borderBottomColor: theme.border },
   stepLabel:       { fontSize: 11, color: '#d1d5db', fontWeight: '600' },
-  stepLabelActive: { color: NAVY },
-  stepLabelDone:   { color: GOLD },
+  stepLabelActive: { color: theme.navy },
+  stepLabelDone:   { color: theme.gold },
 
   scroll: { paddingHorizontal: 20, paddingTop: 20 },
 
-  stepTitle: { fontSize: 22, fontWeight: '800', color: NAVY, marginBottom: 6 },
-  stepSub:   { fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 20 },
+  stepTitle: { fontSize: 22, fontWeight: '800', color: theme.navy, marginBottom: 6 },
+  stepSub:   { fontSize: 14, color: theme.textSecondary, marginBottom: 24, lineHeight: 20 },
 
   // Type step
   typeStep:      { gap: 14, marginBottom: 28 },
-  typeCard:      { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: '#fff', borderRadius: 18, borderWidth: 2, borderColor: '#e5e7eb', padding: 18 },
-  typeCardActive: { borderColor: GOLD, backgroundColor: GOLD + '06' },
-  typeIcon:       { width: 60, height: 60, borderRadius: 18, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
-  typeIconActive: { backgroundColor: GOLD + '18' },
-  typeCardTitle:  { fontSize: 18, fontWeight: '800', color: '#374151', marginBottom: 4 },
-  typeCardDesc:   { fontSize: 13, color: '#9ca3af', lineHeight: 18 },
+  typeCard:      { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: theme.card, borderRadius: 18, borderWidth: 2, borderColor: theme.border, padding: 18 },
+  typeCardActive: { borderColor: theme.gold, backgroundColor: theme.gold + '06' },
+  typeIcon:       { width: 60, height: 60, borderRadius: 18, backgroundColor: theme.background === '#121212' ? '#2c2c2c' : '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
+  typeIconActive: { backgroundColor: theme.gold + '18' },
+  typeCardTitle:  { fontSize: 18, fontWeight: '800', color: theme.text, marginBottom: 4 },
+  typeCardDesc:   { fontSize: 13, color: theme.textSecondary, lineHeight: 18 },
 
   radioOuter: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: '#d1d5db', alignItems: 'center', justifyContent: 'center' },
-  radioActive: { borderColor: GOLD },
-  radioInner:  { width: 10, height: 10, borderRadius: 5, backgroundColor: GOLD },
+  radioActive: { borderColor: theme.gold },
+  radioInner:  { width: 10, height: 10, borderRadius: 5, backgroundColor: theme.gold },
 
   // Fields
-  fieldLabel: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 6 },
-  fieldHint:  { fontSize: 12, color: '#9ca3af', lineHeight: 18, marginBottom: 12, marginTop: -2 },
-  inputWrap:  { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 12, paddingHorizontal: 12 },
-  input:      { paddingVertical: 12, fontSize: 15, color: '#111827' },
+  fieldLabel: { fontSize: 13, fontWeight: '600', color: theme.text, marginBottom: 6 },
+  fieldHint:  { fontSize: 12, color: theme.textSecondary, lineHeight: 18, marginBottom: 12, marginTop: -2 },
+  inputWrap:  { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.inputBg, borderWidth: 1.5, borderColor: theme.border, borderRadius: 12, paddingHorizontal: 12 },
+  input:      { paddingVertical: 12, fontSize: 15, color: theme.text },
 
   chipRow:    { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
-  chip:       { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#e5e7eb' },
-  chipActive: { backgroundColor: NAVY, borderColor: NAVY },
-  chipText:   { fontSize: 13, fontWeight: '600', color: '#6b7280' },
-  chipTextActive: { color: '#fff' },
+  chip:       { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: theme.card, borderWidth: 1.5, borderColor: theme.border },
+  chipActive: { backgroundColor: theme.navy, borderColor: theme.navy },
+  chipText:   { fontSize: 13, fontWeight: '600', color: theme.textSecondary },
+  chipTextActive: { color: theme.background === '#121212' ? '#121212' : '#fff' },
 
   row2: { flexDirection: 'row' },
 
@@ -757,76 +763,76 @@ const styles = StyleSheet.create({
   photoGrid:    { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16 },
   photoSlot:    { width: '31%', aspectRatio: 1, borderRadius: 12, overflow: 'hidden' },
   photoImg:     { width: '100%', height: '100%' },
-  coverBadge:   { position: 'absolute', bottom: 5, left: 5, backgroundColor: NAVY + 'cc', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
+  coverBadge:   { position: 'absolute', bottom: 5, left: 5, backgroundColor: theme.navy + 'cc', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
   coverBadgeText: { fontSize: 9, fontWeight: '700', color: '#fff' },
-  docBadge:     { position: 'absolute', bottom: 5, left: 5, flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: GOLD + 'cc', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
+  docBadge:     { position: 'absolute', bottom: 5, left: 5, flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: theme.gold + 'cc', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
   docBadgeText: { fontSize: 9, fontWeight: '700', color: '#fff' },
   removePhoto:  { position: 'absolute', top: 4, right: 4 },
-  addPhotoSlot: { width: '31%', aspectRatio: 1, borderRadius: 12, borderWidth: 2, borderColor: '#e5e7eb', borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff', gap: 4 },
-  addPhotoText: { fontSize: 11, color: '#9ca3af', fontWeight: '600' },
+  addPhotoSlot: { width: '31%', aspectRatio: 1, borderRadius: 12, borderWidth: 2, borderColor: theme.border, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', backgroundColor: theme.card, gap: 4 },
+  addPhotoText: { fontSize: 11, color: theme.textSecondary, fontWeight: '600' },
   addPhotoCount: { fontSize: 10, color: '#d1d5db' },
-  noPhotoHint:  { flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: '#f9fafb', borderRadius: 12, borderWidth: 1, borderColor: '#e5e7eb', padding: 12, marginBottom: 28 },
-  noPhotoText:  { flex: 1, fontSize: 12, color: '#9ca3af', lineHeight: 18 },
+  noPhotoHint:  { flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: theme.card, borderRadius: 12, borderWidth: 1, borderColor: theme.border, padding: 12, marginBottom: 28 },
+  noPhotoText:  { flex: 1, fontSize: 12, color: theme.textSecondary, lineHeight: 18 },
 
   // Role
-  roleCard:      { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: '#fff', borderRadius: 16, borderWidth: 2, borderColor: '#e5e7eb', padding: 16, marginBottom: 12 },
-  roleCardActive: { borderColor: GOLD, backgroundColor: GOLD + '06' },
-  roleIcon:       { width: 48, height: 48, borderRadius: 14, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
-  roleIconActive: { backgroundColor: GOLD + '18' },
-  roleTitle:      { fontSize: 16, fontWeight: '800', color: '#374151', marginBottom: 4 },
-  roleDesc:       { fontSize: 12, color: '#9ca3af', lineHeight: 17 },
+  roleCard:      { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: theme.card, borderRadius: 16, borderWidth: 2, borderColor: theme.border, padding: 16, marginBottom: 12 },
+  roleCardActive: { borderColor: theme.gold, backgroundColor: theme.gold + '06' },
+  roleIcon:       { width: 48, height: 48, borderRadius: 14, backgroundColor: theme.background === '#121212' ? '#2c2c2c' : '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
+  roleIconActive: { backgroundColor: theme.gold + '18' },
+  roleTitle:      { fontSize: 16, fontWeight: '800', color: theme.text, marginBottom: 4 },
+  roleDesc:       { fontSize: 12, color: theme.textSecondary, lineHeight: 17 },
 
-  commissionCard:    { backgroundColor: NAVY, borderRadius: 16, padding: 16, marginBottom: 20 },
+  commissionCard:    { backgroundColor: theme.navy, borderRadius: 16, padding: 16, marginBottom: 20 },
   commissionTitle:   { fontSize: 15, fontWeight: '700', color: '#fff', marginBottom: 4 },
   commissionDesc:    { fontSize: 12, color: '#94a3b8', lineHeight: 18, marginBottom: 14 },
   commissionRow:     { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  percentLabel:      { fontSize: 28, fontWeight: '900', color: GOLD },
+  percentLabel:      { fontSize: 28, fontWeight: '900', color: theme.gold },
   commissionPreview: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 12, backgroundColor: '#ffffff12', borderRadius: 10, padding: 10 },
   commissionPreviewText: { fontSize: 12, color: '#94a3b8', flex: 1, lineHeight: 18 },
 
   // Approval info card (step 4)
-  approvalCard:       { backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 16, marginBottom: 20 },
+  approvalCard:       { backgroundColor: theme.card, borderRadius: 16, borderWidth: 1, borderColor: theme.border, padding: 16, marginBottom: 20 },
   approvalCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 },
-  approvalCardTitle:  { fontSize: 14, fontWeight: '700', color: NAVY },
+  approvalCardTitle:  { fontSize: 14, fontWeight: '700', color: theme.navy },
   approvalStep:       { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
-  approvalStepDot:    { width: 28, height: 28, borderRadius: 14, backgroundColor: GOLD + '12', borderWidth: 1, borderColor: GOLD + '30', alignItems: 'center', justifyContent: 'center' },
-  approvalStepText:   { flex: 1, fontSize: 13, color: '#374151', lineHeight: 19, paddingTop: 4 },
+  approvalStepDot:    { width: 28, height: 28, borderRadius: 14, backgroundColor: theme.gold + '12', borderWidth: 1, borderColor: theme.gold + '30', alignItems: 'center', justifyContent: 'center' },
+  approvalStepText:   { flex: 1, fontSize: 13, color: theme.text, lineHeight: 19, paddingTop: 4 },
 
   // Summary
-  summaryCard:     { backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 16, marginBottom: 20 },
-  summaryTitle:    { fontSize: 14, fontWeight: '700', color: NAVY, marginBottom: 12 },
+  summaryCard:     { backgroundColor: theme.card, borderRadius: 16, borderWidth: 1, borderColor: theme.border, padding: 16, marginBottom: 20 },
+  summaryTitle:    { fontSize: 14, fontWeight: '700', color: theme.navy, marginBottom: 12 },
   summaryRow:      { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 9 },
-  summaryRowBorder: { borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  summaryLabel:    { fontSize: 13, color: '#9ca3af', fontWeight: '500' },
-  summaryValue:    { fontSize: 13, color: '#111827', fontWeight: '600', maxWidth: '60%', textAlign: 'right' },
+  summaryRowBorder: { borderBottomWidth: 1, borderBottomColor: theme.border },
+  summaryLabel:    { fontSize: 13, color: theme.textSecondary, fontWeight: '500' },
+  summaryValue:    { fontSize: 13, color: theme.text, fontWeight: '600', maxWidth: '60%', textAlign: 'right' },
 
   // Error
   errorBox:  { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#fef2f2', borderWidth: 1, borderColor: '#fecaca', borderRadius: 10, padding: 12, marginBottom: 16 },
   errorText: { color: '#dc2626', fontSize: 13, flex: 1 },
 
   // Buttons
-  btnPrimary: { backgroundColor: NAVY, borderRadius: 14, paddingVertical: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
-  btnText:    { color: '#fff', fontWeight: '700', fontSize: 16 },
+  btnPrimary: { backgroundColor: theme.navy, borderRadius: 14, paddingVertical: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  btnText:    { color: theme.background === '#121212' ? '#121212' : '#fff', fontWeight: '700', fontSize: 16 },
   btnSkip:    { alignItems: 'center', paddingVertical: 10 },
-  btnSkipText: { fontSize: 14, color: '#9ca3af', fontWeight: '500' },
+  btnSkipText: { fontSize: 14, color: theme.textSecondary, fontWeight: '500' },
 
   // Pending approval screen
-  pendingRing:   { width: 96, height: 96, borderRadius: 48, borderWidth: 2, borderColor: GOLD + '55', backgroundColor: GOLD + '10', alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
-  pendingTitle:  { fontSize: 24, fontWeight: '900', color: NAVY, textAlign: 'center', marginBottom: 10 },
-  pendingSub:    { fontSize: 14, color: '#6b7280', textAlign: 'center', lineHeight: 22, marginBottom: 28 },
+  pendingRing:   { width: 96, height: 96, borderRadius: 48, borderWidth: 2, borderColor: theme.gold + '55', backgroundColor: theme.gold + '10', alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
+  pendingTitle:  { fontSize: 24, fontWeight: '900', color: theme.navy, textAlign: 'center', marginBottom: 10 },
+  pendingSub:    { fontSize: 14, color: theme.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: 28 },
 
-  timelineCard: { width: '100%', backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: '#e5e7eb', padding: 20, marginBottom: 20 },
+  timelineCard: { width: '100%', backgroundColor: theme.card, borderRadius: 18, borderWidth: 1, borderColor: theme.border, padding: 20, marginBottom: 20 },
   timelineRow:  { flexDirection: 'row', alignItems: 'flex-start', gap: 14 },
   timelineLeft: { alignItems: 'center', width: 28 },
   timelineDot:  { width: 28, height: 28, borderRadius: 14, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   timelineLine: { width: 2, flex: 1, minHeight: 20, marginTop: 4, marginBottom: 4 },
-  timelineLabel: { flex: 1, fontSize: 14, color: '#9ca3af', paddingTop: 4, paddingBottom: 16, lineHeight: 20 },
+  timelineLabel: { flex: 1, fontSize: 14, color: theme.textSecondary, paddingTop: 4, paddingBottom: 16, lineHeight: 20 },
 
-  pendingInfoBox:  { width: '100%', flexDirection: 'row', alignItems: 'flex-start', gap: 10, backgroundColor: GOLD + '10', borderRadius: 14, borderWidth: 1, borderColor: GOLD + '30', padding: 14, marginBottom: 20 },
-  pendingInfoText: { flex: 1, fontSize: 13, color: '#92400e', lineHeight: 20 },
+  pendingInfoBox:  { width: '100%', flexDirection: 'row', alignItems: 'flex-start', gap: 10, backgroundColor: theme.gold + '10', borderRadius: 14, borderWidth: 1, borderColor: theme.gold + '30', padding: 14, marginBottom: 20 },
+  pendingInfoText: { flex: 1, fontSize: 13, color: theme.badgePendingText, lineHeight: 20 },
 
-  ownerRecap:      { width: '100%', backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#e5e7eb', padding: 14, marginBottom: 20 },
-  ownerRecapRow:   { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  ownerRecapLabel: { fontSize: 13, color: '#9ca3af', fontWeight: '500' },
-  ownerRecapValue: { fontSize: 13, color: '#111827', fontWeight: '700', maxWidth: '65%', textAlign: 'right' },
+  ownerRecap:      { width: '100%', backgroundColor: theme.card, borderRadius: 14, borderWidth: 1, borderColor: theme.border, padding: 14, marginBottom: 20 },
+  ownerRecapRow:   { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.border },
+  ownerRecapLabel: { fontSize: 13, color: theme.textSecondary, fontWeight: '500' },
+  ownerRecapValue: { fontSize: 13, color: theme.text, fontWeight: '700', maxWidth: '65%', textAlign: 'right' },
 });

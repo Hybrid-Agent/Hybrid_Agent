@@ -19,4 +19,10 @@ export const storage = {
     await SecureStore.deleteItemAsync(TOKEN_KEY);
     await SecureStore.deleteItemAsync(USER_KEY);
   },
+
+  getTheme: async (): Promise<'system' | 'light' | 'dark'> => {
+    const raw = await SecureStore.getItemAsync('ha_theme');
+    return (raw as any) || 'system';
+  },
+  setTheme: (t: 'system' | 'light' | 'dark') => SecureStore.setItemAsync('ha_theme', t),
 };

@@ -13,13 +13,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
+import { useAppTheme, type Theme } from '../lib/theme';
 
 const { width: W, height: H } = Dimensions.get('window');
 
-// Brand tokens
-const NAVY   = '#0c2340';
-const GOLD   = '#c9912a';
-const GOLD_L = '#e8b96a';
+
 
 const stats = [
   { icon: 'lock-closed-outline' as const, value: '100%', label: 'On-chain' },
@@ -30,6 +28,8 @@ const stats = [
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const nav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
 
   const logoAnim    = useRef(new Animated.Value(0)).current;
   const logoSlide   = useRef(new Animated.Value(36)).current;
@@ -62,7 +62,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.root}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <StatusBar barStyle={theme.background === '#121212' ? "light-content" : "dark-content"} backgroundColor={theme.background} />
 
       {/* Subtle crosshair guide lines */}
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
@@ -89,14 +89,14 @@ export default function HomeScreen() {
         >
           <View style={styles.iconRing}>
             <View style={styles.iconInner}>
-              <Ionicons name="business-outline" size={26} color={GOLD} />
+              <Ionicons name="business-outline" size={26} color={theme.gold} />
             </View>
           </View>
 
           {/* Wordmark */}
           <Text style={styles.wordmark}>
-            <Text style={{ color: GOLD }}>HYBRID</Text>
-            <Text style={{ color: NAVY }}>AGENT</Text>
+            <Text style={{ color: theme.gold }}>HYBRID</Text>
+            <Text style={{ color: theme.navy }}>AGENT</Text>
           </Text>
 
           {/* Category sub-label */}
@@ -110,9 +110,9 @@ export default function HomeScreen() {
         <Animated.View style={[styles.taglineBlock, { opacity: taglineAnim }]}>
           <Text style={styles.tagline}>
             The secure way for agents to receive commissions{' '}
-            <Text style={{ color: NAVY, fontWeight: '700' }}>locally</Text>
+            <Text style={{ color: theme.navy, fontWeight: '700' }}>locally</Text>
             {' '}&{' '}
-            <Text style={{ color: NAVY, fontWeight: '700' }}>internationally</Text>
+            <Text style={{ color: theme.navy, fontWeight: '700' }}>internationally</Text>
             {' '}— guaranteed on-chain.
           </Text>
         </Animated.View>
@@ -122,8 +122,8 @@ export default function HomeScreen() {
           {stats.map(({ icon, value, label }, i) => (
             <React.Fragment key={label}>
               <View style={styles.statItem}>
-                <Ionicons name={icon} size={16} color={GOLD} />
-                <Text style={[styles.statValue, { color: NAVY }]}>{value}</Text>
+                <Ionicons name={icon} size={16} color={theme.gold} />
+                <Text style={[styles.statValue, { color: theme.text }]}>{value}</Text>
                 <Text style={styles.statLabel}>{label}</Text>
               </View>
               {i < stats.length - 1 && <View style={styles.statDivider} />}
@@ -149,37 +149,37 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root:         { flex: 1, backgroundColor: '#ffffff' },
-  vLine:        { position: 'absolute', top: 0, bottom: 0, width: 1, backgroundColor: '#e5e7eb' },
-  hLine:        { position: 'absolute', left: 0, right: 0, height: 1, backgroundColor: '#e5e7eb' },
+const makeStyles = (theme: Theme) => StyleSheet.create({
+  root:         { flex: 1, backgroundColor: theme.background },
+  vLine:        { position: 'absolute', top: 0, bottom: 0, width: 1, backgroundColor: theme.border },
+  hLine:        { position: 'absolute', left: 0, right: 0, height: 1, backgroundColor: theme.border },
 
   cornerTop:    { position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20 },
   cornerBottom: { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20 },
-  cornerText:   { fontSize: 10, textTransform: 'uppercase', letterSpacing: 2, color: '#9ca3af' },
+  cornerText:   { fontSize: 10, textTransform: 'uppercase', letterSpacing: 2, color: theme.textSecondary },
 
   centre:       { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 },
 
   logoBlock:    { alignItems: 'center', marginBottom: 24 },
-  iconRing:     { width: 76, height: 76, borderRadius: 38, borderWidth: 1.5, borderColor: GOLD + '55', alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
-  iconInner:    { width: 50, height: 50, borderRadius: 25, backgroundColor: GOLD + '15', alignItems: 'center', justifyContent: 'center' },
+  iconRing:     { width: 76, height: 76, borderRadius: 38, borderWidth: 1.5, borderColor: theme.gold + '55', alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
+  iconInner:    { width: 50, height: 50, borderRadius: 25, backgroundColor: theme.gold + '15', alignItems: 'center', justifyContent: 'center' },
   wordmark:     { fontSize: 52, fontWeight: '900', letterSpacing: -1, lineHeight: 56 },
-  subLabel:     { fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#9ca3af', marginTop: 8 },
+  subLabel:     { fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: theme.textSecondary, marginTop: 8 },
 
-  divider:      { width: 48, height: 2, backgroundColor: GOLD, borderRadius: 1, marginBottom: 24 },
+  divider:      { width: 48, height: 2, backgroundColor: theme.gold, borderRadius: 1, marginBottom: 24 },
 
   taglineBlock: { marginBottom: 32, paddingHorizontal: 8 },
-  tagline:      { fontSize: 15, color: '#6b7280', textAlign: 'center', lineHeight: 24 },
+  tagline:      { fontSize: 15, color: theme.textSecondary, textAlign: 'center', lineHeight: 24 },
 
-  statsCard:    { flexDirection: 'row', width: '100%', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', backgroundColor: '#f9fafb', padding: 16, marginBottom: 8 },
+  statsCard:    { flexDirection: 'row', width: '100%', borderRadius: 16, borderWidth: 1, borderColor: theme.border, backgroundColor: theme.card, padding: 16, marginBottom: 8 },
   statItem:     { flex: 1, alignItems: 'center', gap: 4 },
   statValue:    { fontSize: 18, fontWeight: '800' },
-  statLabel:    { fontSize: 10, color: '#9ca3af', textAlign: 'center' },
-  statDivider:  { width: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8, alignSelf: 'stretch' },
+  statLabel:    { fontSize: 10, color: theme.textSecondary, textAlign: 'center' },
+  statDivider:  { width: 1, backgroundColor: theme.border, marginHorizontal: 8, alignSelf: 'stretch' },
 
   ctaBlock:     { width: '100%', marginTop: 28 },
-  btnPrimary:   { backgroundColor: NAVY, borderRadius: 16, paddingVertical: 16, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', marginBottom: 12 },
-  btnPrimaryText: { color: '#ffffff', fontWeight: '700', fontSize: 16, letterSpacing: 0.3 },
-  btnSecondary:  { borderRadius: 16, paddingVertical: 16, alignItems: 'center', borderWidth: 1.5, borderColor: '#e5e7eb', backgroundColor: '#f9fafb' },
-  btnSecondaryText: { color: NAVY, fontWeight: '600', fontSize: 16 },
+  btnPrimary:   { backgroundColor: theme.navy, borderRadius: 16, paddingVertical: 16, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', marginBottom: 12 },
+  btnPrimaryText: { color: theme.background === '#121212' ? '#121212' : '#ffffff', fontWeight: '700', fontSize: 16, letterSpacing: 0.3 },
+  btnSecondary:  { borderRadius: 16, paddingVertical: 16, alignItems: 'center', borderWidth: 1.5, borderColor: theme.border, backgroundColor: theme.card },
+  btnSecondaryText: { color: theme.navy, fontWeight: '600', fontSize: 16 },
 });

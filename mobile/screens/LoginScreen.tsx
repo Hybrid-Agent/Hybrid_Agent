@@ -11,13 +11,13 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { api } from '../lib/api';
 import { storage } from '../lib/storage';
-
-const NAVY = '#0c2340';
-const GOLD = '#c9912a';
+import { useAppTheme, type Theme } from '../lib/theme';
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const nav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
 
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
@@ -46,17 +46,17 @@ export default function LoginScreen() {
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle={theme.background === '#121212' ? "light-content" : "dark-content"} backgroundColor={theme.background} />
 
       <TouchableOpacity style={styles.back} onPress={() => nav.goBack()}>
-        <Ionicons name="arrow-back" size={22} color={NAVY} />
+        <Ionicons name="arrow-back" size={22} color={theme.navy} />
       </TouchableOpacity>
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 24 }]} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <View style={styles.iconRing}>
-            <Ionicons name="lock-closed-outline" size={22} color={GOLD} />
+            <Ionicons name="lock-closed-outline" size={22} color={theme.gold} />
           </View>
           <Text style={styles.title}>Welcome back</Text>
           <Text style={styles.subtitle}>Sign in to your HybridAgent account</Text>
@@ -73,12 +73,12 @@ export default function LoginScreen() {
           <View style={styles.fieldGroup}>
             <Text style={styles.label}>Email</Text>
             <Pressable style={styles.inputWrap} onPress={() => emailRef.current?.focus()}>
-              <Ionicons name="mail-outline" size={17} color={GOLD} style={styles.inputIcon} />
+              <Ionicons name="mail-outline" size={17} color={theme.gold} style={styles.inputIcon} />
               <TextInput
                 ref={emailRef}
                 style={[styles.input, { flex: 1 }]}
                 placeholder="you@example.com"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={theme.textSecondary}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 value={email}
@@ -90,25 +90,25 @@ export default function LoginScreen() {
           <View style={styles.fieldGroup}>
             <Text style={styles.label}>Password</Text>
             <Pressable style={styles.inputWrap} onPress={() => passwordRef.current?.focus()}>
-              <Ionicons name="lock-closed-outline" size={17} color={GOLD} style={styles.inputIcon} />
+              <Ionicons name="lock-closed-outline" size={17} color={theme.gold} style={styles.inputIcon} />
               <TextInput
                 ref={passwordRef}
                 style={[styles.input, { flex: 1 }]}
                 placeholder="••••••••"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={theme.textSecondary}
                 secureTextEntry={!showPw}
                 value={password}
                 onChangeText={setPassword}
               />
               <TouchableOpacity onPress={() => setShowPw(!showPw)} style={styles.eyeBtn}>
-                <Ionicons name={showPw ? 'eye-off-outline' : 'eye-outline'} size={17} color="#9ca3af" />
+                <Ionicons name={showPw ? 'eye-off-outline' : 'eye-outline'} size={17} color={theme.textSecondary} />
               </TouchableOpacity>
             </Pressable>
           </View>
 
           <TouchableOpacity style={styles.btnPrimary} onPress={handleLogin} activeOpacity={0.85} disabled={loading}>
             {loading
-              ? <ActivityIndicator color="#fff" />
+              ? <ActivityIndicator color={theme.background === '#121212' ? '#121212' : '#fff'} />
               : <Text style={styles.btnText}>Sign In</Text>}
           </TouchableOpacity>
         </View>
@@ -125,32 +125,32 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root:       { flex: 1, backgroundColor: '#f9fafb' },
+const makeStyles = (theme: Theme) => StyleSheet.create({
+  root:       { flex: 1, backgroundColor: theme.background },
   scroll:     { flexGrow: 1, paddingHorizontal: 20 },
   back:       { padding: 16, alignSelf: 'flex-start' },
 
   header:     { alignItems: 'center', marginTop: 8, marginBottom: 28 },
-  iconRing:   { width: 60, height: 60, borderRadius: 30, borderWidth: 1.5, borderColor: GOLD + '55', backgroundColor: GOLD + '10', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
-  title:      { fontSize: 26, fontWeight: '800', color: NAVY, marginBottom: 6 },
-  subtitle:   { fontSize: 14, color: '#6b7280', textAlign: 'center' },
+  iconRing:   { width: 60, height: 60, borderRadius: 30, borderWidth: 1.5, borderColor: theme.gold + '55', backgroundColor: theme.gold + '10', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  title:      { fontSize: 26, fontWeight: '800', color: theme.navy, marginBottom: 6 },
+  subtitle:   { fontSize: 14, color: theme.textSecondary, textAlign: 'center' },
 
-  card:       { backgroundColor: '#fff', borderRadius: 20, padding: 24, borderWidth: 1, borderColor: '#e5e7eb', marginBottom: 20 },
+  card:       { backgroundColor: theme.card, borderRadius: 20, padding: 24, borderWidth: 1, borderColor: theme.border, marginBottom: 20 },
 
-  errorBox:   { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#fef2f2', borderWidth: 1, borderColor: '#fecaca', borderRadius: 10, padding: 12, marginBottom: 16 },
-  errorText:  { color: '#dc2626', fontSize: 13, flex: 1 },
+  errorBox:   { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: theme.background === '#121212' ? '#7f1d1d' : '#fef2f2', borderWidth: 1, borderColor: theme.errorText + '50', borderRadius: 10, padding: 12, marginBottom: 16 },
+  errorText:  { color: theme.errorText, fontSize: 13, flex: 1 },
 
   fieldGroup: { marginBottom: 18 },
-  label:      { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 6 },
-  inputWrap:  { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 12, backgroundColor: '#f9fafb', paddingHorizontal: 12 },
+  label:      { fontSize: 13, fontWeight: '600', color: theme.text, marginBottom: 6 },
+  inputWrap:  { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: theme.border, borderRadius: 12, backgroundColor: theme.background === '#121212' ? '#1e1e1e' : '#f9fafb', paddingHorizontal: 12 },
   inputIcon:  { marginRight: 8 },
-  input:      { paddingVertical: 13, fontSize: 15, color: '#111827' },
+  input:      { paddingVertical: 13, fontSize: 15, color: theme.text },
   eyeBtn:     { padding: 4 },
 
-  btnPrimary: { backgroundColor: NAVY, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 4 },
-  btnText:    { color: '#fff', fontWeight: '700', fontSize: 16 },
+  btnPrimary: { backgroundColor: theme.navy, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 4 },
+  btnText:    { color: theme.background === '#121212' ? '#121212' : '#fff', fontWeight: '700', fontSize: 16 },
 
   footer:     { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
-  footerText: { color: '#6b7280', fontSize: 14 },
-  footerLink: { color: NAVY, fontWeight: '700', fontSize: 14 },
+  footerText: { color: theme.textSecondary, fontSize: 14 },
+  footerLink: { color: theme.navy, fontWeight: '700', fontSize: 14 },
 });

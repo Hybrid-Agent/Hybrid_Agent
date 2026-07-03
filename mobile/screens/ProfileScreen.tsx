@@ -10,13 +10,14 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { api, type AuthUser } from '../lib/api';
 import { storage } from '../lib/storage';
-
-const NAVY = '#0c2340';
-const GOLD = '#c9912a';
+import { useAppTheme, useAppThemeContext, type Theme } from '../lib/theme';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const nav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const theme = useAppTheme();
+  const themeCtx = useAppThemeContext();
+  const styles = makeStyles(theme);
 
   const [user, setUser]             = useState<AuthUser | null>(null);
   const [listingCount, setListingCount] = useState(0);
@@ -74,6 +75,11 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleToggleTheme = () => {
+    const next = themeCtx.mode === 'dark' ? 'light' : themeCtx.mode === 'light' ? 'system' : 'dark';
+    themeCtx.setMode(next);
+  };
+
   const isVerified = user?.kyc_status === 'verified';
   const initials   = (user?.full_name ?? user?.user_name ?? 'U')[0].toUpperCase();
 
@@ -116,7 +122,7 @@ export default function ProfileScreen() {
       title: 'Settings',
       items: [
         { icon: 'notifications-outline', label: 'Notifications', sub: 'Push alerts on', route: 'Notifications' },
-        { icon: 'moon-outline',          label: 'Appearance',    sub: 'Light mode' },
+        { icon: 'moon-outline',          label: 'Appearance',    sub: `Mode: ${themeCtx.mode}`, action: 'ToggleTheme' },
         { icon: 'help-circle-outline',   label: 'Help & Support', sub: 'FAQ · Contact' },
       ],
     },
@@ -134,12 +140,12 @@ export default function ProfileScreen() {
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle={theme.background === '#121212' ? "light-content" : "dark-content"} backgroundColor={theme.background} />
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profile</Text>
         <TouchableOpacity style={styles.settingsBtn}>
-          <Ionicons name="settings-outline" size={20} color={NAVY} />
+          <Ionicons name="settings-outline" size={20} color={theme.navy} />
         </TouchableOpacity>
       </View>
 
@@ -155,7 +161,7 @@ export default function ProfileScreen() {
               )}
             </View>
             <TouchableOpacity style={styles.editAvatar} onPress={handleChangeAvatar}>
-              <Ionicons name="camera-outline" size={13} color={NAVY} />
+              <Ionicons name="camera-outline" size={13} color={theme.navy} />
             </TouchableOpacity>
           </View>
           <View style={styles.profileInfo}>
@@ -195,13 +201,13 @@ export default function ProfileScreen() {
         {!isVerified && (
           <TouchableOpacity style={styles.kycCard} activeOpacity={0.85} onPress={() => nav.navigate('KYC')}>
             <View style={styles.kycIcon}>
-              <Ionicons name="shield-checkmark-outline" size={22} color={GOLD} />
+              <Ionicons name="shield-checkmark-outline" size={22} color={theme.gold} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.kycCardTitle}>Complete KYC</Text>
               <Text style={styles.kycCardDesc}>Verify your identity to buy and sell on HybridAgent</Text>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={GOLD} />
+            <Ionicons name="chevron-forward" size={18} color={theme.gold} />
           </TouchableOpacity>
         )}
 
@@ -264,12 +270,14 @@ export default function ProfileScreen() {
                   activeOpacity={0.7}
                   onPress={() => {
                     const r = (item as any).route;
-                    if (r === 'OwnerWithdraw') nav.navigate('OwnerWithdraw', {});
+                    const a = (item as any).action;
+                    if (a === 'ToggleTheme') handleToggleTheme();
+                    else if (r === 'OwnerWithdraw') nav.navigate('OwnerWithdraw', {});
                     else if (r) nav.navigate(r as any);
                   }}
                 >
                   <View style={[styles.menuIcon, (item as any).accent && styles.menuIconAccent]}>
-                    <Ionicons name={item.icon as any} size={18} color={(item as any).accent ? '#f59e0b' : NAVY} />
+                    <Ionicons name={item.icon as any} size={18} color={(item as any).accent ? '#f59e0b' : theme.navy} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.menuLabel}>{item.label}</Text>
@@ -293,46 +301,46 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root:    { flex: 1, backgroundColor: '#f9fafb' },
+const makeStyles = (theme: Theme) => StyleSheet.create({
+  root:    { flex: 1, backgroundColor: theme.background },
   header:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 },
-  headerTitle: { fontSize: 26, fontWeight: '800', color: NAVY },
-  settingsBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontSize: 26, fontWeight: '800', color: theme.navy },
+  settingsBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: theme.background === '#121212' ? '#2c2c2c' : '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
 
   scroll:  { paddingHorizontal: 20, paddingTop: 4 },
 
-  profileCard: { backgroundColor: '#fff', borderRadius: 20, borderWidth: 1, borderColor: '#e5e7eb', padding: 20, marginBottom: 16 },
+  profileCard: { backgroundColor: theme.card, borderRadius: 20, borderWidth: 1, borderColor: theme.border, padding: 20, marginBottom: 16 },
   avatarWrap:  { position: 'relative', alignSelf: 'flex-start', marginBottom: 12 },
-  avatar:      { width: 64, height: 64, borderRadius: 32, backgroundColor: NAVY, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  avatar:      { width: 64, height: 64, borderRadius: 32, backgroundColor: theme.navy, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   avatarImg:   { width: 64, height: 64, borderRadius: 32 },
   avatarText:  { fontSize: 24, fontWeight: '800', color: '#fff' },
-  editAvatar:  { position: 'absolute', right: -2, bottom: -2, width: 22, height: 22, borderRadius: 11, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#e5e7eb' },
+  editAvatar:  { position: 'absolute', right: -2, bottom: -2, width: 22, height: 22, borderRadius: 11, backgroundColor: theme.card, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: theme.border },
   profileInfo: { marginBottom: 16 },
-  profileName: { fontSize: 20, fontWeight: '800', color: '#111827', marginBottom: 2 },
-  profileEmail: { fontSize: 13, color: '#9ca3af', marginBottom: 6 },
+  profileName: { fontSize: 20, fontWeight: '800', color: theme.text, marginBottom: 2 },
+  profileEmail: { fontSize: 13, color: theme.textSecondary, marginBottom: 6 },
   kycRow:      { flexDirection: 'row', alignItems: 'center', gap: 5 },
   kycText:     { fontSize: 12, color: '#f59e0b', fontWeight: '500' },
-  statRow:     { flexDirection: 'row', backgroundColor: '#f9fafb', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#e5e7eb' },
+  statRow:     { flexDirection: 'row', backgroundColor: theme.background, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: theme.border },
   statItem:    { flex: 1, alignItems: 'center', gap: 2 },
-  statVal:     { fontSize: 18, fontWeight: '900', color: NAVY, textTransform: 'capitalize' },
-  statLabel:   { fontSize: 11, color: '#9ca3af' },
-  statDivider: { width: 1, backgroundColor: '#e5e7eb', alignSelf: 'stretch', marginHorizontal: 8 },
+  statVal:     { fontSize: 18, fontWeight: '900', color: theme.navy, textTransform: 'capitalize' },
+  statLabel:   { fontSize: 11, color: theme.textSecondary },
+  statDivider: { width: 1, backgroundColor: theme.border, alignSelf: 'stretch', marginHorizontal: 8 },
 
-  kycCard:    { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: NAVY, borderRadius: 16, padding: 16, marginBottom: 20 },
-  kycIcon:    { width: 44, height: 44, borderRadius: 22, backgroundColor: GOLD + '20', alignItems: 'center', justifyContent: 'center' },
+  kycCard:    { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: theme.navy, borderRadius: 16, padding: 16, marginBottom: 20 },
+  kycIcon:    { width: 44, height: 44, borderRadius: 22, backgroundColor: theme.gold + '20', alignItems: 'center', justifyContent: 'center' },
   kycCardTitle: { fontSize: 15, fontWeight: '700', color: '#fff', marginBottom: 2 },
   kycCardDesc:  { fontSize: 12, color: '#94a3b8', lineHeight: 18 },
 
   menuSection:      { marginBottom: 20 },
-  menuSectionTitle: { fontSize: 12, fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 },
-  menuCard:         { backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', overflow: 'hidden' },
+  menuSectionTitle: { fontSize: 12, fontWeight: '700', color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 },
+  menuCard:         { backgroundColor: theme.card, borderRadius: 16, borderWidth: 1, borderColor: theme.border, overflow: 'hidden' },
   menuItem:         { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
-  menuItemBorder:   { borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  menuIcon:         { width: 36, height: 36, borderRadius: 10, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
+  menuItemBorder:   { borderBottomWidth: 1, borderBottomColor: theme.border },
+  menuIcon:         { width: 36, height: 36, borderRadius: 10, backgroundColor: theme.background === '#121212' ? '#2c2c2c' : '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
   menuIconAccent:   { backgroundColor: '#fef3c7' },
-  menuLabel:        { fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 1 },
-  menuSub:          { fontSize: 12, color: '#9ca3af' },
+  menuLabel:        { fontSize: 14, fontWeight: '600', color: theme.text, marginBottom: 1 },
+  menuSub:          { fontSize: 12, color: theme.textSecondary },
 
-  logoutBtn:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#fff', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#fee2e2' },
+  logoutBtn:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: theme.card, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#fee2e2' },
   logoutText: { fontSize: 15, fontWeight: '700', color: '#dc2626' },
 });

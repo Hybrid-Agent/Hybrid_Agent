@@ -10,11 +10,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { api, type WalletData } from '../lib/api';
 import { storage } from '../lib/storage';
-
-const NAVY  = '#0c2340';
-const GOLD  = '#c9912a';
-const GREEN = '#22c55e';
-
+import { useAppTheme, type Theme } from '../lib/theme';
 
 
 function shortAddr(a: string) {
@@ -27,6 +23,8 @@ function fmtUsdc(n: string | number) {
 export default function ActivityScreen() {
   const insets = useSafeAreaInsets();
   const nav    = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const theme  = useAppTheme();
+  const styles = makeStyles(theme);
 
   const [wallet,  setWallet]  = useState<WalletData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,7 +62,7 @@ export default function ActivityScreen() {
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle={theme.background === '#121212' ? "light-content" : "dark-content"} backgroundColor={theme.background} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -72,14 +70,14 @@ export default function ActivityScreen() {
           <Text style={styles.headerTitle}>Activity</Text>
         </View>
         <TouchableOpacity style={styles.walletBtn} onPress={() => nav.navigate('Wallet')} activeOpacity={0.8}>
-          <Ionicons name="wallet-outline" size={16} color={GOLD} style={{ marginRight: 5 }} />
+          <Ionicons name="wallet-outline" size={16} color={theme.gold} style={{ marginRight: 5 }} />
           <Text style={styles.walletBtnText}>Full Wallet</Text>
         </TouchableOpacity>
       </View>
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={GOLD} />
+          <ActivityIndicator size="large" color={theme.gold} />
         </View>
       ) : (
         <ScrollView
@@ -158,7 +156,7 @@ export default function ActivityScreen() {
                   let title = 'Activity';
                   let body = `Update on ${item.listing_title}`;
                   let icon = 'time-outline';
-                  let iconColor = GOLD;
+                  let iconColor = theme.gold;
 
                   if (isAgentReq) {
                     if (item.status === 'requested') {
@@ -173,7 +171,7 @@ export default function ActivityScreen() {
                       title = 'Escrow Created';
                       body = `Escrow deal created for ${item.listing_title}.`;
                       icon = 'shield-checkmark-outline';
-                      iconColor = GREEN;
+                      iconColor = theme.green;
                     }
                   } else {
                     if (item.status === 'requested') {
@@ -188,7 +186,7 @@ export default function ActivityScreen() {
                       title = 'Escrow Ready';
                       body = `Escrow is ready for ${item.listing_title}. Please fund it.`;
                       icon = 'shield-checkmark-outline';
-                      iconColor = GREEN;
+                      iconColor = theme.green;
                     }
                   }
 
@@ -229,16 +227,19 @@ export default function ActivityScreen() {
                 icon="add-circle-outline"
                 label="New listing"
                 onPress={() => nav.navigate('CreateListing')}
+                theme={theme}
               />
               <QuickAction
                 icon="wallet-outline"
                 label="Wallet"
                 onPress={() => nav.navigate('Wallet')}
+                theme={theme}
               />
               <QuickAction
                 icon="shield-checkmark-outline"
                 label="KYC"
                 onPress={() => nav.navigate('KYC')}
+                theme={theme}
               />
             </View>
           </View>
@@ -251,20 +252,23 @@ export default function ActivityScreen() {
 // ── Sub-components ──────────────────────────────────────────────────────────
 
 function StatPill({ icon, label, value }: { icon: string; label: string; value: string }) {
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
   return (
     <View style={styles.statPill}>
-      <Ionicons name={icon as any} size={14} color={GOLD} />
+      <Ionicons name={icon as any} size={14} color={theme.gold} />
       <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
 }
 
-function QuickAction({ icon, label, onPress }: { icon: string; label: string; onPress: () => void }) {
+function QuickAction({ icon, label, onPress, theme }: { icon: string; label: string; onPress: () => void, theme: Theme }) {
+  const styles = makeStyles(theme);
   return (
     <TouchableOpacity style={styles.quickAction} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.quickIcon}>
-        <Ionicons name={icon as any} size={20} color={NAVY} />
+        <Ionicons name={icon as any} size={20} color={theme.navy} />
       </View>
       <Text style={styles.quickLabel}>{label}</Text>
     </TouchableOpacity>
@@ -272,81 +276,84 @@ function QuickAction({ icon, label, onPress }: { icon: string; label: string; on
 }
 
 // ── Styles ──────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  root:   { flex: 1, backgroundColor: '#f9fafb' },
+const makeStyles = (theme: Theme) => StyleSheet.create({
+  root:   { flex: 1, backgroundColor: theme.background },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
   // Header
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingVertical: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1, borderBottomColor: '#f3f4f6',
+    backgroundColor: theme.card,
+    borderBottomWidth: 1, borderBottomColor: theme.border,
   },
-  headerTitle: { fontSize: 24, fontWeight: '800', color: NAVY },
-  headerSub:   { fontSize: 12, color: GOLD, marginTop: 2, fontWeight: '600' },
+  headerTitle: { fontSize: 24, fontWeight: '800', color: theme.navy },
+  headerSub:   { fontSize: 12, color: theme.gold, marginTop: 2, fontWeight: '600' },
   walletBtn:   {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#f3f4f6', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7,
+    backgroundColor: theme.background === '#121212' ? '#2c2c2c' : '#f3f4f6', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7,
   },
-  walletBtnText: { fontSize: 12, color: NAVY, fontWeight: '700' },
+  walletBtnText: { fontSize: 12, color: theme.navy, fontWeight: '700' },
 
   scroll: { paddingHorizontal: 16 },
 
   // Wallet card
   walletCard: {
-    backgroundColor: NAVY,
+    backgroundColor: theme.background === '#121212' ? 'rgba(255, 255, 255, 0.05)' : theme.navyCard,
     borderRadius: 24,
+    marginTop: 16,
     marginBottom: 24,
     overflow: 'hidden',
-    shadowColor: NAVY, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8,
+    borderWidth: 1,
+    borderColor: theme.background === '#121212' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 8,
   },
   walletCardInner: { padding: 22, paddingBottom: 16 },
   addrRow:    { flexDirection: 'row', alignItems: 'center', gap: 7, marginBottom: 18 },
-  addrDot:    { width: 7, height: 7, borderRadius: 4, backgroundColor: GREEN },
+  addrDot:    { width: 7, height: 7, borderRadius: 4, backgroundColor: theme.green },
   addrText:   { fontSize: 13, color: '#94a3b8', fontFamily: 'monospace', flex: 1 },
   networkBadge: { backgroundColor: '#ffffff15', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3 },
   networkText:  { fontSize: 10, color: '#cbd5e1', fontWeight: '700' },
 
-  balanceLabel:   { fontSize: 11, color: '#64748b', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8 },
+  balanceLabel:   { fontSize: 11, color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8 },
   balanceValue:   { fontSize: 38, fontWeight: '900', color: '#fff', marginTop: 4, letterSpacing: -1 },
-  balanceCurrency:{ fontSize: 13, color: '#64748b', marginTop: 2, marginBottom: 14 },
+  balanceCurrency:{ fontSize: 13, color: '#94a3b8', marginTop: 2, marginBottom: 14 },
 
   ethRow:  { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  ethText: { fontSize: 12, color: '#64748b' },
+  ethText: { fontSize: 12, color: '#94a3b8' },
 
-  statsStrip:   { flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#ffffff10', backgroundColor: '#0c2340' },
+  statsStrip:   { flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#ffffff10', backgroundColor: '#00000010' },
   statsDivider: { width: 1, backgroundColor: '#ffffff10', marginVertical: 12 },
   statPill:     { flex: 1, alignItems: 'center', paddingVertical: 14, gap: 4 },
   statValue:    { fontSize: 15, fontWeight: '800', color: '#fff' },
-  statLabel:    { fontSize: 10, color: '#64748b', fontWeight: '600' },
+  statLabel:    { fontSize: 10, color: '#94a3b8', fontWeight: '600' },
 
   // Activity
   section:      { marginBottom: 24 },
-  sectionTitle: { fontSize: 14, fontWeight: '800', color: NAVY, marginBottom: 12 },
+  sectionTitle: { fontSize: 14, fontWeight: '800', color: theme.navy, marginBottom: 12 },
 
   emptyCard: {
-    backgroundColor: '#fff', borderRadius: 20, borderWidth: 1, borderColor: '#e5e7eb',
+    backgroundColor: theme.card, borderRadius: 20, borderWidth: 1, borderColor: theme.border,
     alignItems: 'center', padding: 32, gap: 8,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 2,
   },
-  emptyTitle: { fontSize: 16, fontWeight: '800', color: NAVY, marginTop: 4 },
-  emptySub:   { fontSize: 13, color: '#64748b', textAlign: 'center', lineHeight: 19 },
+  emptyTitle: { fontSize: 16, fontWeight: '800', color: theme.navy, marginTop: 4 },
+  emptySub:   { fontSize: 13, color: theme.textSecondary, textAlign: 'center', lineHeight: 19 },
 
-  notifList: { backgroundColor: '#0d2d52', borderRadius: 16, borderWidth: 1, borderColor: '#ffffff10', overflow: 'hidden' },
+  notifList: { backgroundColor: theme.background === '#121212' ? '#1e1e1e' : '#0c2340', borderRadius: 16, borderWidth: 1, borderColor: theme.border, overflow: 'hidden' },
   notifRow:        { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
-  notifRowBorder:  { borderBottomWidth: 1, borderBottomColor: '#ffffff08' },
+  notifRowBorder:  { borderBottomWidth: 1, borderBottomColor: '#ffffff15' },
   notifRowUnread:  { backgroundColor: '#ffffff05' },
   notifIcon:       { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   notifTitleRow:   { flexDirection: 'row', alignItems: 'center', gap: 7 },
   notifTitle:      { fontSize: 14, fontWeight: '700', color: '#fff' },
-  unreadDot:       { width: 7, height: 7, borderRadius: 4, backgroundColor: GOLD },
+  unreadDot:       { width: 7, height: 7, borderRadius: 4, backgroundColor: theme.gold },
   notifBody:       { fontSize: 12, color: '#94a3b8', lineHeight: 17 },
-  notifTime:       { fontSize: 11, color: '#475569' },
+  notifTime:       { fontSize: 11, color: '#94a3b8' },
 
   // Quick actions
   quickRow:    { flexDirection: 'row', gap: 10 },
-  quickAction: { flex: 1, alignItems: 'center', gap: 8, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', paddingVertical: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 2 },
-  quickIcon:   { width: 44, height: 44, borderRadius: 14, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
-  quickLabel:  { fontSize: 11, fontWeight: '700', color: '#374151' },
+  quickAction: { flex: 1, alignItems: 'center', gap: 8, backgroundColor: theme.card, borderRadius: 16, borderWidth: 1, borderColor: theme.border, paddingVertical: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 2 },
+  quickIcon:   { width: 44, height: 44, borderRadius: 14, backgroundColor: theme.background === '#121212' ? '#2c2c2c' : '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
+  quickLabel:  { fontSize: 11, fontWeight: '700', color: theme.text },
 });

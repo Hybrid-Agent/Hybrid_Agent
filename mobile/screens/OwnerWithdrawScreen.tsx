@@ -8,11 +8,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
+import { useAppTheme, type Theme } from '../lib/theme';
 
-const NAVY   = '#0c2340';
-const GOLD   = '#c9912a';
-const GOLD_L = '#fdf3e3';
-const GREEN  = '#059669';
 
 // Mock settlement data — populated when Baba clicks the email link.
 // In production this comes from the backend using the escrow ID in the deep link.
@@ -38,6 +35,8 @@ type FlowState = 'email' | 'otp' | 'balance' | 'sending' | 'done';
 
 // ────────────────────────────────────────────────────────────────────────────
 export default function OwnerWithdrawScreen() {
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
   const insets = useSafeAreaInsets();
   const nav    = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -158,7 +157,7 @@ export default function OwnerWithdrawScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={[styles.root, { paddingTop: insets.top }]}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+        <StatusBar barStyle={theme.background === "#111827" ? "light-content" : "dark-content"} backgroundColor={theme.background} />
 
         {/* Top bar */}
         <View style={styles.topBar}>
@@ -174,11 +173,11 @@ export default function OwnerWithdrawScreen() {
                 else nav.goBack();
               }}
             >
-              <Ionicons name="arrow-back" size={20} color={NAVY} />
+              <Ionicons name="arrow-back" size={20} color={theme.navy} />
             </TouchableOpacity>
           )}
           <View style={styles.logoRow}>
-            <Ionicons name="lock-closed-outline" size={15} color={GOLD} />
+            <Ionicons name="lock-closed-outline" size={15} color={theme.gold} />
             <Text style={styles.logoText}>HybridAgent Payout</Text>
           </View>
           {/* Progress dots */}
@@ -215,7 +214,7 @@ export default function OwnerWithdrawScreen() {
               {/* Illustration */}
               <View style={styles.illustration}>
                 <View style={styles.illustrationRing}>
-                  <Ionicons name="mail-outline" size={38} color={NAVY} />
+                  <Ionicons name="mail-outline" size={38} color={theme.navy} />
                 </View>
               </View>
 
@@ -227,7 +226,7 @@ export default function OwnerWithdrawScreen() {
               <View style={styles.card}>
                 <Text style={styles.fieldLabel}>Email address</Text>
                 <Pressable style={styles.inputWrap} onPress={() => emailInputRef.current?.focus()}>
-                  <Ionicons name="mail-outline" size={17} color={GOLD} style={styles.inputIcon} />
+                  <Ionicons name="mail-outline" size={17} color={theme.gold} style={styles.inputIcon} />
                   <TextInput
                     ref={emailInputRef}
                     style={[styles.input, { flex: 1 }]}
@@ -253,7 +252,7 @@ export default function OwnerWithdrawScreen() {
 
               {/* Demo shortcut */}
               <TouchableOpacity style={styles.demoHint} onPress={() => { setEmail('baba@gmail.com'); submitEmail(); }}>
-                <Ionicons name="flash-outline" size={13} color={GOLD} />
+                <Ionicons name="flash-outline" size={13} color={theme.gold} />
                 <Text style={styles.demoHintText}>Demo: use baba@gmail.com</Text>
               </TouchableOpacity>
 
@@ -280,7 +279,7 @@ export default function OwnerWithdrawScreen() {
             <View>
               <View style={styles.illustration}>
                 <View style={styles.illustrationRing}>
-                  <Ionicons name="keypad-outline" size={38} color={NAVY} />
+                  <Ionicons name="keypad-outline" size={38} color={theme.navy} />
                 </View>
               </View>
 
@@ -318,7 +317,7 @@ export default function OwnerWithdrawScreen() {
               ) : null}
 
               <TouchableOpacity style={styles.demoHint} onPress={fillDemoOtp}>
-                <Ionicons name="flash-outline" size={13} color={GOLD} />
+                <Ionicons name="flash-outline" size={13} color={theme.gold} />
                 <Text style={styles.demoHintText}>Demo: fill code 123456</Text>
               </TouchableOpacity>
 
@@ -403,7 +402,7 @@ export default function OwnerWithdrawScreen() {
               {/* Escrow proof */}
               <View style={styles.proofCard}>
                 <View style={styles.proofRow}>
-                  <Ionicons name="lock-closed-outline" size={14} color={GOLD} />
+                  <Ionicons name="lock-closed-outline" size={14} color={theme.gold} />
                   <Text style={styles.proofLabel}>Escrow settlement TX</Text>
                 </View>
                 <Text style={styles.proofHash}>{MOCK_SETTLEMENT.escrowTxHash}</Text>
@@ -438,7 +437,7 @@ export default function OwnerWithdrawScreen() {
               <View style={styles.card}>
                 <Text style={styles.fieldLabel}>Destination</Text>
                 <Pressable style={[styles.inputWrap, destError ? styles.inputWrapError : null]} onPress={() => destInputRef.current?.focus()}>
-                  <Ionicons name="wallet-outline" size={17} color={destError ? '#dc2626' : GOLD} style={styles.inputIcon} />
+                  <Ionicons name="wallet-outline" size={17} color={destError ? '#dc2626' : theme.gold} style={styles.inputIcon} />
                   <TextInput
                     ref={destInputRef}
                     style={[styles.input, { flex: 1 }]}
@@ -463,7 +462,7 @@ export default function OwnerWithdrawScreen() {
 
                 {/* Demo shortcut */}
                 <TouchableOpacity style={styles.demoHint} onPress={() => setDestination('0xd9145CCE52D386f254917e481eB44e9943F39138')}>
-                  <Ionicons name="flash-outline" size={13} color={GOLD} />
+                  <Ionicons name="flash-outline" size={13} color={theme.gold} />
                   <Text style={styles.demoHintText}>Demo: fill sample address</Text>
                 </TouchableOpacity>
               </View>
@@ -481,13 +480,13 @@ export default function OwnerWithdrawScreen() {
                       activeOpacity={0.8}
                     >
                       <View style={[styles.networkIcon, network === n.id && styles.networkIconActive]}>
-                        <Ionicons name={n.icon as any} size={18} color={network === n.id ? GOLD : '#9ca3af'} />
+                        <Ionicons name={n.icon as any} size={18} color={network === n.id ? theme.gold : '#9ca3af'} />
                       </View>
                       <View style={{ flex: 1 }}>
-                        <Text style={[styles.networkLabel, network === n.id && { color: NAVY }]}>{n.label}</Text>
+                        <Text style={[styles.networkLabel, network === n.id && { color: theme.navy }]}>{n.label}</Text>
                         <Text style={styles.networkNote}>{n.note}</Text>
                       </View>
-                      {network === n.id && <Ionicons name="checkmark-circle" size={18} color={GOLD} />}
+                      {network === n.id && <Ionicons name="checkmark-circle" size={18} color={theme.gold} />}
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -504,7 +503,7 @@ export default function OwnerWithdrawScreen() {
                 >
                   <View style={[styles.radioCircle, sendAll && styles.radioCircleFilled]} />
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.amountOptionLabel, sendAll && { color: NAVY }]}>
+                    <Text style={[styles.amountOptionLabel, sendAll && { color: theme.navy }]}>
                       Send full balance
                     </Text>
                     <Text style={styles.amountOptionSub}>${ownerPayout.toLocaleString()} USDC</Text>
@@ -517,12 +516,12 @@ export default function OwnerWithdrawScreen() {
                   activeOpacity={0.8}
                 >
                   <View style={[styles.radioCircle, !sendAll && styles.radioCircleFilled]} />
-                  <Text style={[styles.amountOptionLabel, !sendAll && { color: NAVY }]}>Custom amount</Text>
+                  <Text style={[styles.amountOptionLabel, !sendAll && { color: theme.navy }]}>Custom amount</Text>
                 </TouchableOpacity>
 
                 {!sendAll && (
                   <Pressable style={[styles.inputWrap, { marginTop: 10 }]} onPress={() => customAmtRef.current?.focus()}>
-                    <Text style={[styles.inputIcon, { fontSize: 15, color: GOLD, fontWeight: '700' }]}>$</Text>
+                    <Text style={[styles.inputIcon, { fontSize: 15, color: theme.gold, fontWeight: '700' }]}>$</Text>
                     <TextInput
                       ref={customAmtRef}
                       style={[styles.input, { flex: 1 }]}
@@ -532,7 +531,7 @@ export default function OwnerWithdrawScreen() {
                       onChangeText={setCustomAmt}
                       keyboardType="decimal-pad"
                     />
-                    <Text style={{ fontSize: 13, color: '#9ca3af', marginRight: 4 }}>USDC</Text>
+                    <Text style={{ fontSize: 13, color: theme.textSecondary, marginRight: 4 }}>USDC</Text>
                   </Pressable>
                 )}
               </View>
@@ -596,7 +595,7 @@ export default function OwnerWithdrawScreen() {
               </View>
 
               <View style={styles.doneBanner}>
-                <Ionicons name="shield-checkmark-outline" size={20} color={GOLD} />
+                <Ionicons name="shield-checkmark-outline" size={20} color={theme.gold} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.doneBannerTitle}>HybridAgent — your commission was protected</Text>
                   <Text style={styles.doneBannerSub}>
@@ -620,12 +619,14 @@ function BreakdownRow({
 }: {
   label: string; value: string; bold?: boolean; valueSmall?: boolean; valueColor?: string;
 }) {
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
   return (
     <View style={styles.breakdownRow}>
       <Text style={styles.breakdownLabel}>{label}</Text>
       <Text style={[
         styles.breakdownValue,
-        bold       && { fontWeight: '800', color: NAVY },
+        bold       && { fontWeight: '800', color: theme.navy },
         valueSmall && { fontSize: 11, maxWidth: 160, textAlign: 'right' },
         valueColor ? { color: valueColor } : null,
       ]} numberOfLines={2}>
@@ -636,68 +637,70 @@ function BreakdownRow({
 }
 
 function SummaryRow({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
   return (
     <View style={styles.summaryRow}>
       <Text style={styles.summaryLabel}>{label}</Text>
-      <Text style={[styles.summaryValue, bold && { fontWeight: '800', color: NAVY }]}>{value}</Text>
+      <Text style={[styles.summaryValue, bold && { fontWeight: '800', color: theme.navy }]}>{value}</Text>
     </View>
   );
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
-  root:   { flex: 1, backgroundColor: '#f9fafb' },
+const makeStyles = (theme: Theme) => StyleSheet.create({
+  root:   { flex: 1, backgroundColor: theme.background },
   scroll: { flexGrow: 1, paddingHorizontal: 20, paddingTop: 8 },
 
   // Top bar
-  topBar:    { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f3f4f6', gap: 10 },
+  topBar:    { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: theme.card, borderBottomWidth: 1, borderBottomColor: '#f3f4f6', gap: 10 },
   backBtn:   { width: 36, height: 36, borderRadius: 10, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
   logoRow:   { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
-  logoText:  { fontSize: 13, fontWeight: '700', color: NAVY },
+  logoText:  { fontSize: 13, fontWeight: '700', color: theme.navy },
   progressDots: { flexDirection: 'row', gap: 5 },
   dot:       { width: 6, height: 6, borderRadius: 3, backgroundColor: '#e5e7eb' },
-  dotActive: { backgroundColor: NAVY, width: 18 },
-  dotDone:   { backgroundColor: GOLD },
+  dotActive: { backgroundColor: theme.navy, width: 18 },
+  dotDone:   { backgroundColor: theme.gold },
 
   // Section header
   headerBlock: { marginTop: 24, marginBottom: 20 },
-  headerTitle: { fontSize: 26, fontWeight: '900', color: NAVY, lineHeight: 34, marginBottom: 8 },
-  headerSub:   { fontSize: 14, color: '#6b7280', lineHeight: 22 },
+  headerTitle: { fontSize: 26, fontWeight: '900', color: theme.navy, lineHeight: 34, marginBottom: 8 },
+  headerSub:   { fontSize: 14, color: theme.textSecondary, lineHeight: 22 },
 
   // Illustration circle
   illustration:     { alignItems: 'center', marginTop: 24, marginBottom: 8 },
-  illustrationRing: { width: 88, height: 88, borderRadius: 44, backgroundColor: NAVY + '10', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: NAVY + '20' },
+  illustrationRing: { width: 88, height: 88, borderRadius: 44, backgroundColor: theme.navy + '10', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: theme.navy + '20' },
 
   // Card
-  card:      { backgroundColor: '#fff', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: '#e5e7eb', marginBottom: 16 },
-  cardTitle: { fontSize: 14, fontWeight: '700', color: NAVY, marginBottom: 12 },
+  card:      { backgroundColor: theme.card, borderRadius: 18, padding: 18, borderWidth: 1, borderColor: theme.border, marginBottom: 16 },
+  cardTitle: { fontSize: 14, fontWeight: '700', color: theme.navy, marginBottom: 12 },
   divider:   { height: 1, backgroundColor: '#f3f4f6', marginVertical: 10 },
 
   // Fields
-  fieldLabel: { fontSize: 13, fontWeight: '700', color: '#374151', marginBottom: 8 },
-  fieldHint:  { fontSize: 11, color: '#9ca3af', lineHeight: 16, marginTop: 6 },
-  inputWrap:      { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 12, backgroundColor: '#f9fafb', paddingHorizontal: 12 },
+  fieldLabel: { fontSize: 13, fontWeight: '700', color: theme.text, marginBottom: 8 },
+  fieldHint:  { fontSize: 11, color: theme.textSecondary, lineHeight: 16, marginTop: 6 },
+  inputWrap:      { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: theme.border, borderRadius: 12, backgroundColor: theme.background, paddingHorizontal: 12 },
   inputWrapError: { borderColor: '#fca5a5' },
   inputIcon:  { marginRight: 8 },
-  input:      { flex: 1, paddingVertical: 13, fontSize: 14, color: '#111827' },
+  input:      { flex: 1, paddingVertical: 13, fontSize: 14, color: theme.text },
 
   // Info box
-  infoBox:   { flexDirection: 'row', gap: 8, alignItems: 'flex-start', backgroundColor: '#f9fafb', borderRadius: 10, padding: 12, marginTop: 14, borderWidth: 1, borderColor: '#e5e7eb' },
-  infoText:  { fontSize: 12, color: '#6b7280', flex: 1, lineHeight: 17 },
+  infoBox:   { flexDirection: 'row', gap: 8, alignItems: 'flex-start', backgroundColor: theme.background, borderRadius: 10, padding: 12, marginTop: 14, borderWidth: 1, borderColor: theme.border },
+  infoText:  { fontSize: 12, color: theme.textSecondary, flex: 1, lineHeight: 17 },
 
   // Demo hint
   demoHint:     { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', marginTop: 10, marginBottom: 4 },
-  demoHintText: { fontSize: 12, color: GOLD, fontWeight: '600' },
+  demoHintText: { fontSize: 12, color: theme.gold, fontWeight: '600' },
 
   // Primary button
-  primaryBtn:     { backgroundColor: NAVY, borderRadius: 16, paddingVertical: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  primaryBtn:     { backgroundColor: theme.navy, borderRadius: 16, paddingVertical: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
   primaryBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
 
   // OTP
   otpRow:       { flexDirection: 'row', gap: 10, justifyContent: 'center', marginBottom: 16, marginTop: 8 },
-  otpBox:       { width: 46, height: 56, borderRadius: 14, borderWidth: 2, borderColor: '#e5e7eb', backgroundColor: '#fff', fontSize: 22, fontWeight: '800', color: NAVY, textAlign: 'center' },
-  otpBoxFilled: { borderColor: NAVY, backgroundColor: NAVY + '08' },
+  otpBox:       { width: 46, height: 56, borderRadius: 14, borderWidth: 2, borderColor: theme.border, backgroundColor: theme.card, fontSize: 22, fontWeight: '800', color: theme.navy, textAlign: 'center' },
+  otpBoxFilled: { borderColor: theme.navy, backgroundColor: theme.navy + '08' },
   otpBoxError:  { borderColor: '#fca5a5', backgroundColor: '#fff5f5' },
 
   // Errors
@@ -706,80 +709,80 @@ const styles = StyleSheet.create({
 
   // Resend
   resendRow:  { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 8 },
-  resendText: { fontSize: 13, color: '#6b7280' },
-  resendLink: { fontSize: 13, color: NAVY, fontWeight: '700' },
+  resendText: { fontSize: 13, color: theme.textSecondary },
+  resendLink: { fontSize: 13, color: theme.navy, fontWeight: '700' },
 
   // Greeting block (balance screen)
-  greetingBlock:     { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff', borderRadius: 18, padding: 16, marginTop: 16, marginBottom: 16, borderWidth: 1, borderColor: '#e5e7eb' },
-  greetingAvatar:    { width: 44, height: 44, borderRadius: 22, backgroundColor: NAVY, alignItems: 'center', justifyContent: 'center' },
+  greetingBlock:     { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: theme.card, borderRadius: 18, padding: 16, marginTop: 16, marginBottom: 16, borderWidth: 1, borderColor: theme.border },
+  greetingAvatar:    { width: 44, height: 44, borderRadius: 22, backgroundColor: theme.navy, alignItems: 'center', justifyContent: 'center' },
   greetingInitial:   { fontSize: 18, fontWeight: '800', color: '#fff' },
-  greetingName:      { fontSize: 16, fontWeight: '800', color: NAVY },
-  greetingStatus:    { fontSize: 12, color: '#6b7280', marginTop: 1 },
+  greetingName:      { fontSize: 16, fontWeight: '800', color: theme.navy },
+  greetingStatus:    { fontSize: 12, color: theme.textSecondary, marginTop: 1 },
   greetingBadge:     { marginLeft: 'auto', flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#d1fae5', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5 },
-  greetingDot:       { width: 6, height: 6, borderRadius: 3, backgroundColor: GREEN },
-  greetingBadgeText: { fontSize: 11, fontWeight: '700', color: GREEN },
+  greetingDot:       { width: 6, height: 6, borderRadius: 3, backgroundColor: theme.green },
+  greetingBadgeText: { fontSize: 11, fontWeight: '700', color: theme.green },
 
   // Payout hero
-  payoutHero:     { alignItems: 'center', paddingVertical: 28, backgroundColor: NAVY, borderRadius: 24, marginBottom: 16 },
-  payoutLabel:    { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 },
+  payoutHero:     { alignItems: 'center', paddingVertical: 28, backgroundColor: theme.navy, borderRadius: 24, marginBottom: 16 },
+  payoutLabel:    { fontSize: 12, color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 },
   payoutAmount:   { fontSize: 42, fontWeight: '900', color: '#fff', letterSpacing: -1 },
-  payoutCurrency: { fontSize: 18, fontWeight: '600', color: '#94a3b8' },
+  payoutCurrency: { fontSize: 18, fontWeight: '600', color: theme.textSecondary },
   payoutSettledAt: { fontSize: 12, color: '#64748b', marginTop: 8 },
 
   // Breakdown
   breakdownRow:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 5 },
-  breakdownLabel: { fontSize: 13, color: '#6b7280', flex: 1 },
-  breakdownValue: { fontSize: 13, fontWeight: '600', color: '#374151', textAlign: 'right' },
+  breakdownLabel: { fontSize: 13, color: theme.textSecondary, flex: 1 },
+  breakdownValue: { fontSize: 13, fontWeight: '600', color: theme.text, textAlign: 'right' },
 
   // Proof card
-  proofCard: { backgroundColor: NAVY + '08', borderRadius: 14, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: NAVY + '15' },
+  proofCard: { backgroundColor: theme.navy + '08', borderRadius: 14, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: theme.navy + '15' },
   proofRow:  { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
-  proofLabel: { fontSize: 12, fontWeight: '700', color: NAVY },
-  proofHash:  { fontSize: 13, color: '#374151', fontFamily: 'monospace' },
+  proofLabel: { fontSize: 12, fontWeight: '700', color: theme.navy },
+  proofHash:  { fontSize: 13, color: theme.text, fontFamily: 'monospace' },
 
   // Next steps
-  nextStepsCard: { backgroundColor: GOLD_L, borderRadius: 14, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: GOLD + '30' },
+  nextStepsCard: { backgroundColor: (theme.background === '#121212' ? '#78350f' : '#fdf3e3'), borderRadius: 14, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: theme.gold + '30' },
   nextStepsTitle: { fontSize: 14, fontWeight: '700', color: '#92400e', marginBottom: 4 },
-  nextStepsDesc:  { fontSize: 12, color: '#6b7280', lineHeight: 17 },
+  nextStepsDesc:  { fontSize: 12, color: theme.textSecondary, lineHeight: 17 },
 
   // Network selector
   networkList:       { gap: 8, marginTop: 8 },
-  networkOption:     { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 14, padding: 12 },
-  networkOptionActive: { borderColor: GOLD, backgroundColor: GOLD + '08' },
+  networkOption:     { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1.5, borderColor: theme.border, borderRadius: 14, padding: 12 },
+  networkOptionActive: { borderColor: theme.gold, backgroundColor: theme.gold + '08' },
   networkIcon:       { width: 38, height: 38, borderRadius: 11, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
-  networkIconActive: { backgroundColor: GOLD + '18' },
-  networkLabel:      { fontSize: 14, fontWeight: '700', color: '#374151', marginBottom: 1 },
-  networkNote:       { fontSize: 11, color: '#9ca3af' },
+  networkIconActive: { backgroundColor: theme.gold + '18' },
+  networkLabel:      { fontSize: 14, fontWeight: '700', color: theme.text, marginBottom: 1 },
+  networkNote:       { fontSize: 11, color: theme.textSecondary },
 
   // Amount options
-  amountOption:       { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 14, padding: 13, marginBottom: 8 },
-  amountOptionActive: { borderColor: GOLD, backgroundColor: GOLD + '08' },
-  amountOptionLabel:  { fontSize: 14, fontWeight: '700', color: '#374151' },
-  amountOptionSub:    { fontSize: 12, color: '#9ca3af', marginTop: 1 },
+  amountOption:       { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1.5, borderColor: theme.border, borderRadius: 14, padding: 13, marginBottom: 8 },
+  amountOptionActive: { borderColor: theme.gold, backgroundColor: theme.gold + '08' },
+  amountOptionLabel:  { fontSize: 14, fontWeight: '700', color: theme.text },
+  amountOptionSub:    { fontSize: 12, color: theme.textSecondary, marginTop: 1 },
   radioCircle:        { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: '#d1d5db', alignItems: 'center', justifyContent: 'center' },
-  radioCircleFilled:  { borderColor: GOLD, backgroundColor: GOLD },
+  radioCircleFilled:  { borderColor: theme.gold, backgroundColor: theme.gold },
 
   // Send summary
-  sendSummary: { backgroundColor: '#fff', borderRadius: 14, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: '#e5e7eb', gap: 6 },
+  sendSummary: { backgroundColor: theme.card, borderRadius: 14, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: theme.border, gap: 6 },
   summaryRow:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  summaryLabel: { fontSize: 13, color: '#6b7280' },
-  summaryValue: { fontSize: 13, fontWeight: '600', color: '#374151' },
+  summaryLabel: { fontSize: 13, color: theme.textSecondary },
+  summaryValue: { fontSize: 13, fontWeight: '600', color: theme.text },
 
   // Done screen
   doneWrapper: { alignItems: 'center', paddingTop: 32 },
-  doneCheckRing: { width: 110, height: 110, borderRadius: 55, borderWidth: 3, borderColor: GREEN + '40', alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
-  doneCheckInner: { width: 80, height: 80, borderRadius: 40, backgroundColor: GREEN, alignItems: 'center', justifyContent: 'center' },
-  doneTitle: { fontSize: 30, fontWeight: '900', color: NAVY, marginBottom: 10 },
-  doneSub:   { fontSize: 14, color: '#6b7280', textAlign: 'center', lineHeight: 22, marginBottom: 24, paddingHorizontal: 8 },
+  doneCheckRing: { width: 110, height: 110, borderRadius: 55, borderWidth: 3, borderColor: theme.green + '40', alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
+  doneCheckInner: { width: 80, height: 80, borderRadius: 40, backgroundColor: theme.green, alignItems: 'center', justifyContent: 'center' },
+  doneTitle: { fontSize: 30, fontWeight: '900', color: theme.navy, marginBottom: 10 },
+  doneSub:   { fontSize: 14, color: theme.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: 24, paddingHorizontal: 8 },
 
-  doneTxCard: { width: '100%', backgroundColor: '#fff', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#e5e7eb', marginBottom: 14, gap: 6 },
-  txHashLabel: { fontSize: 11, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 },
-  txHash:      { fontSize: 13, color: '#374151', fontFamily: 'monospace', marginTop: 2 },
+  doneTxCard: { width: '100%', backgroundColor: theme.card, borderRadius: 18, padding: 16, borderWidth: 1, borderColor: theme.border, marginBottom: 14, gap: 6 },
+  txHashLabel: { fontSize: 11, color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 },
+  txHash:      { fontSize: 13, color: theme.text, fontFamily: 'monospace', marginTop: 2 },
 
-  doneInfoCard: { width: '100%', flexDirection: 'row', gap: 10, alignItems: 'flex-start', backgroundColor: '#f9fafb', borderRadius: 14, padding: 14, marginBottom: 14, borderWidth: 1, borderColor: '#e5e7eb' },
-  doneInfoText: { fontSize: 12, color: '#6b7280', flex: 1, lineHeight: 17 },
+  doneInfoCard: { width: '100%', flexDirection: 'row', gap: 10, alignItems: 'flex-start', backgroundColor: theme.background, borderRadius: 14, padding: 14, marginBottom: 14, borderWidth: 1, borderColor: theme.border },
+  doneInfoText: { fontSize: 12, color: theme.textSecondary, flex: 1, lineHeight: 17 },
 
-  doneBanner: { width: '100%', flexDirection: 'row', gap: 12, alignItems: 'flex-start', backgroundColor: NAVY, borderRadius: 16, padding: 16 },
+  doneBanner: { width: '100%', flexDirection: 'row', gap: 12, alignItems: 'flex-start', backgroundColor: theme.navy, borderRadius: 16, padding: 16 },
   doneBannerTitle: { fontSize: 13, fontWeight: '700', color: '#fff', marginBottom: 4 },
-  doneBannerSub:   { fontSize: 12, color: '#94a3b8', lineHeight: 18 },
+  doneBannerSub:   { fontSize: 12, color: theme.textSecondary, lineHeight: 18 },
 });

@@ -6,14 +6,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { api, type Agent } from '../lib/api';
-
-const NAVY = '#0c2340';
-const GOLD = '#c9912a';
+import { useAppTheme, type Theme } from '../lib/theme';
 
 const MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
 export default function LeaderboardScreen() {
   const insets = useSafeAreaInsets();
+  const theme  = useAppTheme();
+  const styles = makeStyles(theme);
 
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +39,7 @@ export default function LeaderboardScreen() {
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle={theme.background === '#121212' ? "light-content" : "dark-content"} backgroundColor={theme.background} />
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Leaderboard</Text>
@@ -48,7 +48,7 @@ export default function LeaderboardScreen() {
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={NAVY} />
+          <ActivityIndicator size="large" color={theme.navy} />
         </View>
       ) : error ? (
         <View style={styles.center}>
@@ -76,14 +76,14 @@ export default function LeaderboardScreen() {
                     <Text style={styles.podiumName} numberOfLines={1}>
                       {agent.full_name.split(' ')[0]}
                     </Text>
-                    <View style={[styles.podiumBar, { height: heights[idx], backgroundColor: isFirst ? NAVY : '#f3f4f6', borderColor: isFirst ? GOLD : '#e5e7eb' }]}>
-                      <Text style={[styles.podiumRank, { color: isFirst ? GOLD : '#9ca3af' }]}>
+                    <View style={[styles.podiumBar, { height: heights[idx], backgroundColor: isFirst ? theme.navy : theme.background === '#121212' ? '#2c2c2c' : '#f3f4f6', borderColor: isFirst ? theme.gold : theme.border }]}>
+                      <Text style={[styles.podiumRank, { color: isFirst ? theme.gold : theme.textSecondary }]}>
                         #{agents.indexOf(agent) + 1}
                       </Text>
-                      <Text style={[styles.podiumDeals, { color: isFirst ? '#fff' : '#374151' }]}>
+                      <Text style={[styles.podiumDeals, { color: isFirst ? '#fff' : theme.text }]}>
                         {agent.sales_count}
                       </Text>
-                      <Text style={[styles.podiumLabel, { color: isFirst ? '#94a3b8' : '#9ca3af' }]}>deals</Text>
+                      <Text style={[styles.podiumLabel, { color: isFirst ? '#94a3b8' : theme.textSecondary }]}>deals</Text>
                     </View>
                   </View>
                 );
@@ -101,11 +101,11 @@ export default function LeaderboardScreen() {
                     ? <Text style={styles.medal}>{MEDAL[i + 1]}</Text>
                     : <Text style={styles.rankNum}>#{i + 1}</Text>}
                 </View>
-                <View style={[styles.avatar, { backgroundColor: i < 3 ? NAVY : '#f3f4f6' }]}>
+                <View style={[styles.avatar, { backgroundColor: i < 3 ? theme.navy : theme.background === '#121212' ? '#2c2c2c' : '#f3f4f6' }]}>
                   {agent.avatar ? (
                     <Image source={{ uri: agent.avatar }} style={styles.avatarImg} resizeMode="cover" />
                   ) : (
-                    <Text style={[styles.avatarText, { color: i < 3 ? '#fff' : '#374151' }]}>
+                    <Text style={[styles.avatarText, { color: i < 3 ? '#fff' : theme.text }]}>
                       {agent.full_name[0]}
                     </Text>
                   )}
@@ -114,7 +114,7 @@ export default function LeaderboardScreen() {
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                     <Text style={styles.agentName}>{agent.full_name}</Text>
                     {agent.kyc_status === 'verified' && (
-                      <Ionicons name="shield-checkmark" size={13} color={GOLD} />
+                      <Ionicons name="shield-checkmark" size={13} color={theme.gold} />
                     )}
                   </View>
                   <Text style={styles.agentMeta}>
@@ -130,7 +130,7 @@ export default function LeaderboardScreen() {
           </View>
 
           <View style={styles.infoCard}>
-            <Ionicons name="information-circle-outline" size={16} color={GOLD} />
+            <Ionicons name="information-circle-outline" size={16} color={theme.gold} />
             <Text style={styles.infoText}>Rankings are based on on-chain settled deals. Updated in real-time from the blockchain.</Text>
           </View>
 
@@ -141,43 +141,43 @@ export default function LeaderboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root:       { flex: 1, backgroundColor: '#f9fafb' },
+const makeStyles = (theme: Theme) => StyleSheet.create({
+  root:       { flex: 1, backgroundColor: theme.background },
   header:     { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
-  headerTitle: { fontSize: 26, fontWeight: '800', color: NAVY },
-  headerSub:  { fontSize: 13, color: '#9ca3af', marginTop: 2 },
+  headerTitle: { fontSize: 26, fontWeight: '800', color: theme.navy },
+  headerSub:  { fontSize: 13, color: theme.textSecondary, marginTop: 2 },
 
   scroll:     { paddingHorizontal: 20, paddingTop: 16 },
 
   center:     { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
-  errorText:  { fontSize: 14, color: '#9ca3af', textAlign: 'center' },
-  retryBtn:   { paddingHorizontal: 20, paddingVertical: 9, backgroundColor: NAVY, borderRadius: 12 },
-  retryText:  { color: '#fff', fontWeight: '700', fontSize: 14 },
+  errorText:  { fontSize: 14, color: theme.textSecondary, textAlign: 'center' },
+  retryBtn:   { paddingHorizontal: 20, paddingVertical: 9, backgroundColor: theme.navy, borderRadius: 12 },
+  retryText:  { color: theme.background === '#121212' ? '#121212' : '#fff', fontWeight: '700', fontSize: 14 },
 
   podium:     { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: 8, marginBottom: 24 },
   podiumItem: { flex: 1, alignItems: 'center', gap: 6 },
-  podiumName: { fontSize: 11, fontWeight: '700', color: '#374151', textAlign: 'center' },
+  podiumName: { fontSize: 11, fontWeight: '700', color: theme.text, textAlign: 'center' },
   podiumBar:  { width: '100%', borderRadius: 12, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center', gap: 2, paddingVertical: 8 },
   podiumRank: { fontSize: 10, fontWeight: '700' },
   podiumDeals: { fontSize: 18, fontWeight: '900' },
   podiumLabel: { fontSize: 10 },
 
-  listCard:   { backgroundColor: '#fff', borderRadius: 20, borderWidth: 1, borderColor: '#e5e7eb', padding: 16, marginBottom: 16 },
-  listTitle:  { fontSize: 15, fontWeight: '700', color: NAVY, marginBottom: 14 },
+  listCard:   { backgroundColor: theme.card, borderRadius: 20, borderWidth: 1, borderColor: theme.border, padding: 16, marginBottom: 16 },
+  listTitle:  { fontSize: 15, fontWeight: '700', color: theme.navy, marginBottom: 14 },
 
   agentRow:    { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12 },
-  agentRowBorder: { borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
+  agentRowBorder: { borderBottomWidth: 1, borderBottomColor: theme.border },
   rankCol:     { width: 28, alignItems: 'center' },
   medal:       { fontSize: 18 },
-  rankNum:     { fontSize: 13, fontWeight: '700', color: '#9ca3af' },
+  rankNum:     { fontSize: 13, fontWeight: '700', color: theme.textSecondary },
   avatar:      { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   avatarImg:   { width: 38, height: 38, borderRadius: 19 },
   avatarText:  { fontSize: 14, fontWeight: '800' },
-  agentName:   { fontSize: 14, fontWeight: '700', color: '#111827' },
-  agentMeta:   { fontSize: 11, color: '#9ca3af', marginTop: 1 },
-  volumeVal:   { fontSize: 13, fontWeight: '800', color: NAVY },
-  volumeLabel: { fontSize: 11, color: '#9ca3af', textAlign: 'right' },
+  agentName:   { fontSize: 14, fontWeight: '700', color: theme.text },
+  agentMeta:   { fontSize: 11, color: theme.textSecondary, marginTop: 1 },
+  volumeVal:   { fontSize: 13, fontWeight: '800', color: theme.navy },
+  volumeLabel: { fontSize: 11, color: theme.textSecondary, textAlign: 'right' },
 
-  infoCard:   { flexDirection: 'row', alignItems: 'flex-start', gap: 10, backgroundColor: GOLD + '10', borderRadius: 14, borderWidth: 1, borderColor: GOLD + '30', padding: 14 },
-  infoText:   { flex: 1, fontSize: 12, color: '#6b7280', lineHeight: 18 },
+  infoCard:   { flexDirection: 'row', alignItems: 'flex-start', gap: 10, backgroundColor: theme.gold + '10', borderRadius: 14, borderWidth: 1, borderColor: theme.gold + '30', padding: 14 },
+  infoText:   { flex: 1, fontSize: 12, color: theme.textSecondary, lineHeight: 18 },
 });

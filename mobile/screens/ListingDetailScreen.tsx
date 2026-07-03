@@ -10,10 +10,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { ListingsStackParamList, RootStackParamList } from '../navigation/types';
 import { api, type Listing } from '../lib/api';
 import { storage } from '../lib/storage';
-
-const NAVY   = '#0c2340';
-const GOLD   = '#c9912a';
-const GOLD_L = '#fdf3e3';
+import { useAppTheme, type Theme } from '../lib/theme';
 
 type PurchaseStatus = null | 'requested' | 'deal_created' | 'funded';
 type DetailRoute    = RouteProp<ListingsStackParamList, 'ListingDetail'>;
@@ -32,6 +29,8 @@ export default function ListingDetailScreen() {
   const insets = useSafeAreaInsets();
   const nav    = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route  = useRoute<DetailRoute>();
+  const theme  = useAppTheme();
+  const styles = makeStyles(theme);
 
   const [listing, setListing] = useState<Listing | null>(null);
   const [myUserId, setMyUserId] = useState<string | null>(null);
@@ -92,7 +91,7 @@ export default function ListingDetailScreen() {
   if (loadingListing) {
     return (
       <View style={[styles.root, { alignItems: 'center', justifyContent: 'center' }]}>
-        <ActivityIndicator size="large" color={NAVY} />
+        <ActivityIndicator size="large" color={theme.navy} />
       </View>
     );
   }
@@ -166,12 +165,12 @@ export default function ListingDetailScreen() {
 
   return (
     <View style={styles.root}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle={theme.background === '#121212' ? "light-content" : "dark-content"} backgroundColor={theme.background} />
 
       {/* Hero */}
       <View style={[styles.hero, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity style={styles.backBtn} onPress={() => nav.goBack()}>
-          <Ionicons name="arrow-back" size={20} color={NAVY} />
+          <Ionicons name="arrow-back" size={20} color={theme.navy} />
         </TouchableOpacity>
         <View style={styles.heroImage}>
           {listing.image ? (
@@ -180,7 +179,7 @@ export default function ListingDetailScreen() {
             <Ionicons
               name={isProperty ? 'business-outline' : 'car-outline'}
               size={56}
-              color={isProperty ? NAVY : GOLD}
+              color={isProperty ? (theme.navy === '#0c2340' ? theme.navy : '#fff') : theme.gold}
             />
           )}
         </View>
@@ -204,7 +203,7 @@ export default function ListingDetailScreen() {
           </View>
           {listing.listing_type === 'agent_brokered' && (
             <View style={styles.brokerTag}>
-              <Ionicons name="briefcase-outline" size={10} color={GOLD} />
+              <Ionicons name="briefcase-outline" size={10} color={theme.gold} />
               <Text style={styles.brokerTagText}>Agent Brokered</Text>
             </View>
           )}
@@ -242,7 +241,7 @@ export default function ListingDetailScreen() {
         {listing.listing_type === 'agent_brokered' && listing.commission_bps != null && (
           <View style={styles.commCard}>
             <View style={styles.commHeader}>
-              <Ionicons name="briefcase-outline" size={15} color={GOLD} />
+              <Ionicons name="briefcase-outline" size={15} color={theme.gold} />
               <Text style={styles.commTitle}>Agent commission: {commPct}%</Text>
             </View>
             <BreakdownRow label="Listing price"                    value={`$${listing.price_usdc}`} />
@@ -263,7 +262,7 @@ export default function ListingDetailScreen() {
             {/* "This is your listing" */}
             <View style={styles.ownerBanner}>
               <View style={styles.ownerBannerIcon}>
-                <Ionicons name="business-outline" size={18} color={NAVY} />
+                <Ionicons name="business-outline" size={18} color={theme.navy} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.ownerBannerTitle}>This is your listing</Text>
@@ -317,8 +316,8 @@ export default function ListingDetailScreen() {
                 {ownerStatus === 'pending_email' && (
                   <>
                     <View style={styles.attachHeader}>
-                      <Ionicons name="mail-outline" size={16} color={GOLD} />
-                      <Text style={[styles.attachTitle, { color: '#92400e' }]}>Awaiting owner confirmation</Text>
+                      <Ionicons name="mail-outline" size={16} color={theme.gold} />
+                      <Text style={[styles.attachTitle, { color: theme.badgePendingText }]}>Awaiting owner confirmation</Text>
                     </View>
                     <View style={styles.pendingEmailBox}>
                       <Text style={styles.pendingEmailName}>{ownerName}</Text>
@@ -351,7 +350,7 @@ export default function ListingDetailScreen() {
                 {ownerStatus === 'none' && (
                   <>
                     <View style={styles.attachHeader}>
-                      <Ionicons name="person-add-outline" size={16} color={GOLD} />
+                      <Ionicons name="person-add-outline" size={16} color={theme.gold} />
                       <Text style={styles.attachTitle}>Invite the property owner</Text>
                     </View>
                     <Text style={styles.attachHint}>
@@ -547,7 +546,7 @@ export default function ListingDetailScreen() {
                 <Text style={styles.agentName}>{listing.agent_name ?? 'Agent'}</Text>
                 {listing.agent_kyc === 'verified' && (
                   <View style={styles.kycBadge}>
-                    <Ionicons name="shield-checkmark" size={11} color={GOLD} />
+                    <Ionicons name="shield-checkmark" size={11} color={theme.gold} />
                     <Text style={styles.kycText}>KYC Verified</Text>
                   </View>
                 )}
@@ -555,7 +554,7 @@ export default function ListingDetailScreen() {
               <Text style={styles.agentSub}>Licensed HybridAgent broker</Text>
             </View>
             <TouchableOpacity style={styles.contactBtn} onPress={handleChat} disabled={openingChat}>
-              {openingChat ? <ActivityIndicator size="small" color={NAVY} /> : <Ionicons name="chatbubble-outline" size={16} color={NAVY} />}
+              {openingChat ? <ActivityIndicator size="small" color={theme.navy} /> : <Ionicons name="chatbubble-outline" size={16} color={theme.navy} />}
             </TouchableOpacity>
           </View>
         </View>
@@ -563,7 +562,7 @@ export default function ListingDetailScreen() {
         {/* Escrow explanation */}
         <View style={styles.escrowCard}>
           <View style={styles.escrowRow}>
-            <Ionicons name="lock-closed-outline" size={16} color={GOLD} />
+            <Ionicons name="lock-closed-outline" size={16} color={theme.gold} />
             <Text style={styles.escrowTitle}>On-chain Escrow</Text>
           </View>
           <Text style={styles.escrowDesc}>
@@ -621,7 +620,7 @@ export default function ListingDetailScreen() {
               <Text style={styles.fundBtnText}>Fund Escrow · ${listing.price_usdc} USDC</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.chatBtnRow} onPress={handleChat} disabled={openingChat}>
-              {openingChat ? <ActivityIndicator size="small" color={NAVY} style={{ marginRight: 6 }} /> : <Ionicons name="chatbubble-outline" size={15} color={NAVY} style={{ marginRight: 6 }} />}
+              {openingChat ? <ActivityIndicator size="small" color={theme.navy} style={{ marginRight: 6 }} /> : <Ionicons name="chatbubble-outline" size={15} color={theme.navy} style={{ marginRight: 6 }} />}
               <Text style={styles.chatBtnRowText}>Chat with agent</Text>
             </TouchableOpacity>
           </View>
@@ -635,7 +634,7 @@ export default function ListingDetailScreen() {
               <Text style={styles.waitCtaText}>Waiting for the agent to set up your escrow deal</Text>
             </View>
             <TouchableOpacity style={styles.chatBtnRow} onPress={handleChat} disabled={openingChat}>
-              {openingChat ? <ActivityIndicator size="small" color={NAVY} style={{ marginRight: 6 }} /> : <Ionicons name="chatbubble-outline" size={15} color={NAVY} style={{ marginRight: 6 }} />}
+              {openingChat ? <ActivityIndicator size="small" color={theme.navy} style={{ marginRight: 6 }} /> : <Ionicons name="chatbubble-outline" size={15} color={theme.navy} style={{ marginRight: 6 }} />}
               <Text style={styles.chatBtnRowText}>Chat with agent</Text>
             </TouchableOpacity>
           </View>
@@ -650,7 +649,7 @@ export default function ListingDetailScreen() {
                 <Text style={styles.ctaTotalValue}>${listing.price_usdc} USDC</Text>
               </View>
               <TouchableOpacity style={styles.chatIconBtn} onPress={handleChat} disabled={openingChat}>
-                {openingChat ? <ActivityIndicator size="small" color={NAVY} /> : <Ionicons name="chatbubble-outline" size={18} color={NAVY} />}
+                {openingChat ? <ActivityIndicator size="small" color={theme.navy} /> : <Ionicons name="chatbubble-outline" size={18} color={theme.navy} />}
               </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.buyBtn} activeOpacity={0.85} onPress={() => setShowBuyModal(true)}>
@@ -677,11 +676,11 @@ export default function ListingDetailScreen() {
 
             {/* Listing summary */}
             <View style={styles.sheetSummary}>
-              <View style={[styles.sheetThumb, { backgroundColor: isProperty ? '#e8f0fe' : GOLD_L }]}>
+              <View style={[styles.sheetThumb, { backgroundColor: isProperty ? (theme.navy === '#0c2340' ? '#e8f0fe' : theme.navyCard) : (theme.gold + '22') }]}>
                 <Ionicons
                   name={isProperty ? 'business-outline' : 'car-outline'}
                   size={22}
-                  color={isProperty ? NAVY : GOLD}
+                  color={isProperty ? (theme.navy === '#0c2340' ? theme.navy : '#fff') : theme.gold}
                 />
               </View>
               <View style={{ flex: 1 }}>
@@ -729,24 +728,30 @@ export default function ListingDetailScreen() {
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function SpecChip({ icon, value }: { icon: string; value: string }) {
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
   return (
     <View style={styles.specChip}>
-      <Ionicons name={icon as any} size={14} color={GOLD} />
+      <Ionicons name={icon as any} size={14} color={theme.gold} />
       <Text style={styles.specChipText}>{value}</Text>
     </View>
   );
 }
 
 function BreakdownRow({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
   return (
     <View style={styles.breakdownRow}>
-      <Text style={[styles.breakdownLabel, bold && { fontWeight: '700', color: '#111827' }]}>{label}</Text>
-      <Text style={[styles.breakdownValue, bold && { fontWeight: '800', color: NAVY }]}>{value}</Text>
+      <Text style={[styles.breakdownLabel, bold && { fontWeight: '700', color: theme.text }]}>{label}</Text>
+      <Text style={[styles.breakdownValue, bold && { fontWeight: '800', color: theme.navy }]}>{value}</Text>
     </View>
   );
 }
 
 function DealMetaRow({ label, value }: { label: string; value: string }) {
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
   return (
     <View style={styles.dealMetaRow}>
       <Text style={styles.dealMetaLabel}>{label}</Text>
@@ -756,20 +761,22 @@ function DealMetaRow({ label, value }: { label: string; value: string }) {
 }
 
 function SheetRow({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
   return (
     <View style={styles.sheetRow}>
-      <Text style={[styles.sheetRowLabel, bold && { fontWeight: '700', color: '#111827' }]}>{label}</Text>
-      <Text style={[styles.sheetRowValue, bold && { fontWeight: '800', color: NAVY }]}>{value}</Text>
+      <Text style={[styles.sheetRowLabel, bold && { fontWeight: '700', color: theme.text }]}>{label}</Text>
+      <Text style={[styles.sheetRowValue, bold && { fontWeight: '800', color: theme.navy }]}>{value}</Text>
     </View>
   );
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
-  root:  { flex: 1, backgroundColor: '#fff' },
-  hero:  { backgroundColor: '#f3f4f6', paddingHorizontal: 16, paddingBottom: 0 },
-  backBtn: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+const makeStyles = (theme: Theme) => StyleSheet.create({
+  root:  { flex: 1, backgroundColor: theme.background },
+  hero:  { backgroundColor: theme.background === '#121212' ? '#1e1e1e' : '#f3f4f6', paddingHorizontal: 16, paddingBottom: 0 },
+  backBtn: { width: 38, height: 38, borderRadius: 12, backgroundColor: theme.card, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
   heroImage: { height: 180, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   heroImg:   { width: '100%', height: '100%' },
 
@@ -778,148 +785,148 @@ const styles = StyleSheet.create({
 
   // Tags row
   topRow:       { flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginBottom: 12 },
-  typeTag:      { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: NAVY + '12', borderWidth: 1, borderColor: NAVY + '25' },
-  typeTagText:  { fontSize: 10, fontWeight: '700', color: NAVY, letterSpacing: 0.8 },
-  statusTag:    { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: '#d1fae5' },
-  statusPending: { backgroundColor: '#fef3c7' },
+  typeTag:      { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: theme.navy + '12', borderWidth: 1, borderColor: theme.navy + '25' },
+  typeTagText:  { fontSize: 10, fontWeight: '700', color: theme.navy, letterSpacing: 0.8 },
+  statusTag:    { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: theme.badgeSuccessBg },
+  statusPending: { backgroundColor: theme.badgePendingBg },
   statusSold:    { backgroundColor: '#fee2e2' },
-  statusText:   { fontSize: 10, fontWeight: '700', color: '#065f46' },
-  brokerTag:    { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 9, paddingVertical: 4, borderRadius: 20, backgroundColor: GOLD + '15', borderWidth: 1, borderColor: GOLD + '30' },
-  brokerTagText: { fontSize: 10, fontWeight: '700', color: GOLD },
+  statusText:   { fontSize: 10, fontWeight: '700', color: theme.successText },
+  brokerTag:    { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 9, paddingVertical: 4, borderRadius: 20, backgroundColor: theme.gold + '15', borderWidth: 1, borderColor: theme.gold + '30' },
+  brokerTagText: { fontSize: 10, fontWeight: '700', color: theme.gold },
 
   // Title / price / location
-  title:     { fontSize: 22, fontWeight: '800', color: '#111827', lineHeight: 30, marginBottom: 8 },
+  title:     { fontSize: 22, fontWeight: '800', color: theme.text, lineHeight: 30, marginBottom: 8 },
   priceRow:  { flexDirection: 'row', alignItems: 'baseline', marginBottom: 8 },
-  price:     { fontSize: 28, fontWeight: '900', color: NAVY },
-  priceUnit: { fontSize: 14, fontWeight: '600', color: '#9ca3af' },
+  price:     { fontSize: 28, fontWeight: '900', color: theme.navy },
+  priceUnit: { fontSize: 14, fontWeight: '600', color: theme.textSecondary },
   locRow:    { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 16 },
-  locText:   { fontSize: 13, color: '#9ca3af' },
+  locText:   { fontSize: 13, color: theme.textSecondary },
 
   // Spec chips
   specs:        { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
-  specChip:     { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#e5e7eb' },
-  specChipText: { fontSize: 13, fontWeight: '600', color: '#374151' },
+  specChip:     { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border },
+  specChipText: { fontSize: 13, fontWeight: '600', color: theme.text },
 
   // Sections
   section:      { marginBottom: 20 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: NAVY, marginBottom: 10 },
-  desc:         { fontSize: 14, color: '#6b7280', lineHeight: 22 },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: theme.navy, marginBottom: 10 },
+  desc:         { fontSize: 14, color: theme.textSecondary, lineHeight: 22 },
 
   // Commission card
-  commCard:    { backgroundColor: GOLD_L, borderRadius: 14, padding: 14, marginBottom: 20, borderWidth: 1, borderColor: GOLD + '30' },
+  commCard:    { backgroundColor: theme.background === '#121212' ? '#1e1e1e' : '#fdf3e3', borderRadius: 14, padding: 14, marginBottom: 20, borderWidth: 1, borderColor: theme.gold + '30' },
   commHeader:  { flexDirection: 'row', alignItems: 'center', gap: 7, marginBottom: 10 },
-  commTitle:   { fontSize: 13, fontWeight: '700', color: '#92400e' },
-  commDivider: { height: 1, backgroundColor: GOLD + '35', marginVertical: 8 },
+  commTitle:   { fontSize: 13, fontWeight: '700', color: theme.badgePendingText },
+  commDivider: { height: 1, backgroundColor: theme.gold + '35', marginVertical: 8 },
   breakdownRow:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 3 },
-  breakdownLabel: { fontSize: 12, color: '#6b7280' },
-  breakdownValue: { fontSize: 12, color: '#374151', fontWeight: '600' },
+  breakdownLabel: { fontSize: 12, color: theme.textSecondary },
+  breakdownValue: { fontSize: 12, color: theme.text, fontWeight: '600' },
 
   // ── OWNER PANEL ──
-  ownerPanel:      { backgroundColor: '#f8faff', borderRadius: 18, padding: 16, marginBottom: 8, borderWidth: 1, borderColor: NAVY + '18', gap: 14 },
+  ownerPanel:      { backgroundColor: theme.background === '#121212' ? '#1e1e1e' : '#f8faff', borderRadius: 18, padding: 16, marginBottom: 8, borderWidth: 1, borderColor: theme.navy + '18', gap: 14 },
   ownerBanner:     { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  ownerBannerIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: NAVY + '10', alignItems: 'center', justifyContent: 'center', marginTop: 1 },
-  ownerBannerTitle: { fontSize: 15, fontWeight: '800', color: NAVY, marginBottom: 2 },
-  ownerBannerSub:   { fontSize: 12, color: '#6b7280', lineHeight: 17 },
+  ownerBannerIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: theme.navy + '10', alignItems: 'center', justifyContent: 'center', marginTop: 1 },
+  ownerBannerTitle: { fontSize: 15, fontWeight: '800', color: theme.navy, marginBottom: 2 },
+  ownerBannerSub:   { fontSize: 12, color: theme.textSecondary, lineHeight: 17 },
 
   // Attach owner wallet
-  attachCard:   { backgroundColor: '#fff', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#e5e7eb', gap: 10 },
+  attachCard:   { backgroundColor: theme.card, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: theme.border, gap: 10 },
   attachHeader: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  attachTitle:  { fontSize: 13, fontWeight: '700', color: '#92400e' },
-  attachHint:   { fontSize: 12, color: '#6b7280', lineHeight: 17 },
+  attachTitle:  { fontSize: 13, fontWeight: '700', color: theme.badgePendingText },
+  attachHint:   { fontSize: 12, color: theme.textSecondary, lineHeight: 17 },
   attachFieldGroup: { gap: 8 },
-  attachInput:  { borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 11, fontSize: 13, color: '#111827', backgroundColor: '#f9fafb' },
-  attachBtn:    { backgroundColor: NAVY, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 11, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  attachBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
-  attachConfirmedNote: { fontSize: 11, color: '#6b7280', lineHeight: 16 },
+  attachInput:  { borderWidth: 1.5, borderColor: theme.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 11, fontSize: 13, color: theme.text, backgroundColor: theme.inputBg },
+  attachBtn:    { backgroundColor: theme.navy, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 11, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  attachBtnText: { color: theme.background === '#121212' ? '#121212' : '#fff', fontWeight: '700', fontSize: 13 },
+  attachConfirmedNote: { fontSize: 11, color: theme.textSecondary, lineHeight: 16 },
 
   // Owner confirmed state
-  ownerConfirmedRow:     { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#f0fdf4', borderRadius: 10, padding: 10 },
+  ownerConfirmedRow:     { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: theme.badgeSuccessBg, borderRadius: 10, padding: 10 },
   ownerConfirmedAvatar:  { width: 34, height: 34, borderRadius: 17, backgroundColor: '#059669', alignItems: 'center', justifyContent: 'center' },
   ownerConfirmedInitial: { fontSize: 14, fontWeight: '800', color: '#fff' },
-  ownerConfirmedName:    { fontSize: 13, fontWeight: '700', color: '#065f46' },
-  ownerConfirmedEmail:   { fontSize: 11, color: '#6b7280', marginTop: 1 },
+  ownerConfirmedName:    { fontSize: 13, fontWeight: '700', color: theme.successText },
+  ownerConfirmedEmail:   { fontSize: 11, color: theme.textSecondary, marginTop: 1 },
 
   // Pending email state
-  pendingEmailBox:  { backgroundColor: '#fffbeb', borderRadius: 10, padding: 10, borderWidth: 1, borderColor: '#fde68a' },
-  pendingEmailName: { fontSize: 13, fontWeight: '700', color: '#92400e' },
-  pendingEmailAddr: { fontSize: 12, color: '#6b7280', marginTop: 2 },
+  pendingEmailBox:  { backgroundColor: theme.badgePendingBg, borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.gold },
+  pendingEmailName: { fontSize: 13, fontWeight: '700', color: theme.badgePendingText },
+  pendingEmailAddr: { fontSize: 12, color: theme.textSecondary, marginTop: 2 },
 
   // Requests
   requestsSection: { gap: 10 },
-  requestsTitle:   { fontSize: 13, fontWeight: '700', color: NAVY },
-  reqCard:    { backgroundColor: '#fff', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#e5e7eb', gap: 10 },
+  requestsTitle:   { fontSize: 13, fontWeight: '700', color: theme.navy },
+  reqCard:    { backgroundColor: theme.card, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: theme.border, gap: 10 },
   reqCardTop: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  reqAvatar:  { width: 36, height: 36, borderRadius: 18, backgroundColor: NAVY, alignItems: 'center', justifyContent: 'center' },
-  reqAvatarText: { fontSize: 14, fontWeight: '800', color: '#fff' },
-  reqBuyer:   { fontSize: 14, fontWeight: '700', color: '#111827' },
-  reqAddr:    { fontSize: 11, color: '#9ca3af', fontFamily: 'monospace' },
-  reqTime:    { fontSize: 11, color: '#9ca3af' },
-  reqBlockedNote: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#fef3c7', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 },
-  reqBlockedText: { fontSize: 12, color: '#92400e', flex: 1, lineHeight: 16 },
-  createDealBtn: { backgroundColor: NAVY, borderRadius: 12, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  createDealBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  reqAvatar:  { width: 36, height: 36, borderRadius: 18, backgroundColor: theme.navy, alignItems: 'center', justifyContent: 'center' },
+  reqAvatarText: { fontSize: 14, fontWeight: '800', color: theme.background === '#121212' ? '#121212' : '#fff' },
+  reqBuyer:   { fontSize: 14, fontWeight: '700', color: theme.text },
+  reqAddr:    { fontSize: 11, color: theme.textSecondary, fontFamily: 'monospace' },
+  reqTime:    { fontSize: 11, color: theme.textSecondary },
+  reqBlockedNote: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: theme.badgePendingBg, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 },
+  reqBlockedText: { fontSize: 12, color: theme.badgePendingText, flex: 1, lineHeight: 16 },
+  createDealBtn: { backgroundColor: theme.navy, borderRadius: 12, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  createDealBtnText: { color: theme.background === '#121212' ? '#121212' : '#fff', fontWeight: '700', fontSize: 14 },
 
   // Active deals
-  activeDealCard: { backgroundColor: '#f0fdf4', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#bbf7d0', gap: 4 },
+  activeDealCard: { backgroundColor: theme.badgeSuccessBg, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: theme.border, gap: 4 },
   activeDealTop:  { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  activeDot:      { width: 8, height: 8, borderRadius: 4, backgroundColor: '#4ade80' },
-  activeDealLabel: { fontSize: 13, fontWeight: '700', color: '#065f46' },
-  activeDealMeta:  { fontSize: 12, color: '#374151' },
-  activeDealAddr:  { fontSize: 11, color: '#9ca3af', fontFamily: 'monospace' },
+  activeDot:      { width: 8, height: 8, borderRadius: 4, backgroundColor: theme.green },
+  activeDealLabel: { fontSize: 13, fontWeight: '700', color: theme.successText },
+  activeDealMeta:  { fontSize: 12, color: theme.text },
+  activeDealAddr:  { fontSize: 11, color: theme.textSecondary, fontFamily: 'monospace' },
 
   // Empty requests state
   emptyReqs:     { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, justifyContent: 'center' },
-  emptyReqsText: { fontSize: 13, color: '#9ca3af' },
+  emptyReqsText: { fontSize: 13, color: theme.textSecondary },
 
   // ── BUYER CARDS ──
   soldCard:  { flexDirection: 'row', alignItems: 'flex-start', gap: 12, backgroundColor: '#fef2f2', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#fecaca' },
   soldTitle: { fontSize: 14, fontWeight: '700', color: '#dc2626', marginBottom: 2 },
-  soldSub:   { fontSize: 12, color: '#6b7280', lineHeight: 17 },
+  soldSub:   { fontSize: 12, color: theme.textSecondary, lineHeight: 17 },
 
-  fundedCard:  { flexDirection: 'row', alignItems: 'flex-start', gap: 12, backgroundColor: '#f0fdf4', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#bbf7d0' },
-  fundedTitle: { fontSize: 14, fontWeight: '700', color: '#059669', marginBottom: 2 },
-  fundedSub:   { fontSize: 12, color: '#6b7280', lineHeight: 17 },
+  fundedCard:  { flexDirection: 'row', alignItems: 'flex-start', gap: 12, backgroundColor: theme.badgeSuccessBg, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: theme.border },
+  fundedTitle: { fontSize: 14, fontWeight: '700', color: theme.successText, marginBottom: 2 },
+  fundedSub:   { fontSize: 12, color: theme.textSecondary, lineHeight: 17 },
 
-  dealReadyCard: { backgroundColor: '#fffbeb', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#fde68a', gap: 8 },
+  dealReadyCard: { backgroundColor: theme.badgePendingBg, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: theme.gold, gap: 8 },
   dealReadyTop:  { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  dealReadyTitle: { fontSize: 14, fontWeight: '700', color: '#92400e', flex: 1 },
-  dealReadySub:   { fontSize: 12, color: '#6b7280', lineHeight: 17 },
-  dealMeta:       { backgroundColor: '#fff8e1', borderRadius: 10, padding: 10, gap: 4 },
+  dealReadyTitle: { fontSize: 14, fontWeight: '700', color: theme.badgePendingText, flex: 1 },
+  dealReadySub:   { fontSize: 12, color: theme.textSecondary, lineHeight: 17 },
+  dealMeta:       { backgroundColor: theme.card, borderRadius: 10, padding: 10, gap: 4 },
   dealMetaRow:    { flexDirection: 'row', justifyContent: 'space-between' },
-  dealMetaLabel:  { fontSize: 12, color: '#92400e' },
-  dealMetaValue:  { fontSize: 12, fontWeight: '700', color: '#92400e' },
+  dealMetaLabel:  { fontSize: 12, color: theme.badgePendingText },
+  dealMetaValue:  { fontSize: 12, fontWeight: '700', color: theme.badgePendingText },
 
-  waitingCard: { backgroundColor: '#f9fafb', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#e5e7eb', gap: 8 },
+  waitingCard: { backgroundColor: theme.card, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: theme.border, gap: 8 },
   waitingTop:  { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  waitingTitle: { fontSize: 14, fontWeight: '700', color: '#374151' },
-  waitingSub:   { fontSize: 12, color: '#6b7280', lineHeight: 17 },
+  waitingTitle: { fontSize: 14, fontWeight: '700', color: theme.text },
+  waitingSub:   { fontSize: 12, color: theme.textSecondary, lineHeight: 17 },
 
   // Demo state-advance button (dev only)
-  demoBtn:     { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, backgroundColor: '#e5e7eb', marginTop: 4 },
-  demoBtnText: { fontSize: 11, color: '#374151', fontWeight: '600' },
+  demoBtn:     { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, backgroundColor: theme.border, marginTop: 4 },
+  demoBtnText: { fontSize: 11, color: theme.text, fontWeight: '600' },
 
   // Agent card
-  agentCard:    { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#f9fafb', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#e5e7eb' },
-  agentAvatar:  { width: 44, height: 44, borderRadius: 22, backgroundColor: NAVY, alignItems: 'center', justifyContent: 'center' },
-  agentInitial: { fontSize: 17, fontWeight: '800', color: '#fff' },
-  agentName:    { fontSize: 15, fontWeight: '700', color: '#111827' },
-  agentSub:     { fontSize: 12, color: '#9ca3af', marginTop: 2 },
-  kycBadge:     { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: GOLD + '18', borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2 },
-  kycText:      { fontSize: 10, fontWeight: '700', color: GOLD },
-  contactBtn:   { width: 38, height: 38, borderRadius: 12, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb', alignItems: 'center', justifyContent: 'center' },
+  agentCard:    { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: theme.card, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: theme.border },
+  agentAvatar:  { width: 44, height: 44, borderRadius: 22, backgroundColor: theme.navy, alignItems: 'center', justifyContent: 'center' },
+  agentInitial: { fontSize: 17, fontWeight: '800', color: theme.background === '#121212' ? '#121212' : '#fff' },
+  agentName:    { fontSize: 15, fontWeight: '700', color: theme.text },
+  agentSub:     { fontSize: 12, color: theme.textSecondary, marginTop: 2 },
+  kycBadge:     { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: theme.gold + '18', borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2 },
+  kycText:      { fontSize: 10, fontWeight: '700', color: theme.gold },
+  contactBtn:   { width: 38, height: 38, borderRadius: 12, backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border, alignItems: 'center', justifyContent: 'center' },
 
   // Escrow card
-  escrowCard: { backgroundColor: NAVY, borderRadius: 16, padding: 16, marginBottom: 8 },
+  escrowCard: { backgroundColor: theme.navyCard, borderRadius: 16, padding: 16, marginBottom: 8 },
   escrowRow:  { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
   escrowTitle: { fontSize: 14, fontWeight: '700', color: '#fff' },
   escrowDesc:  { fontSize: 13, color: '#94a3b8', lineHeight: 20 },
 
   // ── STICKY CTA BAR ──
-  ctaBar: { backgroundColor: '#fff', paddingHorizontal: 20, paddingTop: 14, borderTopWidth: 1, borderTopColor: '#f3f4f6' },
+  ctaBar: { backgroundColor: theme.card, paddingHorizontal: 20, paddingTop: 14, borderTopWidth: 1, borderTopColor: theme.border },
 
   // Owner CTA
   ownerCtaRow:  { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
-  ownerCtaText: { fontSize: 13, color: '#6b7280', flex: 1, lineHeight: 18 },
+  ownerCtaText: { fontSize: 13, color: theme.textSecondary, flex: 1, lineHeight: 18 },
 
   // Sold CTA
   soldCtaRow:  { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 10 },
@@ -927,50 +934,50 @@ const styles = StyleSheet.create({
 
   // Funded CTA
   fundedCtaRow:  { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 10 },
-  fundedCtaText: { fontSize: 13, fontWeight: '600', color: '#059669', flex: 1 },
+  fundedCtaText: { fontSize: 13, fontWeight: '600', color: theme.successText, flex: 1 },
 
   // Fund escrow button
   fundBtn:     { backgroundColor: '#d97706', borderRadius: 14, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   fundBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
 
   // Chat row (secondary)
-  chatBtnRow:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 14, borderWidth: 1.5, borderColor: '#e5e7eb' },
-  chatBtnRowText: { fontSize: 14, fontWeight: '600', color: NAVY },
+  chatBtnRow:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 14, borderWidth: 1.5, borderColor: theme.border },
+  chatBtnRowText: { fontSize: 14, fontWeight: '600', color: theme.navy },
 
   // Waiting CTA
   waitCtaRow:  { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
-  waitCtaText: { fontSize: 13, color: '#6b7280', flex: 1, lineHeight: 18 },
+  waitCtaText: { fontSize: 13, color: theme.textSecondary, flex: 1, lineHeight: 18 },
 
   // Default buy CTA
   ctaTopRow:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  ctaTotalLabel: { fontSize: 11, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 1 },
-  ctaTotalValue: { fontSize: 20, fontWeight: '900', color: NAVY },
-  chatIconBtn:   { width: 44, height: 44, borderRadius: 14, borderWidth: 1.5, borderColor: '#e5e7eb', alignItems: 'center', justifyContent: 'center' },
-  buyBtn:        { backgroundColor: NAVY, borderRadius: 14, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  buyBtnText:    { color: '#fff', fontWeight: '700', fontSize: 16 },
+  ctaTotalLabel: { fontSize: 11, color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: 1 },
+  ctaTotalValue: { fontSize: 20, fontWeight: '900', color: theme.navy },
+  chatIconBtn:   { width: 44, height: 44, borderRadius: 14, borderWidth: 1.5, borderColor: theme.border, alignItems: 'center', justifyContent: 'center' },
+  buyBtn:        { backgroundColor: theme.navy, borderRadius: 14, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  buyBtnText:    { color: theme.background === '#121212' ? '#121212' : '#fff', fontWeight: '700', fontSize: 16 },
 
   // ── BUY SHEET (modal) ──
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
-  buySheet:     { backgroundColor: '#fff', borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 24, paddingTop: 16 },
-  sheetHandle:  { width: 40, height: 4, borderRadius: 2, backgroundColor: '#e5e7eb', alignSelf: 'center', marginBottom: 20 },
-  sheetTitle:   { fontSize: 20, fontWeight: '800', color: NAVY, marginBottom: 16 },
+  buySheet:     { backgroundColor: theme.card, borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 24, paddingTop: 16 },
+  sheetHandle:  { width: 40, height: 4, borderRadius: 2, backgroundColor: theme.border, alignSelf: 'center', marginBottom: 20 },
+  sheetTitle:   { fontSize: 20, fontWeight: '800', color: theme.navy, marginBottom: 16 },
 
   sheetSummary:      { flexDirection: 'row', gap: 12, alignItems: 'center', marginBottom: 16 },
   sheetThumb:        { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  sheetListingTitle: { fontSize: 14, fontWeight: '700', color: '#111827', lineHeight: 19 },
-  sheetListingLoc:   { fontSize: 12, color: '#9ca3af', marginTop: 2 },
+  sheetListingTitle: { fontSize: 14, fontWeight: '700', color: theme.text, lineHeight: 19 },
+  sheetListingLoc:   { fontSize: 12, color: theme.textSecondary, marginTop: 2 },
 
-  sheetBreakdown: { backgroundColor: '#f9fafb', borderRadius: 14, padding: 14, gap: 4, marginBottom: 14, borderWidth: 1, borderColor: '#e5e7eb' },
+  sheetBreakdown: { backgroundColor: theme.background, borderRadius: 14, padding: 14, gap: 4, marginBottom: 14, borderWidth: 1, borderColor: theme.border },
   sheetRow:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 2 },
-  sheetRowLabel:  { fontSize: 13, color: '#6b7280' },
-  sheetRowValue:  { fontSize: 13, fontWeight: '600', color: '#374151' },
-  sheetDivider:   { height: 1, backgroundColor: '#e5e7eb', marginVertical: 4 },
+  sheetRowLabel:  { fontSize: 13, color: theme.textSecondary },
+  sheetRowValue:  { fontSize: 13, fontWeight: '600', color: theme.text },
+  sheetDivider:   { height: 1, backgroundColor: theme.border, marginVertical: 4 },
 
-  sheetNote:     { flexDirection: 'row', gap: 8, alignItems: 'flex-start', backgroundColor: '#f9fafb', borderRadius: 12, padding: 12, marginBottom: 16, borderWidth: 1, borderColor: '#e5e7eb' },
-  sheetNoteText: { fontSize: 12, color: '#6b7280', flex: 1, lineHeight: 17 },
+  sheetNote:     { flexDirection: 'row', gap: 8, alignItems: 'flex-start', backgroundColor: theme.background, borderRadius: 12, padding: 12, marginBottom: 16, borderWidth: 1, borderColor: theme.border },
+  sheetNoteText: { fontSize: 12, color: theme.textSecondary, flex: 1, lineHeight: 17 },
 
-  sheetConfirmBtn:  { backgroundColor: NAVY, borderRadius: 14, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
-  sheetConfirmText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  sheetConfirmBtn:  { backgroundColor: theme.navy, borderRadius: 14, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  sheetConfirmText: { color: theme.background === '#121212' ? '#121212' : '#fff', fontWeight: '700', fontSize: 16 },
   sheetCancelBtn:   { borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
-  sheetCancelText:  { fontSize: 15, color: '#9ca3af', fontWeight: '600' },
+  sheetCancelText:  { fontSize: 15, color: theme.textSecondary, fontWeight: '600' },
 });

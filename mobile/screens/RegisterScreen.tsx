@@ -11,9 +11,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { api, type UserType } from '../lib/api';
 import { storage } from '../lib/storage';
-
-const NAVY = '#0c2340';
-const GOLD = '#c9912a';
+import { useAppTheme, type Theme } from '../lib/theme';
 
 const STEPS = ['Account', 'Contact', 'Role', 'Security'];
 
@@ -22,6 +20,8 @@ const USERNAME_RX = /^[a-zA-Z0-9]{3,40}$/;
 export default function RegisterScreen() {
   const insets = useSafeAreaInsets();
   const nav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
 
   const [step, setStep]   = useState(0);
   const [loading, setLoading] = useState(false);
@@ -87,10 +87,10 @@ export default function RegisterScreen() {
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle={theme.background === '#121212' ? "light-content" : "dark-content"} backgroundColor={theme.background} />
 
       <TouchableOpacity style={styles.back} onPress={() => step > 0 ? setStep(s => s - 1) : nav.goBack()}>
-        <Ionicons name="arrow-back" size={22} color={NAVY} />
+        <Ionicons name="arrow-back" size={22} color={theme.navy} />
       </TouchableOpacity>
 
       <View style={styles.stepper}>
@@ -123,16 +123,16 @@ export default function RegisterScreen() {
         {/* Step 0 — Account */}
         {step === 0 && (
           <View style={styles.card}>
-            <Field label="Full Name" icon="person-outline" value={fullName} onChangeText={setFullName} placeholder="Jane Doe" />
-            <Field label="Username" icon="at-outline" value={userName} onChangeText={setUserName} placeholder="janeadeyemi" />
-            <Field label="Email" icon="mail-outline" value={email} onChangeText={setEmail} placeholder="you@example.com" keyboard="email-address" />
+            <Field label="Full Name" icon="person-outline" value={fullName} onChangeText={setFullName} placeholder="Jane Doe" theme={theme} />
+            <Field label="Username" icon="at-outline" value={userName} onChangeText={setUserName} placeholder="janeadeyemi" theme={theme} />
+            <Field label="Email" icon="mail-outline" value={email} onChangeText={setEmail} placeholder="you@example.com" keyboard="email-address" theme={theme} />
           </View>
         )}
 
         {/* Step 1 — Contact */}
         {step === 1 && (
           <View style={styles.card}>
-            <Field label="Phone Number" icon="call-outline" value={phone} onChangeText={setPhone} placeholder="+234 800 000 0000" keyboard="phone-pad" />
+            <Field label="Phone Number" icon="call-outline" value={phone} onChangeText={setPhone} placeholder="+234 800 000 0000" keyboard="phone-pad" theme={theme} />
           </View>
         )}
 
@@ -148,13 +148,13 @@ export default function RegisterScreen() {
                 activeOpacity={0.8}
               >
                 <View style={[styles.roleIcon, role === opt.key && styles.roleIconActive]}>
-                  <Ionicons name={opt.icon as any} size={20} color={role === opt.key ? GOLD : '#9ca3af'} />
+                  <Ionicons name={opt.icon as any} size={20} color={role === opt.key ? theme.gold : theme.emptyIcon} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.roleLabel, role === opt.key && styles.roleLabelActive]}>{opt.label}</Text>
                   <Text style={styles.roleDesc}>{opt.desc}</Text>
                 </View>
-                {role === opt.key && <Ionicons name="checkmark-circle" size={20} color={GOLD} />}
+                {role === opt.key && <Ionicons name="checkmark-circle" size={20} color={theme.gold} />}
               </TouchableOpacity>
             ))}
           </View>
@@ -163,16 +163,16 @@ export default function RegisterScreen() {
         {/* Step 3 — Security */}
         {step === 3 && (
           <View style={styles.card}>
-            <Field label="Password" icon="lock-closed-outline" value={password} onChangeText={setPassword} placeholder="••••••••" secure={!showPw} toggleSecure={() => setShowPw(v => !v)} showSecure={showPw} />
-            <Field label="Confirm Password" icon="lock-closed-outline" value={confirm} onChangeText={setConfirm} placeholder="••••••••" secure={!showCf} toggleSecure={() => setShowCf(v => !v)} showSecure={showCf} />
+            <Field label="Password" icon="lock-closed-outline" value={password} onChangeText={setPassword} placeholder="••••••••" secure={!showPw} toggleSecure={() => setShowPw(v => !v)} showSecure={showPw} theme={theme} />
+            <Field label="Confirm Password" icon="lock-closed-outline" value={confirm} onChangeText={setConfirm} placeholder="••••••••" secure={!showCf} toggleSecure={() => setShowCf(v => !v)} showSecure={showCf} theme={theme} />
           </View>
         )}
 
         <TouchableOpacity style={styles.btnPrimary} onPress={next} activeOpacity={0.85} disabled={loading}>
           {loading
-            ? <ActivityIndicator color="#fff" />
+            ? <ActivityIndicator color={theme.background === '#121212' ? '#121212' : '#fff'} />
             : <Text style={styles.btnText}>{step < 3 ? 'Continue' : 'Create Account'}</Text>}
-          {!loading && step < 3 && <Ionicons name="arrow-forward" size={16} color="#fff" style={{ marginLeft: 6 }} />}
+          {!loading && step < 3 && <Ionicons name="arrow-forward" size={16} color={theme.background === '#121212' ? '#121212' : '#fff'} style={{ marginLeft: 6 }} />}
         </TouchableOpacity>
 
         {step === 0 && (
@@ -190,22 +190,23 @@ export default function RegisterScreen() {
 }
 
 function Field({
-  label, icon, value, onChangeText, placeholder, keyboard, secure, toggleSecure, showSecure,
+  label, icon, value, onChangeText, placeholder, keyboard, secure, toggleSecure, showSecure, theme,
 }: {
   label: string; icon: string; value: string; onChangeText: (t: string) => void;
-  placeholder?: string; keyboard?: any; secure?: boolean; toggleSecure?: () => void; showSecure?: boolean;
+  placeholder?: string; keyboard?: any; secure?: boolean; toggleSecure?: () => void; showSecure?: boolean; theme: Theme;
 }) {
   const inputRef = useRef<TextInput>(null);
+  const styles = makeStyles(theme);
   return (
     <View style={styles.fieldGroup}>
       <Text style={styles.label}>{label}</Text>
       <Pressable style={styles.inputWrap} onPress={() => inputRef.current?.focus()}>
-        <Ionicons name={icon as any} size={17} color={GOLD} style={styles.inputIcon} />
+        <Ionicons name={icon as any} size={17} color={theme.gold} style={styles.inputIcon} />
         <TextInput
           ref={inputRef}
           style={[styles.input, { flex: 1 }]}
           placeholder={placeholder}
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={theme.textSecondary}
           keyboardType={keyboard}
           secureTextEntry={secure}
           value={value}
@@ -214,7 +215,7 @@ function Field({
         />
         {toggleSecure && (
           <TouchableOpacity onPress={toggleSecure} style={{ padding: 4 }}>
-            <Ionicons name={showSecure ? 'eye-off-outline' : 'eye-outline'} size={17} color="#9ca3af" />
+            <Ionicons name={showSecure ? 'eye-off-outline' : 'eye-outline'} size={17} color={theme.textSecondary} />
           </TouchableOpacity>
         )}
       </Pressable>
@@ -222,48 +223,48 @@ function Field({
   );
 }
 
-const styles = StyleSheet.create({
-  root:    { flex: 1, backgroundColor: '#f9fafb' },
+const makeStyles = (theme: Theme) => StyleSheet.create({
+  root:    { flex: 1, backgroundColor: theme.background },
   scroll:  { flexGrow: 1, paddingHorizontal: 20 },
   back:    { padding: 16, alignSelf: 'flex-start' },
 
   stepper: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, marginBottom: 24 },
   stepItem:    { alignItems: 'center' },
-  stepDot:     { width: 28, height: 28, borderRadius: 14, backgroundColor: '#e5e7eb', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  stepDotActive: { backgroundColor: NAVY },
-  stepNum:      { fontSize: 12, fontWeight: '700', color: '#9ca3af' },
-  stepNumActive: { color: '#fff' },
-  stepLabel:    { fontSize: 10, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5 },
-  stepLabelActive: { color: NAVY, fontWeight: '700' },
-  stepLine:     { flex: 1, height: 1.5, backgroundColor: '#e5e7eb', marginBottom: 18 },
-  stepLineActive: { backgroundColor: GOLD },
+  stepDot:     { width: 28, height: 28, borderRadius: 14, backgroundColor: theme.border, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  stepDotActive: { backgroundColor: theme.navy },
+  stepNum:      { fontSize: 12, fontWeight: '700', color: theme.textSecondary },
+  stepNumActive: { color: theme.background === '#121212' ? '#121212' : '#fff' },
+  stepLabel:    { fontSize: 10, color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5 },
+  stepLabelActive: { color: theme.navy, fontWeight: '700' },
+  stepLine:     { flex: 1, height: 1.5, backgroundColor: theme.border, marginBottom: 18 },
+  stepLineActive: { backgroundColor: theme.gold },
 
-  stepTitle: { fontSize: 22, fontWeight: '800', color: NAVY, marginBottom: 16 },
+  stepTitle: { fontSize: 22, fontWeight: '800', color: theme.navy, marginBottom: 16 },
 
-  errorBox:  { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#fef2f2', borderWidth: 1, borderColor: '#fecaca', borderRadius: 10, padding: 12, marginBottom: 16 },
-  errorText: { color: '#dc2626', fontSize: 13, flex: 1 },
+  errorBox:  { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: theme.background === '#121212' ? '#7f1d1d' : '#fef2f2', borderWidth: 1, borderColor: theme.errorText + '50', borderRadius: 10, padding: 12, marginBottom: 16 },
+  errorText: { color: theme.errorText, fontSize: 13, flex: 1 },
 
-  card:      { backgroundColor: '#fff', borderRadius: 20, padding: 20, borderWidth: 1, borderColor: '#e5e7eb', marginBottom: 20 },
+  card:      { backgroundColor: theme.card, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: theme.border, marginBottom: 20 },
 
   fieldGroup: { marginBottom: 16 },
-  label:      { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 6 },
-  inputWrap:  { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 12, backgroundColor: '#f9fafb', paddingHorizontal: 12 },
+  label:      { fontSize: 13, fontWeight: '600', color: theme.text, marginBottom: 6 },
+  inputWrap:  { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: theme.border, borderRadius: 12, backgroundColor: theme.background === '#121212' ? '#1e1e1e' : '#f9fafb', paddingHorizontal: 12 },
   inputIcon:  { marginRight: 8 },
-  input:      { paddingVertical: 13, fontSize: 15, color: '#111827' },
+  input:      { paddingVertical: 13, fontSize: 15, color: theme.text },
 
-  roleHint:  { fontSize: 13, color: '#6b7280', marginBottom: 14, lineHeight: 19 },
-  roleCard:  { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 14, padding: 14, marginBottom: 10, gap: 12 },
-  roleCardActive: { borderColor: GOLD, backgroundColor: GOLD + '08' },
-  roleIcon:  { width: 42, height: 42, borderRadius: 21, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
-  roleIconActive: { backgroundColor: GOLD + '18' },
-  roleLabel: { fontSize: 15, fontWeight: '700', color: '#374151', marginBottom: 2 },
-  roleLabelActive: { color: NAVY },
-  roleDesc:  { fontSize: 12, color: '#9ca3af', lineHeight: 17 },
+  roleHint:  { fontSize: 13, color: theme.textSecondary, marginBottom: 14, lineHeight: 19 },
+  roleCard:  { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: theme.border, borderRadius: 14, padding: 14, marginBottom: 10, gap: 12 },
+  roleCardActive: { borderColor: theme.gold, backgroundColor: theme.gold + '08' },
+  roleIcon:  { width: 42, height: 42, borderRadius: 21, backgroundColor: theme.background === '#121212' ? '#2c2c2c' : '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
+  roleIconActive: { backgroundColor: theme.gold + '18' },
+  roleLabel: { fontSize: 15, fontWeight: '700', color: theme.text, marginBottom: 2 },
+  roleLabelActive: { color: theme.navy },
+  roleDesc:  { fontSize: 12, color: theme.textSecondary, lineHeight: 17 },
 
-  btnPrimary: { backgroundColor: NAVY, borderRadius: 14, paddingVertical: 15, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', marginBottom: 16 },
-  btnText:    { color: '#fff', fontWeight: '700', fontSize: 16 },
+  btnPrimary: { backgroundColor: theme.navy, borderRadius: 14, paddingVertical: 15, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', marginBottom: 16 },
+  btnText:    { color: theme.background === '#121212' ? '#121212' : '#fff', fontWeight: '700', fontSize: 16 },
 
   footer:     { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
-  footerText: { color: '#6b7280', fontSize: 14 },
-  footerLink: { color: NAVY, fontWeight: '700', fontSize: 14 },
+  footerText: { color: theme.textSecondary, fontSize: 14 },
+  footerLink: { color: theme.navy, fontWeight: '700', fontSize: 14 },
 });

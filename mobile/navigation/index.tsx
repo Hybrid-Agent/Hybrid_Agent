@@ -1,9 +1,10 @@
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppTheme } from '../lib/theme';
 
 import HomeScreen from '../screens/HomeScreen';
 import DashboardScreen from '../screens/DashboardScreen';
@@ -26,9 +27,6 @@ import GlobalNotifier from '../components/GlobalNotifier';
 
 import type { RootStackParamList, ListingsStackParamList, TabParamList } from './types';
 
-const NAVY = '#0c2340';
-const GOLD = '#c9912a';
-
 const RootStack  = createNativeStackNavigator<RootStackParamList>();
 const Tab        = createBottomTabNavigator<TabParamList>();
 const ListStack  = createNativeStackNavigator<ListingsStackParamList>();
@@ -45,18 +43,24 @@ function ListingsStack() {
 function MainTabs() {
   const insets = useSafeAreaInsets();
   const tabBarHeight = 62 + insets.bottom;
+  const theme = useAppTheme();
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
-          ...styles.tabBar,
+          backgroundColor: theme.tabBar,
+          borderTopWidth: 1,
+          borderTopColor: theme.border,
+          paddingTop: 8,
+          elevation: 0,
+          shadowOpacity: 0,
           height: tabBarHeight,
           paddingBottom: insets.bottom + 10,
         },
-        tabBarActiveTintColor: NAVY,
-        tabBarInactiveTintColor: '#9ca3af',
+        tabBarActiveTintColor: theme.navy,
+        tabBarInactiveTintColor: theme.textSecondary,
         tabBarLabelStyle: styles.tabLabel,
         tabBarIcon: ({ color, size, focused }) => {
           const icons: Record<string, { outline: string; solid: string }> = {
@@ -68,7 +72,7 @@ function MainTabs() {
           };
           const key = focused ? 'solid' : 'outline';
           return (
-            <View style={focused ? [styles.tabIconActive, { borderColor: GOLD }] : undefined}>
+            <View style={focused ? [styles.tabIconActive, { borderColor: theme.gold }] : undefined}>
               <Ionicons name={icons[route.name][key] as any} size={20} color={color} />
             </View>
           );
@@ -95,8 +99,18 @@ function MainTabs() {
 }
 
 export default function Navigation() {
+  const theme = useAppTheme();
+  
+  const navTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: theme.background,
+    },
+  };
+
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navTheme}>
       <RootStack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
         <RootStack.Screen name="Cover"    component={HomeScreen} />
         <RootStack.Screen name="Login"    component={LoginScreen} />
@@ -117,14 +131,6 @@ export default function Navigation() {
 }
 
 const styles = StyleSheet.create({
-  tabBar: {
-    backgroundColor: '#ffffff',
-    borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
-    paddingTop: 8,
-    elevation: 0,
-    shadowOpacity: 0,
-  },
   tabLabel: {
     fontSize: 10,
     fontWeight: '600',

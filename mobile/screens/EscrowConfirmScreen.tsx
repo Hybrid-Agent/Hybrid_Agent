@@ -11,11 +11,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { api, type Listing, type WalletData } from '../lib/api';
 import { storage } from '../lib/storage';
 import { buyListing, ethersId, ZeroAddress } from '../lib/contracts';
-
-const NAVY  = '#0c2340';
-const GOLD  = '#c9912a';
-const GREEN = '#22c55e';
-const RED   = '#ef4444';
+import { useAppTheme, type Theme } from '../lib/theme';
 
 // Platform fee: 100 bps = 1%
 const PLATFORM_FEE_BPS = 100;
@@ -35,6 +31,8 @@ export default function EscrowConfirmScreen() {
   const insets = useSafeAreaInsets();
   const nav    = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route  = useRoute<EscrowRoute>();
+  const theme  = useAppTheme();
+  const styles = makeStyles(theme);
 
   const [listing, setListing] = useState<Listing | null>(null);
   const [wallet,  setWallet]  = useState<WalletData | null>(null);
@@ -127,7 +125,7 @@ export default function EscrowConfirmScreen() {
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle={theme.background === '#121212' ? "light-content" : "dark-content"} backgroundColor={theme.background} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -136,7 +134,7 @@ export default function EscrowConfirmScreen() {
           onPress={() => nav.goBack()}
           disabled={step === 'executing'}
         >
-          <Ionicons name={step === 'done' ? 'close' : 'arrow-back'} size={20} color={step === 'executing' ? '#d1d5db' : NAVY} />
+          <Ionicons name={step === 'done' ? 'close' : 'arrow-back'} size={20} color={step === 'executing' ? '#d1d5db' : theme.navy} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
           {step === 'review'    ? 'Review Deal'
@@ -178,11 +176,11 @@ export default function EscrowConfirmScreen() {
           <View>
             {/* Listing summary */}
             <View style={styles.listingCard}>
-              <View style={[styles.listingThumb, { backgroundColor: listing.asset_type === 'property' ? '#e8f0fe' : '#fef3c7' }]}>
+              <View style={[styles.listingThumb, { backgroundColor: listing.asset_type === 'property' ? theme.background === '#121212' ? '#1e3a8a' : '#e8f0fe' : theme.background === '#121212' ? '#78350f' : '#fef3c7' }]}>
                 <Ionicons
                   name={listing.asset_type === 'property' ? 'business-outline' : 'car-sport-outline'}
                   size={28}
-                  color={listing.asset_type === 'property' ? NAVY : GOLD}
+                  color={listing.asset_type === 'property' ? theme.navy : theme.gold}
                 />
               </View>
               <View style={{ flex: 1 }}>
@@ -238,7 +236,7 @@ export default function EscrowConfirmScreen() {
                   <Text style={styles.agentName}>{listing.agent_name ?? 'Agent'}</Text>
                   {listing.agent_kyc === 'verified' && (
                     <View style={styles.kycPill}>
-                      <Ionicons name="shield-checkmark" size={10} color={GOLD} />
+                      <Ionicons name="shield-checkmark" size={10} color={theme.gold} />
                       <Text style={styles.kycPillText}>KYC</Text>
                     </View>
                   )}
@@ -250,7 +248,7 @@ export default function EscrowConfirmScreen() {
 
             {/* Escrow explanation */}
             <View style={styles.escrowInfo}>
-              <Ionicons name="lock-closed-outline" size={16} color={GOLD} style={{ marginTop: 1 }} />
+              <Ionicons name="lock-closed-outline" size={16} color={theme.gold} style={{ marginTop: 1 }} />
               <View style={{ flex: 1, gap: 6 }}>
                 <Text style={styles.escrowInfoTitle}>How escrow works</Text>
                 {[
@@ -281,7 +279,7 @@ export default function EscrowConfirmScreen() {
             <View style={[styles.walletCard, !hasBalance && styles.walletCardInsuff]}>
               <View style={styles.walletCardTop}>
                 <View style={styles.walletIcon}>
-                  <Ionicons name="wallet-outline" size={20} color={hasBalance ? GOLD : RED} />
+                  <Ionicons name="wallet-outline" size={20} color={hasBalance ? theme.gold : theme.errorText} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.walletLabel}>Paying from</Text>
@@ -289,7 +287,7 @@ export default function EscrowConfirmScreen() {
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
                   <Text style={styles.walletBalLabel}>Balance</Text>
-                  <Text style={[styles.walletBal, !hasBalance && { color: RED }]}>
+                  <Text style={[styles.walletBal, !hasBalance && { color: theme.errorText }]}>
                     ${fmt(walletUsdc)} USDC
                   </Text>
                 </View>
@@ -297,14 +295,14 @@ export default function EscrowConfirmScreen() {
 
               {hasBalance ? (
                 <View style={styles.balOkRow}>
-                  <Ionicons name="checkmark-circle" size={15} color={GREEN} />
+                  <Ionicons name="checkmark-circle" size={15} color={theme.green} />
                   <Text style={styles.balOkText}>
                     Sufficient balance · ${fmt(walletUsdc - totalDue)} USDC remaining after
                   </Text>
                 </View>
               ) : (
                 <View style={styles.balErrRow}>
-                  <Ionicons name="alert-circle-outline" size={15} color={RED} />
+                  <Ionicons name="alert-circle-outline" size={15} color={theme.errorText} />
                   <Text style={styles.balErrText}>
                     Insufficient balance. Need ${fmt(totalDue - walletUsdc)} more USDC.
                   </Text>
@@ -383,8 +381,8 @@ export default function EscrowConfirmScreen() {
         {/* ── ERROR ──────────────────────────────────────────────────── */}
         {step === 'error' && (
           <View style={styles.successContainer}>
-            <Ionicons name="close-circle" size={64} color={RED} />
-            <Text style={[styles.successTitle, { color: RED }]}>Transaction failed</Text>
+            <Ionicons name="close-circle" size={64} color={theme.errorText} />
+            <Text style={[styles.successTitle, { color: theme.errorText }]}>Transaction failed</Text>
             <Text style={[styles.successSub, { color: '#6b7280' }]}>{errorMsg}</Text>
             <TouchableOpacity style={[styles.btnPrimary, { marginTop: 24 }]} onPress={() => {
               setStep('wallet');
@@ -404,7 +402,7 @@ export default function EscrowConfirmScreen() {
         {step === 'done' && phase.id === 'funded' && (
           <View style={styles.successContainer}>
             <Animated.View style={[styles.successRing, { transform: [{ scale: checkScale }] }]}>
-              <Ionicons name="checkmark-circle" size={64} color={GREEN} />
+              <Ionicons name="checkmark-circle" size={64} color={theme.green} />
             </Animated.View>
 
             <Text style={styles.successTitle}>Escrow funded!</Text>
@@ -420,7 +418,7 @@ export default function EscrowConfirmScreen() {
               </View>
               <View style={styles.dealRow}>
                 <Text style={styles.dealLabel}>Amount locked</Text>
-                <Text style={[styles.dealValue, { color: NAVY, fontWeight: '800' }]}>${fmt(totalDue)} USDC</Text>
+                <Text style={[styles.dealValue, { color: theme.navy, fontWeight: '800' }]}>${fmt(totalDue)} USDC</Text>
               </View>
               <View style={styles.dealRow}>
                 <Text style={styles.dealLabel}>Transaction</Text>
@@ -444,7 +442,7 @@ export default function EscrowConfirmScreen() {
                 { icon: 'shield-outline',      text: 'If anything goes wrong, open a dispute.' },
               ].map(n => (
                 <View key={n.text} style={styles.nextRow}>
-                  <Ionicons name={n.icon as any} size={15} color={GOLD} style={{ marginTop: 1 }} />
+                  <Ionicons name={n.icon as any} size={15} color={theme.gold} style={{ marginTop: 1 }} />
                   <Text style={styles.nextText}>{n.text}</Text>
                 </View>
               ))}
@@ -469,6 +467,8 @@ export default function EscrowConfirmScreen() {
 // ── Sub-components ─────────────────────────────────────────────────────────
 
 function BreakdownRow({ label, value, sub, muted }: { label: string; value: string; sub?: string; muted?: boolean }) {
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
   return (
     <View style={styles.breakdownRow}>
       <View style={{ flex: 1 }}>
@@ -481,6 +481,8 @@ function BreakdownRow({ label, value, sub, muted }: { label: string; value: stri
 }
 
 function TxStep({ n, title, desc, last }: { n: number; title: string; desc: string; last?: boolean }) {
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
   return (
     <View style={[styles.txStep, !last && styles.txStepBorder]}>
       <View style={styles.txStepNum}>
@@ -495,6 +497,8 @@ function TxStep({ n, title, desc, last }: { n: number; title: string; desc: stri
 }
 
 function PhaseRow({ label, state }: { label: string; state: 'waiting' | 'active' | 'done' }) {
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
   return (
     <View style={styles.phaseRow}>
       <View style={[styles.phaseIcon, state === 'active' && styles.phaseIconActive, state === 'done' && styles.phaseIconDone]}>
@@ -512,125 +516,125 @@ function PhaseRow({ label, state }: { label: string; state: 'waiting' | 'active'
 }
 
 // ── Styles ─────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  root:   { flex: 1, backgroundColor: '#f9fafb' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  closeBtn:    { width: 38, height: 38, borderRadius: 12, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 16, fontWeight: '800', color: NAVY },
+const makeStyles = (theme: Theme) => StyleSheet.create({
+  root:   { flex: 1, backgroundColor: theme.background },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: theme.card, borderBottomWidth: 1, borderBottomColor: theme.border },
+  closeBtn:    { width: 38, height: 38, borderRadius: 12, backgroundColor: theme.background === '#121212' ? '#2c2c2c' : '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontSize: 16, fontWeight: '800', color: theme.navy },
 
-  dotRow:  { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', paddingHorizontal: 24, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
+  dotRow:  { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.card, paddingHorizontal: 24, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: theme.border },
   dotItem: { alignItems: 'center', gap: 4 },
-  dot:     { width: 26, height: 26, borderRadius: 13, backgroundColor: '#e5e7eb', alignItems: 'center', justifyContent: 'center' },
-  dotActive: { backgroundColor: NAVY },
-  dotDone:   { backgroundColor: GREEN },
-  dotNum:    { fontSize: 11, fontWeight: '800', color: '#9ca3af' },
-  dotLabel:  { fontSize: 10, color: '#9ca3af', fontWeight: '600' },
-  dotLabelActive: { color: NAVY },
-  dotLine:   { flex: 1, height: 1.5, backgroundColor: '#e5e7eb', marginHorizontal: 4, marginBottom: 14 },
-  dotLineDone: { backgroundColor: GREEN },
+  dot:     { width: 26, height: 26, borderRadius: 13, backgroundColor: theme.border, alignItems: 'center', justifyContent: 'center' },
+  dotActive: { backgroundColor: theme.navy },
+  dotDone:   { backgroundColor: theme.green },
+  dotNum:    { fontSize: 11, fontWeight: '800', color: theme.textSecondary },
+  dotLabel:  { fontSize: 10, color: theme.textSecondary, fontWeight: '600' },
+  dotLabelActive: { color: theme.navy },
+  dotLine:   { flex: 1, height: 1.5, backgroundColor: theme.border, marginHorizontal: 4, marginBottom: 14 },
+  dotLineDone: { backgroundColor: theme.green },
 
   scroll:  { paddingHorizontal: 20, paddingTop: 20 },
 
   // Listing card
-  listingCard:  { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 14, marginBottom: 20 },
+  listingCard:  { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: theme.card, borderRadius: 16, borderWidth: 1, borderColor: theme.border, padding: 14, marginBottom: 20 },
   listingThumb: { width: 56, height: 56, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  listingType:  { fontSize: 10, fontWeight: '700', color: GOLD, letterSpacing: 0.8, marginBottom: 2 },
-  listingTitle: { fontSize: 14, fontWeight: '700', color: '#111827', lineHeight: 20, marginBottom: 3 },
-  listingLoc:   { fontSize: 11, color: '#9ca3af' },
+  listingType:  { fontSize: 10, fontWeight: '700', color: theme.gold, letterSpacing: 0.8, marginBottom: 2 },
+  listingTitle: { fontSize: 14, fontWeight: '700', color: theme.text, lineHeight: 20, marginBottom: 3 },
+  listingLoc:   { fontSize: 11, color: theme.textSecondary },
 
-  sectionLabel: { fontSize: 12, fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 },
+  sectionLabel: { fontSize: 12, fontWeight: '700', color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 },
 
   // Breakdown
-  breakdownCard:  { backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: '#e5e7eb', paddingHorizontal: 16, paddingTop: 4, paddingBottom: 0, marginBottom: 20 },
-  breakdownRow:   { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f9fafb' },
-  breakdownLabel: { fontSize: 14, fontWeight: '600', color: '#374151' },
-  breakdownSub:   { fontSize: 11, color: '#9ca3af', marginTop: 2 },
-  breakdownValue: { fontSize: 14, fontWeight: '700', color: '#111827' },
-  breakdownDivider: { height: 1, backgroundColor: '#f3f4f6', marginVertical: 4 },
+  breakdownCard:  { backgroundColor: theme.card, borderRadius: 18, borderWidth: 1, borderColor: theme.border, paddingHorizontal: 16, paddingTop: 4, paddingBottom: 0, marginBottom: 20 },
+  breakdownRow:   { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: theme.background },
+  breakdownLabel: { fontSize: 14, fontWeight: '600', color: theme.text },
+  breakdownSub:   { fontSize: 11, color: theme.textSecondary, marginTop: 2 },
+  breakdownValue: { fontSize: 14, fontWeight: '700', color: theme.text },
+  breakdownDivider: { height: 1, backgroundColor: theme.border, marginVertical: 4 },
   totalRow:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 16 },
-  totalLabel:     { fontSize: 15, fontWeight: '800', color: NAVY },
-  totalSub:       { fontSize: 11, color: '#9ca3af', marginTop: 2 },
-  totalAmount:    { fontSize: 22, fontWeight: '900', color: NAVY },
+  totalLabel:     { fontSize: 15, fontWeight: '800', color: theme.navy },
+  totalSub:       { fontSize: 11, color: theme.textSecondary, marginTop: 2 },
+  totalAmount:    { fontSize: 22, fontWeight: '900', color: theme.navy },
 
   // Agent
-  agentCard:   { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#e5e7eb', padding: 14, marginBottom: 20 },
-  agentAvatar: { width: 42, height: 42, borderRadius: 21, backgroundColor: NAVY, alignItems: 'center', justifyContent: 'center' },
+  agentCard:   { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: theme.card, borderRadius: 14, borderWidth: 1, borderColor: theme.border, padding: 14, marginBottom: 20 },
+  agentAvatar: { width: 42, height: 42, borderRadius: 21, backgroundColor: theme.navy, alignItems: 'center', justifyContent: 'center' },
   agentInitial: { fontSize: 16, fontWeight: '800', color: '#fff' },
-  agentName:   { fontSize: 14, fontWeight: '700', color: '#111827' },
-  agentSub:    { fontSize: 11, color: '#9ca3af', marginTop: 2 },
-  agentComm:   { fontSize: 15, fontWeight: '800', color: NAVY },
-  kycPill:     { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: GOLD + '15', borderRadius: 20, paddingHorizontal: 6, paddingVertical: 2 },
-  kycPillText: { fontSize: 9, fontWeight: '800', color: GOLD },
+  agentName:   { fontSize: 14, fontWeight: '700', color: theme.text },
+  agentSub:    { fontSize: 11, color: theme.textSecondary, marginTop: 2 },
+  agentComm:   { fontSize: 15, fontWeight: '800', color: theme.navy },
+  kycPill:     { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: theme.gold + '15', borderRadius: 20, paddingHorizontal: 6, paddingVertical: 2 },
+  kycPillText: { fontSize: 9, fontWeight: '800', color: theme.gold },
 
   // Escrow info
-  escrowInfo:      { flexDirection: 'row', alignItems: 'flex-start', gap: 12, backgroundColor: NAVY + '06', borderRadius: 16, borderWidth: 1, borderColor: NAVY + '12', padding: 16, marginBottom: 24 },
-  escrowInfoTitle: { fontSize: 13, fontWeight: '700', color: NAVY, marginBottom: 6 },
-  escrowBullet:    { fontSize: 14, color: '#9ca3af', lineHeight: 20 },
-  escrowInfoText:  { flex: 1, fontSize: 12, color: '#6b7280', lineHeight: 20 },
+  escrowInfo:      { flexDirection: 'row', alignItems: 'flex-start', gap: 12, backgroundColor: theme.navy + '06', borderRadius: 16, borderWidth: 1, borderColor: theme.navy + '12', padding: 16, marginBottom: 24 },
+  escrowInfoTitle: { fontSize: 13, fontWeight: '700', color: theme.navy, marginBottom: 6 },
+  escrowBullet:    { fontSize: 14, color: theme.textSecondary, lineHeight: 20 },
+  escrowInfoText:  { flex: 1, fontSize: 12, color: theme.textSecondary, lineHeight: 20 },
 
   // Wallet check
-  walletCard:      { backgroundColor: '#fff', borderRadius: 18, borderWidth: 1.5, borderColor: '#e5e7eb', padding: 16, marginBottom: 20 },
-  walletCardInsuff: { borderColor: RED + '50', backgroundColor: '#fff5f5' },
+  walletCard:      { backgroundColor: theme.card, borderRadius: 18, borderWidth: 1.5, borderColor: theme.border, padding: 16, marginBottom: 20 },
+  walletCardInsuff: { borderColor: theme.errorText + '50', backgroundColor: theme.background === '#121212' ? '#450a0a' : '#fff5f5' },
   walletCardTop:   { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
-  walletIcon:      { width: 42, height: 42, borderRadius: 12, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
-  walletLabel:     { fontSize: 11, color: '#9ca3af', marginBottom: 2 },
-  walletAddr:      { fontSize: 14, fontWeight: '700', color: NAVY, fontFamily: 'monospace' },
-  walletBalLabel:  { fontSize: 11, color: '#9ca3af', textAlign: 'right', marginBottom: 2 },
-  walletBal:       { fontSize: 16, fontWeight: '900', color: NAVY },
-  balOkRow:        { flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: '#f0fdf4', borderRadius: 10, padding: 10 },
-  balOkText:       { fontSize: 12, color: '#166534', flex: 1 },
-  balErrRow:       { flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: '#fef2f2', borderRadius: 10, padding: 10 },
-  balErrText:      { fontSize: 12, color: RED, flex: 1 },
+  walletIcon:      { width: 42, height: 42, borderRadius: 12, backgroundColor: theme.background === '#121212' ? '#2c2c2c' : '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
+  walletLabel:     { fontSize: 11, color: theme.textSecondary, marginBottom: 2 },
+  walletAddr:      { fontSize: 14, fontWeight: '700', color: theme.navy, fontFamily: 'monospace' },
+  walletBalLabel:  { fontSize: 11, color: theme.textSecondary, textAlign: 'right', marginBottom: 2 },
+  walletBal:       { fontSize: 16, fontWeight: '900', color: theme.navy },
+  balOkRow:        { flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: theme.badgeSuccessBg, borderRadius: 10, padding: 10 },
+  balOkText:       { fontSize: 12, color: theme.successText, flex: 1 },
+  balErrRow:       { flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: theme.background === '#121212' ? '#7f1d1d' : '#fef2f2', borderRadius: 10, padding: 10 },
+  balErrText:      { fontSize: 12, color: theme.errorText, flex: 1 },
 
-  stepsCard:  { backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', paddingHorizontal: 16, marginBottom: 14 },
+  stepsCard:  { backgroundColor: theme.card, borderRadius: 16, borderWidth: 1, borderColor: theme.border, paddingHorizontal: 16, marginBottom: 14 },
   txStep:     { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingVertical: 14 },
-  txStepBorder: { borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  txStepNum:  { width: 24, height: 24, borderRadius: 12, backgroundColor: NAVY, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
+  txStepBorder: { borderBottomWidth: 1, borderBottomColor: theme.border },
+  txStepNum:  { width: 24, height: 24, borderRadius: 12, backgroundColor: theme.navy, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
   txStepNumText: { fontSize: 11, fontWeight: '800', color: '#fff' },
-  txStepTitle: { fontSize: 14, fontWeight: '700', color: '#111827', marginBottom: 3 },
-  txStepDesc:  { fontSize: 12, color: '#6b7280', lineHeight: 18 },
+  txStepTitle: { fontSize: 14, fontWeight: '700', color: theme.text, marginBottom: 3 },
+  txStepDesc:  { fontSize: 12, color: theme.textSecondary, lineHeight: 18 },
 
   gasNote:     { flexDirection: 'row', alignItems: 'center', gap: 7, marginBottom: 20, paddingHorizontal: 4 },
-  gasNoteText: { fontSize: 12, color: '#9ca3af', flex: 1 },
+  gasNoteText: { fontSize: 12, color: theme.textSecondary, flex: 1 },
 
   // Executing
   execContainer: { alignItems: 'center', paddingTop: 16, gap: 0 },
-  progressTrack: { width: '100%', height: 4, backgroundColor: '#e5e7eb', borderRadius: 2, marginBottom: 32, overflow: 'hidden' },
-  progressFill:  { height: 4, backgroundColor: GOLD, borderRadius: 2 },
-  phaseList:     { width: '100%', backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 16, gap: 14, marginBottom: 24 },
+  progressTrack: { width: '100%', height: 4, backgroundColor: theme.border, borderRadius: 2, marginBottom: 32, overflow: 'hidden' },
+  progressFill:  { height: 4, backgroundColor: theme.gold, borderRadius: 2 },
+  phaseList:     { width: '100%', backgroundColor: theme.card, borderRadius: 16, borderWidth: 1, borderColor: theme.border, padding: 16, gap: 14, marginBottom: 24 },
   phaseRow:      { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  phaseIcon:     { width: 30, height: 30, borderRadius: 15, backgroundColor: '#e5e7eb', alignItems: 'center', justifyContent: 'center' },
-  phaseIconActive: { backgroundColor: NAVY },
-  phaseIconDone:   { backgroundColor: GREEN },
-  phaseWaitDot:    { width: 8, height: 8, borderRadius: 4, backgroundColor: '#d1d5db' },
-  phaseLabel:      { fontSize: 14, color: '#9ca3af', fontWeight: '500' },
-  phaseLabelActive: { color: NAVY, fontWeight: '700' },
-  phaseLabelDone:   { color: GREEN, fontWeight: '600' },
-  execNote:  { fontSize: 15, color: NAVY, fontWeight: '600', textAlign: 'center' },
-  execSub:   { fontSize: 12, color: '#9ca3af', marginTop: 4 },
+  phaseIcon:     { width: 30, height: 30, borderRadius: 15, backgroundColor: theme.border, alignItems: 'center', justifyContent: 'center' },
+  phaseIconActive: { backgroundColor: theme.navy },
+  phaseIconDone:   { backgroundColor: theme.green },
+  phaseWaitDot:    { width: 8, height: 8, borderRadius: 4, backgroundColor: theme.emptyIcon },
+  phaseLabel:      { fontSize: 14, color: theme.textSecondary, fontWeight: '500' },
+  phaseLabelActive: { color: theme.navy, fontWeight: '700' },
+  phaseLabelDone:   { color: theme.green, fontWeight: '600' },
+  execNote:  { fontSize: 15, color: theme.navy, fontWeight: '600', textAlign: 'center' },
+  execSub:   { fontSize: 12, color: theme.textSecondary, marginTop: 4 },
 
   // Success
   successContainer: { alignItems: 'center', paddingTop: 8, gap: 12 },
   successRing:  { marginBottom: 8 },
-  successTitle: { fontSize: 26, fontWeight: '900', color: NAVY },
-  successSub:   { fontSize: 14, color: '#6b7280', textAlign: 'center', lineHeight: 22, paddingHorizontal: 8 },
-  dealCard:     { width: '100%', backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: '#e5e7eb', paddingHorizontal: 16, marginTop: 8 },
-  dealRow:      { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  dealLabel:    { fontSize: 12, color: '#9ca3af', fontWeight: '500' },
-  dealValue:    { fontSize: 13, color: '#111827', fontWeight: '600', maxWidth: '60%', textAlign: 'right' },
-  dealStatusPill: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: GOLD + '15', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
-  dealStatusDot:  { width: 6, height: 6, borderRadius: 3, backgroundColor: GOLD },
-  dealStatusText: { fontSize: 11, fontWeight: '700', color: GOLD },
-  nextSteps:    { width: '100%', backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 16, gap: 12 },
-  nextStepsTitle: { fontSize: 14, fontWeight: '700', color: NAVY, marginBottom: 4 },
+  successTitle: { fontSize: 26, fontWeight: '900', color: theme.navy },
+  successSub:   { fontSize: 14, color: theme.textSecondary, textAlign: 'center', lineHeight: 22, paddingHorizontal: 8 },
+  dealCard:     { width: '100%', backgroundColor: theme.card, borderRadius: 18, borderWidth: 1, borderColor: theme.border, paddingHorizontal: 16, marginTop: 8 },
+  dealRow:      { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: theme.border },
+  dealLabel:    { fontSize: 12, color: theme.textSecondary, fontWeight: '500' },
+  dealValue:    { fontSize: 13, color: theme.text, fontWeight: '600', maxWidth: '60%', textAlign: 'right' },
+  dealStatusPill: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: theme.gold + '15', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
+  dealStatusDot:  { width: 6, height: 6, borderRadius: 3, backgroundColor: theme.gold },
+  dealStatusText: { fontSize: 11, fontWeight: '700', color: theme.gold },
+  nextSteps:    { width: '100%', backgroundColor: theme.card, borderRadius: 16, borderWidth: 1, borderColor: theme.border, padding: 16, gap: 12 },
+  nextStepsTitle: { fontSize: 14, fontWeight: '700', color: theme.navy, marginBottom: 4 },
   nextRow:      { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  nextText:     { flex: 1, fontSize: 13, color: '#374151', lineHeight: 19 },
+  nextText:     { flex: 1, fontSize: 13, color: theme.text, lineHeight: 19 },
 
   // Buttons
-  btnPrimary:   { backgroundColor: NAVY, borderRadius: 14, paddingVertical: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 4, width: '100%' },
-  btnText:      { color: '#fff', fontWeight: '700', fontSize: 16 },
-  btnDanger:    { backgroundColor: RED, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 4 },
-  btnDangerText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  btnPrimary:   { backgroundColor: theme.navy, borderRadius: 14, paddingVertical: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 4, width: '100%' },
+  btnText:      { color: theme.background === '#121212' ? '#121212' : '#fff', fontWeight: '700', fontSize: 16 },
+  btnDanger:    { backgroundColor: theme.errorText, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 4 },
+  btnDangerText: { color: theme.background === '#121212' ? '#121212' : '#fff', fontWeight: '700', fontSize: 16 },
   btnGhost:     { paddingVertical: 12, alignItems: 'center' },
-  btnGhostText: { fontSize: 14, color: '#9ca3af', fontWeight: '500' },
+  btnGhostText: { fontSize: 14, color: theme.textSecondary, fontWeight: '500' },
 });

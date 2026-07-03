@@ -10,10 +10,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { api } from '../lib/api';
 import { storage } from '../lib/storage';
-
-const NAVY  = '#0c2340';
-const GOLD  = '#c9912a';
-const GREEN = '#22c55e';
+import { useAppTheme, type Theme } from '../lib/theme';
 
 type Notif = {
   id: string;
@@ -35,6 +32,8 @@ function fmtUsdc(n: string | number) {
 export default function NotificationsScreen() {
   const insets = useSafeAreaInsets();
   const nav    = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const theme  = useAppTheme();
+  const styles = makeStyles(theme);
 
   const [notifs,  setNotifs]  = useState<Notif[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,20 +76,20 @@ export default function NotificationsScreen() {
   const unread = notifs.filter(n => !n.read).length;
 
   const iconForType = (t: Notif['type']) => {
-    if (t === 'deal_funded')   return { name: 'checkmark-circle',  color: GREEN };
-    if (t === 'deal_approved') return { name: 'lock-closed',        color: GOLD };
-    return                            { name: 'cart-outline',        color: NAVY };
+    if (t === 'deal_funded')   return { name: 'checkmark-circle',  color: theme.green };
+    if (t === 'deal_approved') return { name: 'lock-closed',        color: theme.gold };
+    return                            { name: 'cart-outline',        color: theme.navy };
   };
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle={theme.background === '#121212' ? "light-content" : "dark-content"} backgroundColor={theme.background} />
 
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTitleRow}>
           <TouchableOpacity onPress={() => nav.goBack()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color={NAVY} />
+            <Ionicons name="arrow-back" size={24} color={theme.navy} />
           </TouchableOpacity>
           <View>
             <Text style={styles.headerTitle}>Notifications</Text>
@@ -103,7 +102,7 @@ export default function NotificationsScreen() {
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={GOLD} />
+          <ActivityIndicator size="large" color={theme.gold} />
         </View>
       ) : (
         <ScrollView
@@ -166,44 +165,44 @@ export default function NotificationsScreen() {
 }
 
 // ── Styles ──────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  root:   { flex: 1, backgroundColor: '#f9fafb' },
+const makeStyles = (theme: Theme) => StyleSheet.create({
+  root:   { flex: 1, backgroundColor: theme.background },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
   // Header
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingVertical: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1, borderBottomColor: '#f3f4f6',
+    backgroundColor: theme.card,
+    borderBottomWidth: 1, borderBottomColor: theme.border,
   },
   headerTitleRow: { flexDirection: 'row', alignItems: 'center' },
   backBtn:     { marginRight: 12, paddingVertical: 4, paddingRight: 8 },
-  headerTitle: { fontSize: 24, fontWeight: '800', color: NAVY },
-  headerSub:   { fontSize: 12, color: GOLD, marginTop: 2, fontWeight: '600' },
+  headerTitle: { fontSize: 24, fontWeight: '800', color: theme.navy },
+  headerSub:   { fontSize: 12, color: theme.gold, marginTop: 2, fontWeight: '600' },
 
   scroll: { paddingHorizontal: 16, paddingTop: 16 },
 
   // Notifications
   section:      { marginBottom: 20 },
-  sectionTitle: { fontSize: 13, fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 },
+  sectionTitle: { fontSize: 13, fontWeight: '700', color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 },
 
   emptyCard: {
-    backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb',
+    backgroundColor: theme.card, borderRadius: 16, borderWidth: 1, borderColor: theme.border,
     alignItems: 'center', padding: 32, gap: 8,
   },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: NAVY, marginTop: 4 },
-  emptySub:   { fontSize: 13, color: '#64748b', textAlign: 'center', lineHeight: 19 },
+  emptyTitle: { fontSize: 16, fontWeight: '700', color: theme.navy, marginTop: 4 },
+  emptySub:   { fontSize: 13, color: theme.textSecondary, textAlign: 'center', lineHeight: 19 },
 
-  notifList: { backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', overflow: 'hidden' },
+  notifList: { backgroundColor: theme.card, borderRadius: 16, borderWidth: 1, borderColor: theme.border, overflow: 'hidden' },
   notifRow:        { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
-  notifRowBorder:  { borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  notifRowUnread:  { backgroundColor: '#f9fafb' },
+  notifRowBorder:  { borderBottomWidth: 1, borderBottomColor: theme.border },
+  notifRowUnread:  { backgroundColor: theme.background === '#121212' ? '#1e1e1e' : '#f9fafb' },
   notifIcon:       { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   notifTitleRow:   { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  notifTitle:      { fontSize: 14, fontWeight: '700', color: '#111827' },
-  unreadDot:       { width: 7, height: 7, borderRadius: 4, backgroundColor: GOLD },
-  notifBody:       { fontSize: 12, color: '#4b5563', lineHeight: 17 },
-  notifTime:       { fontSize: 11, color: '#9ca3af' },
+  notifTitle:      { fontSize: 14, fontWeight: '700', color: theme.text },
+  unreadDot:       { width: 7, height: 7, borderRadius: 4, backgroundColor: theme.gold },
+  notifBody:       { fontSize: 12, color: theme.textSecondary, lineHeight: 17 },
+  notifTime:       { fontSize: 11, color: theme.textSecondary },
 
 });

@@ -5,10 +5,13 @@ import { storage } from '../lib/storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useAppTheme, type Theme } from '../lib/theme';
 
 export default function GlobalNotifier() {
   const insets = useSafeAreaInsets();
   const nav = useNavigation<any>();
+  const theme = useAppTheme();
+  const styles = makeStyles(theme);
   const [toast, setToast] = useState<{ id: string, title: string, body: string, conversationId: string } | null>(null);
   const slideAnim = useRef(new Animated.Value(-100)).current;
 
@@ -78,7 +81,7 @@ export default function GlobalNotifier() {
         }}
       >
         <View style={styles.iconBox}>
-          <Ionicons name="chatbubble-outline" size={20} color="#0c2340" />
+          <Ionicons name="chatbubble-outline" size={20} color={theme.navy} />
         </View>
         <View style={styles.content}>
           <Text style={styles.title}>{toast.title}</Text>
@@ -92,7 +95,7 @@ export default function GlobalNotifier() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: Theme) => StyleSheet.create({
   container: {
     position: 'absolute',
     left: 16,
@@ -100,10 +103,10 @@ const styles = StyleSheet.create({
     zIndex: 99999,
   },
   toast: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.card,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: theme.border,
     flexDirection: 'row',
     padding: 12,
     alignItems: 'flex-start',
@@ -117,7 +120,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 12,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: theme.background === '#121212' ? '#2c2c2c' : '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -128,12 +131,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111827',
+    color: theme.text,
     marginBottom: 2,
   },
   body: {
     fontSize: 13,
-    color: '#6b7280',
+    color: theme.textSecondary,
     lineHeight: 18,
   },
   closeBtn: {

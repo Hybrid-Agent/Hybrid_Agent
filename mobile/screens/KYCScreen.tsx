@@ -10,10 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { api } from '../lib/api';
 import { storage } from '../lib/storage';
-
-const NAVY  = '#0c2340';
-const GOLD  = '#c9912a';
-const GREEN = '#22c55e';
+import { useAppTheme, type Theme } from '../lib/theme';
 
 type KYCState = 'start' | 'personal' | 'document' | 'selfie' | 'review' | 'pending' | 'verified';
 type DocType  = 'Passport' | 'National ID' | "Driver's Licence";
@@ -34,6 +31,8 @@ const UNLOCKS = [
 export default function KYCScreen() {
   const insets = useSafeAreaInsets();
   const nav    = useNavigation();
+  const theme  = useAppTheme();
+  const styles = makeStyles(theme);
 
   const [state, setState] = useState<KYCState>('start');
   const [submitting, setSubmitting] = useState(false);
@@ -115,7 +114,7 @@ export default function KYCScreen() {
   // ── RENDER ────────────────────────────────────────────────────────────────
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle={theme.background === '#121212' ? "light-content" : "dark-content"} backgroundColor={theme.background} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -123,7 +122,7 @@ export default function KYCScreen() {
           style={styles.backBtn}
           onPress={() => state === 'start' || state === 'pending' || state === 'verified' ? nav.goBack() : back()}
         >
-          <Ionicons name={state === 'start' || state === 'pending' || state === 'verified' ? 'close' : 'arrow-back'} size={20} color={NAVY} />
+          <Ionicons name={state === 'start' || state === 'pending' || state === 'verified' ? 'close' : 'arrow-back'} size={20} color={theme.navy} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Identity Verification</Text>
         <View style={{ width: 38 }} />
@@ -154,9 +153,9 @@ export default function KYCScreen() {
               {/* Tier card */}
               <View style={styles.tierCard}>
                 <View style={styles.tierRow}>
-                  <TierBadge tier={1} active label="Account created" done />
+                  <TierBadge tier={1} active label="Account created" done theme={theme} />
                   <View style={styles.tierLine} />
-                  <TierBadge tier={2} label="KYC Verified" active={false} />
+                  <TierBadge tier={2} label="KYC Verified" active={false} theme={theme} />
                 </View>
                 <Text style={styles.tierHint}>You are currently at Tier 1. Complete Tier 2 to transact.</Text>
               </View>
@@ -167,7 +166,7 @@ export default function KYCScreen() {
                 {UNLOCKS.map(u => (
                   <View key={u.text} style={styles.unlockRow}>
                     <View style={styles.unlockIcon}>
-                      <Ionicons name={u.icon as any} size={18} color={GOLD} />
+                      <Ionicons name={u.icon as any} size={18} color={theme.gold} />
                     </View>
                     <Text style={styles.unlockText}>{u.text}</Text>
                   </View>
@@ -183,7 +182,7 @@ export default function KYCScreen() {
                   { icon: 'time-outline',           text: '5 minutes — usually approved within 24 hours' },
                 ].map(n => (
                   <View key={n.text} style={styles.needRow}>
-                    <Ionicons name={n.icon as any} size={16} color={NAVY} style={{ marginTop: 1 }} />
+                    <Ionicons name={n.icon as any} size={16} color={theme.navy} style={{ marginTop: 1 }} />
                     <Text style={styles.needText}>{n.text}</Text>
                   </View>
                 ))}
@@ -191,7 +190,7 @@ export default function KYCScreen() {
 
               {/* Privacy note */}
               <View style={styles.privacyBox}>
-                <Ionicons name="shield-outline" size={15} color={GOLD} />
+                <Ionicons name="shield-outline" size={15} color={theme.gold} />
                 <Text style={styles.privacyText}>
                   Your documents are encrypted in transit and stored securely. HybridAgent uses them only to verify your identity and comply with AML regulations.
                 </Text>
@@ -210,8 +209,8 @@ export default function KYCScreen() {
               <Text style={styles.stepTitle}>Personal Information</Text>
               <Text style={styles.stepSub}>Enter your details exactly as they appear on your ID.</Text>
 
-              <KYCField label="Full Legal Name" icon="person-outline" value={fullName} onChange={setFullName} placeholder="Jane Adeyemi" />
-              <KYCField label="Date of Birth" icon="calendar-outline" value={dob} onChange={setDob} placeholder="DD/MM/YYYY" keyboard="numeric" />
+              <KYCField label="Full Legal Name" icon="person-outline" value={fullName} onChange={setFullName} placeholder="Jane Adeyemi" theme={theme} />
+              <KYCField label="Date of Birth" icon="calendar-outline" value={dob} onChange={setDob} placeholder="DD/MM/YYYY" keyboard="numeric" theme={theme} />
 
               <Text style={styles.fieldLabel}>Nationality</Text>
               <View style={styles.chipRow}>
@@ -222,7 +221,7 @@ export default function KYCScreen() {
                 ))}
               </View>
 
-              <KYCField label="Country of Residence" icon="location-outline" value={country} onChange={setCountry} placeholder="Nigeria" />
+              <KYCField label="Country of Residence" icon="location-outline" value={country} onChange={setCountry} placeholder="Nigeria" theme={theme} />
             </View>
           )}
 
@@ -245,7 +244,7 @@ export default function KYCScreen() {
                     <Ionicons
                       name={d === 'Passport' ? 'book-outline' : d === 'National ID' ? 'card-outline' : 'car-outline'}
                       size={22}
-                      color={docType === d ? GOLD : '#9ca3af'}
+                      color={docType === d ? theme.gold : theme.emptyIcon}
                     />
                     <Text style={[styles.docTypeText, docType === d && styles.docTypeTextActive]}>{d}</Text>
                   </TouchableOpacity>
@@ -259,6 +258,7 @@ export default function KYCScreen() {
                 uri={docFront}
                 onPick={() => pickImage(setDocFront)}
                 onRetake={() => setDocFront(null)}
+                theme={theme}
               />
 
               {docType && docType !== 'Passport' && (
@@ -268,11 +268,12 @@ export default function KYCScreen() {
                   uri={docBack}
                   onPick={() => pickImage(uri => setDocBack(uri))}
                   onRetake={() => setDocBack(null)}
+                  theme={theme}
                 />
               )}
 
               <View style={styles.docHint}>
-                <Ionicons name="information-circle-outline" size={14} color={GOLD} />
+                <Ionicons name="information-circle-outline" size={14} color={theme.gold} />
                 <Text style={styles.docHintText}>All 4 corners must be visible. Text must be legible.</Text>
               </View>
             </View>
@@ -288,7 +289,7 @@ export default function KYCScreen() {
                 <View style={styles.selfiePreview}>
                   <Image source={{ uri: selfie }} style={styles.selfieImg} />
                   <TouchableOpacity style={styles.selfieRetake} onPress={() => setSelfie(null)}>
-                    <Ionicons name="refresh-outline" size={16} color={NAVY} />
+                    <Ionicons name="refresh-outline" size={16} color={theme.navy} />
                     <Text style={styles.selfieRetakeText}>Retake</Text>
                   </TouchableOpacity>
                 </View>
@@ -296,14 +297,14 @@ export default function KYCScreen() {
                 <View>
                   <TouchableOpacity style={styles.selfieBox} onPress={() => pickImage(setSelfie, true)} activeOpacity={0.8}>
                     <View style={styles.selfieRing}>
-                      <Ionicons name="camera-outline" size={36} color={NAVY} />
+                      <Ionicons name="camera-outline" size={36} color={theme.navy} />
                     </View>
                     <Text style={styles.selfieBoxTitle}>Take selfie with camera</Text>
                     <Text style={styles.selfieBoxSub}>Best result — uses your front camera</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity style={styles.selfieAlt} onPress={() => pickImage(setSelfie, false)}>
-                    <Ionicons name="images-outline" size={16} color={NAVY} />
+                    <Ionicons name="images-outline" size={16} color={theme.navy} />
                     <Text style={styles.selfieAltText}>Upload from camera roll instead</Text>
                   </TouchableOpacity>
                 </View>
@@ -312,7 +313,7 @@ export default function KYCScreen() {
               <View style={styles.selfieGuide}>
                 {['Face centred and fully visible', 'Good lighting — no shadows', 'No glasses or hat', 'Neutral expression'].map(tip => (
                   <View key={tip} style={styles.selfieGuideLine}>
-                    <Ionicons name="checkmark-circle-outline" size={14} color={GREEN} />
+                    <Ionicons name="checkmark-circle-outline" size={14} color={theme.green} />
                     <Text style={styles.selfieGuideText}>{tip}</Text>
                   </View>
                 ))}
@@ -327,20 +328,20 @@ export default function KYCScreen() {
               <Text style={styles.stepSub}>Check everything looks correct before submitting.</Text>
 
               <View style={styles.reviewCard}>
-                <ReviewRow label="Full Name"   value={fullName} />
-                <ReviewRow label="Date of Birth" value={dob} />
-                <ReviewRow label="Nationality" value={nationality} />
-                <ReviewRow label="Country"     value={country} />
-                <ReviewRow label="Document"    value={docType ?? '—'} />
-                <ReviewRow label="Front photo" value={docFront ? '✓ Uploaded' : '—'} ok={!!docFront} />
+                <ReviewRow label="Full Name"   value={fullName} theme={theme} />
+                <ReviewRow label="Date of Birth" value={dob} theme={theme} />
+                <ReviewRow label="Nationality" value={nationality} theme={theme} />
+                <ReviewRow label="Country"     value={country} theme={theme} />
+                <ReviewRow label="Document"    value={docType ?? '—'} theme={theme} />
+                <ReviewRow label="Front photo" value={docFront ? '✓ Uploaded' : '—'} ok={!!docFront} theme={theme} />
                 {docType !== 'Passport' && (
-                  <ReviewRow label="Back photo"  value={docBack ? '✓ Uploaded' : '—'} ok={!!docBack} />
+                  <ReviewRow label="Back photo"  value={docBack ? '✓ Uploaded' : '—'} ok={!!docBack} theme={theme} />
                 )}
-                <ReviewRow label="Selfie"      value={selfie ? '✓ Uploaded' : '—'} ok={!!selfie} last />
+                <ReviewRow label="Selfie"      value={selfie ? '✓ Uploaded' : '—'} ok={!!selfie} last theme={theme} />
               </View>
 
               <View style={styles.consentBox}>
-                <Ionicons name="shield-checkmark-outline" size={16} color={GOLD} />
+                <Ionicons name="shield-checkmark-outline" size={16} color={theme.gold} />
                 <Text style={styles.consentText}>
                   By submitting, you confirm that all information is accurate and consent to HybridAgent processing your data for identity verification under our Privacy Policy.
                 </Text>
@@ -352,7 +353,7 @@ export default function KYCScreen() {
           {state === 'pending' && (
             <View style={styles.centreState}>
               <View style={styles.pendingRing}>
-                <Ionicons name="time-outline" size={44} color={GOLD} />
+                <Ionicons name="time-outline" size={44} color={theme.gold} />
               </View>
               <Text style={styles.centreTitle}>Verification submitted</Text>
               <Text style={styles.centreSub}>
@@ -385,7 +386,7 @@ export default function KYCScreen() {
           {state === 'verified' && (
             <View style={styles.centreState}>
               <View style={styles.verifiedRing}>
-                <Ionicons name="shield-checkmark" size={48} color={GREEN} />
+                <Ionicons name="shield-checkmark" size={48} color={theme.green} />
               </View>
               <Text style={styles.centreTitle}>Verified ✓</Text>
               <Text style={styles.centreSub}>You are now a Tier 2 verified user. All marketplace features are unlocked.</Text>
@@ -393,7 +394,7 @@ export default function KYCScreen() {
               <View style={styles.verifiedCard}>
                 {UNLOCKS.map(u => (
                   <View key={u.text} style={styles.verifiedRow}>
-                    <Ionicons name="checkmark-circle" size={16} color={GREEN} />
+                    <Ionicons name="checkmark-circle" size={16} color={theme.green} />
                     <Text style={styles.verifiedText}>{u.text}</Text>
                   </View>
                 ))}
@@ -434,7 +435,8 @@ export default function KYCScreen() {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function TierBadge({ tier, label, done, active }: { tier: number; label: string; done?: boolean; active: boolean }) {
+function TierBadge({ tier, label, done, active, theme }: { tier: number; label: string; done?: boolean; active: boolean, theme: Theme }) {
+  const tierStyles = makeTierStyles(theme);
   return (
     <View style={{ alignItems: 'center', gap: 6 }}>
       <View style={[tierStyles.dot, active && tierStyles.dotActive, done && tierStyles.dotDone]}>
@@ -446,29 +448,30 @@ function TierBadge({ tier, label, done, active }: { tier: number; label: string;
     </View>
   );
 }
-const tierStyles = StyleSheet.create({
-  dot:       { width: 36, height: 36, borderRadius: 18, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#e5e7eb' },
-  dotActive: { borderColor: NAVY },
-  dotDone:   { backgroundColor: GREEN, borderColor: GREEN },
-  num:       { fontSize: 14, fontWeight: '800', color: '#9ca3af' },
-  label:     { fontSize: 11, color: '#9ca3af', textAlign: 'center', fontWeight: '600' },
-  labelDone: { color: GREEN },
+const makeTierStyles = (theme: Theme) => StyleSheet.create({
+  dot:       { width: 36, height: 36, borderRadius: 18, backgroundColor: theme.background === '#121212' ? '#1e1e1e' : '#f3f4f6', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: theme.border },
+  dotActive: { borderColor: theme.navy },
+  dotDone:   { backgroundColor: theme.green, borderColor: theme.green },
+  num:       { fontSize: 14, fontWeight: '800', color: theme.textSecondary },
+  label:     { fontSize: 11, color: theme.textSecondary, textAlign: 'center', fontWeight: '600' },
+  labelDone: { color: theme.green },
 });
 
-function KYCField({ label, icon, value, onChange, placeholder, keyboard }: {
-  label: string; icon: string; value: string; onChange: (t: string) => void; placeholder?: string; keyboard?: any;
+function KYCField({ label, icon, value, onChange, placeholder, keyboard, theme }: {
+  label: string; icon: string; value: string; onChange: (t: string) => void; placeholder?: string; keyboard?: any; theme: Theme;
 }) {
   const inputRef = useRef<TextInput>(null);
+  const styles = makeStyles(theme);
   return (
     <View style={{ marginBottom: 14 }}>
       <Text style={styles.fieldLabel}>{label}</Text>
       <Pressable style={styles.inputWrap} onPress={() => inputRef.current?.focus()}>
-        <Ionicons name={icon as any} size={16} color={GOLD} style={{ marginRight: 8 }} />
+        <Ionicons name={icon as any} size={16} color={theme.gold} style={{ marginRight: 8 }} />
         <TextInput
           ref={inputRef}
           style={[styles.input, { flex: 1 }]}
           placeholder={placeholder}
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={theme.textSecondary}
           keyboardType={keyboard}
           value={value}
           onChangeText={onChange}
@@ -479,9 +482,11 @@ function KYCField({ label, icon, value, onChange, placeholder, keyboard }: {
   );
 }
 
-function PhotoUploadBox({ label, hint, uri, onPick, onRetake }: {
-  label: string; hint: string; uri: string | null; onPick: () => void; onRetake: () => void;
+function PhotoUploadBox({ label, hint, uri, onPick, onRetake, theme }: {
+  label: string; hint: string; uri: string | null; onPick: () => void; onRetake: () => void; theme: Theme;
 }) {
+  const styles = makeStyles(theme);
+  const photoStyles = makePhotoStyles(theme);
   return (
     <View style={{ marginBottom: 14 }}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -489,13 +494,13 @@ function PhotoUploadBox({ label, hint, uri, onPick, onRetake }: {
         <View style={photoStyles.preview}>
           <Image source={{ uri }} style={photoStyles.img} resizeMode="cover" />
           <TouchableOpacity style={photoStyles.retakeBtn} onPress={onRetake}>
-            <Ionicons name="refresh-outline" size={14} color={NAVY} />
+            <Ionicons name="refresh-outline" size={14} color={theme.navy} />
             <Text style={photoStyles.retakeText}>Retake</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <TouchableOpacity style={photoStyles.uploadBox} onPress={onPick} activeOpacity={0.8}>
-          <Ionicons name="cloud-upload-outline" size={28} color="#9ca3af" />
+          <Ionicons name="cloud-upload-outline" size={28} color={theme.emptyIcon} />
           <Text style={photoStyles.uploadLabel}>Tap to upload {label.toLowerCase()}</Text>
           <Text style={photoStyles.uploadHint}>{hint}</Text>
         </TouchableOpacity>
@@ -503,131 +508,132 @@ function PhotoUploadBox({ label, hint, uri, onPick, onRetake }: {
     </View>
   );
 }
-const photoStyles = StyleSheet.create({
-  uploadBox:    { height: 140, borderRadius: 14, borderWidth: 2, borderColor: '#e5e7eb', borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb', gap: 6 },
-  uploadLabel:  { fontSize: 13, fontWeight: '600', color: '#374151' },
-  uploadHint:   { fontSize: 11, color: '#9ca3af' },
-  preview:      { borderRadius: 14, overflow: 'hidden', backgroundColor: '#f3f4f6' },
+const makePhotoStyles = (theme: Theme) => StyleSheet.create({
+  uploadBox:    { height: 140, borderRadius: 14, borderWidth: 2, borderColor: theme.border, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', backgroundColor: theme.background === '#121212' ? '#1e1e1e' : '#f9fafb', gap: 6 },
+  uploadLabel:  { fontSize: 13, fontWeight: '600', color: theme.text },
+  uploadHint:   { fontSize: 11, color: theme.textSecondary },
+  preview:      { borderRadius: 14, overflow: 'hidden', backgroundColor: theme.background === '#121212' ? '#2c2c2c' : '#f3f4f6' },
   img:          { width: '100%', height: 160 },
-  retakeBtn:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, backgroundColor: '#f9fafb' },
-  retakeText:   { fontSize: 13, color: NAVY, fontWeight: '600' },
+  retakeBtn:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, backgroundColor: theme.background === '#121212' ? '#1e1e1e' : '#f9fafb' },
+  retakeText:   { fontSize: 13, color: theme.navy, fontWeight: '600' },
 });
 
-function ReviewRow({ label, value, ok, last }: { label: string; value: string; ok?: boolean; last?: boolean }) {
+function ReviewRow({ label, value, ok, last, theme }: { label: string; value: string; ok?: boolean; last?: boolean, theme: Theme }) {
+  const styles = makeStyles(theme);
   return (
     <View style={[styles.reviewRow, !last && styles.reviewRowBorder]}>
       <Text style={styles.reviewLabel}>{label}</Text>
-      <Text style={[styles.reviewValue, ok === true && { color: GREEN }, ok === false && { color: '#dc2626' }]}>{value}</Text>
+      <Text style={[styles.reviewValue, ok === true && { color: theme.green }, ok === false && { color: theme.errorText }]}>{value}</Text>
     </View>
   );
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  root:   { flex: 1, backgroundColor: '#f9fafb' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  backBtn:     { width: 38, height: 38, borderRadius: 12, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 16, fontWeight: '800', color: NAVY },
+const makeStyles = (theme: Theme) => StyleSheet.create({
+  root:   { flex: 1, backgroundColor: theme.background },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: theme.card, borderBottomWidth: 1, borderBottomColor: theme.border },
+  backBtn:     { width: 38, height: 38, borderRadius: 12, backgroundColor: theme.background === '#121212' ? '#2c2c2c' : '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontSize: 16, fontWeight: '800', color: theme.navy },
 
-  progressTrack: { height: 3, backgroundColor: '#e5e7eb' },
-  progressFill:  { height: 3, backgroundColor: GOLD },
-  stepRow:       { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 8, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  stepLbl:       { fontSize: 11, color: '#d1d5db', fontWeight: '600' },
-  stepLblActive: { color: NAVY },
-  stepLblDone:   { color: GOLD },
+  progressTrack: { height: 3, backgroundColor: theme.border },
+  progressFill:  { height: 3, backgroundColor: theme.gold },
+  stepRow:       { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 8, backgroundColor: theme.card, borderBottomWidth: 1, borderBottomColor: theme.border },
+  stepLbl:       { fontSize: 11, color: theme.border, fontWeight: '600' },
+  stepLblActive: { color: theme.navy },
+  stepLblDone:   { color: theme.gold },
 
   scroll: { paddingHorizontal: 20, paddingTop: 20 },
 
   // Start screen
-  tierCard:  { backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: '#e5e7eb', padding: 20, marginBottom: 20 },
+  tierCard:  { backgroundColor: theme.card, borderRadius: 18, borderWidth: 1, borderColor: theme.border, padding: 20, marginBottom: 20 },
   tierRow:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 0, marginBottom: 12 },
-  tierLine:  { flex: 1, height: 2, backgroundColor: '#e5e7eb', marginHorizontal: 8, maxWidth: 60 },
-  tierHint:  { fontSize: 13, color: '#6b7280', textAlign: 'center', lineHeight: 18 },
+  tierLine:  { flex: 1, height: 2, backgroundColor: theme.border, marginHorizontal: 8, maxWidth: 60 },
+  tierHint:  { fontSize: 13, color: theme.textSecondary, textAlign: 'center', lineHeight: 18 },
 
-  sectionTitle: { fontSize: 14, fontWeight: '700', color: NAVY, marginBottom: 10 },
+  sectionTitle: { fontSize: 14, fontWeight: '700', color: theme.navy, marginBottom: 10 },
 
-  unlockCard: { backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 16, marginBottom: 20 },
-  unlockRow:  { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  unlockIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: GOLD + '12', alignItems: 'center', justifyContent: 'center' },
-  unlockText: { fontSize: 14, color: '#374151', fontWeight: '500' },
+  unlockCard: { backgroundColor: theme.card, borderRadius: 16, borderWidth: 1, borderColor: theme.border, padding: 16, marginBottom: 20 },
+  unlockRow:  { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: theme.border },
+  unlockIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: theme.gold + '12', alignItems: 'center', justifyContent: 'center' },
+  unlockText: { fontSize: 14, color: theme.text, fontWeight: '500' },
 
-  needCard: { backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 16, marginBottom: 20, gap: 12 },
+  needCard: { backgroundColor: theme.card, borderRadius: 16, borderWidth: 1, borderColor: theme.border, padding: 16, marginBottom: 20, gap: 12 },
   needRow:  { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  needText: { fontSize: 13, color: '#6b7280', flex: 1, lineHeight: 19 },
+  needText: { fontSize: 13, color: theme.textSecondary, flex: 1, lineHeight: 19 },
 
-  privacyBox:  { flexDirection: 'row', alignItems: 'flex-start', gap: 9, backgroundColor: GOLD + '10', borderRadius: 14, borderWidth: 1, borderColor: GOLD + '30', padding: 13, marginBottom: 20 },
+  privacyBox:  { flexDirection: 'row', alignItems: 'flex-start', gap: 9, backgroundColor: theme.gold + '10', borderRadius: 14, borderWidth: 1, borderColor: theme.gold + '30', padding: 13, marginBottom: 20 },
   privacyText: { flex: 1, fontSize: 12, color: '#92400e', lineHeight: 18 },
 
   // Form steps
-  stepTitle: { fontSize: 22, fontWeight: '800', color: NAVY, marginBottom: 6 },
-  stepSub:   { fontSize: 14, color: '#6b7280', marginBottom: 22, lineHeight: 20 },
-  fieldLabel: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 6 },
-  inputWrap:  { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 12, paddingHorizontal: 12 },
-  input:      { paddingVertical: 12, fontSize: 15, color: '#111827' },
+  stepTitle: { fontSize: 22, fontWeight: '800', color: theme.navy, marginBottom: 6 },
+  stepSub:   { fontSize: 14, color: theme.textSecondary, marginBottom: 22, lineHeight: 20 },
+  fieldLabel: { fontSize: 13, fontWeight: '600', color: theme.text, marginBottom: 6 },
+  inputWrap:  { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.card, borderWidth: 1.5, borderColor: theme.border, borderRadius: 12, paddingHorizontal: 12 },
+  input:      { paddingVertical: 12, fontSize: 15, color: theme.text },
 
   chipRow:  { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
-  chip:     { paddingHorizontal: 13, paddingVertical: 7, borderRadius: 20, backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#e5e7eb' },
-  chipActive: { backgroundColor: NAVY, borderColor: NAVY },
-  chipText: { fontSize: 13, fontWeight: '600', color: '#6b7280' },
-  chipTextActive: { color: '#fff' },
+  chip:     { paddingHorizontal: 13, paddingVertical: 7, borderRadius: 20, backgroundColor: theme.card, borderWidth: 1.5, borderColor: theme.border },
+  chipActive: { backgroundColor: theme.navy, borderColor: theme.navy },
+  chipText: { fontSize: 13, fontWeight: '600', color: theme.textSecondary },
+  chipTextActive: { color: theme.background === '#121212' ? '#121212' : '#fff' },
 
   // Document
   docTypeRow:      { flexDirection: 'row', gap: 8, marginBottom: 18 },
-  docTypeCard:     { flex: 1, alignItems: 'center', paddingVertical: 14, gap: 7, borderRadius: 14, borderWidth: 2, borderColor: '#e5e7eb', backgroundColor: '#fff' },
-  docTypeCardActive: { borderColor: GOLD, backgroundColor: GOLD + '08' },
-  docTypeText:     { fontSize: 11, fontWeight: '700', color: '#9ca3af', textAlign: 'center' },
-  docTypeTextActive: { color: NAVY },
-  docHint:         { flexDirection: 'row', alignItems: 'center', gap: 6, padding: 10, backgroundColor: GOLD + '10', borderRadius: 10, marginTop: 4, marginBottom: 28 },
-  docHintText:     { fontSize: 12, color: '#92400e', flex: 1 },
+  docTypeCard:     { flex: 1, alignItems: 'center', paddingVertical: 14, gap: 7, borderRadius: 14, borderWidth: 2, borderColor: theme.border, backgroundColor: theme.card },
+  docTypeCardActive: { borderColor: theme.gold, backgroundColor: theme.gold + '08' },
+  docTypeText:     { fontSize: 11, fontWeight: '700', color: theme.emptyIcon, textAlign: 'center' },
+  docTypeTextActive: { color: theme.navy },
+  docHint:         { flexDirection: 'row', alignItems: 'center', gap: 6, padding: 10, backgroundColor: theme.gold + '10', borderRadius: 10, marginTop: 4, marginBottom: 28 },
+  docHintText:     { fontSize: 12, color: theme.background === '#121212' ? theme.gold : '#92400e', flex: 1 },
 
   // Selfie
-  selfieBox:       { borderRadius: 18, borderWidth: 2, borderColor: '#e5e7eb', borderStyle: 'dashed', paddingVertical: 40, alignItems: 'center', backgroundColor: '#fff', marginBottom: 14, gap: 10 },
-  selfieRing:      { width: 76, height: 76, borderRadius: 38, backgroundColor: '#f3f4f6', borderWidth: 2, borderColor: NAVY + '25', alignItems: 'center', justifyContent: 'center' },
-  selfieBoxTitle:  { fontSize: 15, fontWeight: '700', color: NAVY },
-  selfieBoxSub:    { fontSize: 12, color: '#9ca3af' },
+  selfieBox:       { borderRadius: 18, borderWidth: 2, borderColor: theme.border, borderStyle: 'dashed', paddingVertical: 40, alignItems: 'center', backgroundColor: theme.card, marginBottom: 14, gap: 10 },
+  selfieRing:      { width: 76, height: 76, borderRadius: 38, backgroundColor: theme.background === '#121212' ? '#2c2c2c' : '#f3f4f6', borderWidth: 2, borderColor: theme.navy + '25', alignItems: 'center', justifyContent: 'center' },
+  selfieBoxTitle:  { fontSize: 15, fontWeight: '700', color: theme.navy },
+  selfieBoxSub:    { fontSize: 12, color: theme.emptyIcon },
   selfieAlt:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingVertical: 12, marginBottom: 16 },
-  selfieAltText:   { fontSize: 14, color: NAVY, fontWeight: '600' },
+  selfieAltText:   { fontSize: 14, color: theme.navy, fontWeight: '600' },
   selfiePreview:   { borderRadius: 14, overflow: 'hidden', marginBottom: 14 },
   selfieImg:       { width: '100%', height: 260 },
-  selfieRetake:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 11, backgroundColor: '#f9fafb' },
-  selfieRetakeText: { fontSize: 13, color: NAVY, fontWeight: '600' },
-  selfieGuide:     { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#e5e7eb', padding: 14, gap: 10, marginBottom: 28 },
+  selfieRetake:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 11, backgroundColor: theme.background === '#121212' ? '#1e1e1e' : '#f9fafb' },
+  selfieRetakeText: { fontSize: 13, color: theme.navy, fontWeight: '600' },
+  selfieGuide:     { backgroundColor: theme.card, borderRadius: 14, borderWidth: 1, borderColor: theme.border, padding: 14, gap: 10, marginBottom: 28 },
   selfieGuideLine: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  selfieGuideText: { fontSize: 13, color: '#374151' },
+  selfieGuideText: { fontSize: 13, color: theme.text },
 
   // Review
-  reviewCard:   { backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 16, marginBottom: 16 },
+  reviewCard:   { backgroundColor: theme.card, borderRadius: 16, borderWidth: 1, borderColor: theme.border, padding: 16, marginBottom: 16 },
   reviewRow:    { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10 },
-  reviewRowBorder: { borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  reviewLabel:  { fontSize: 13, color: '#9ca3af', fontWeight: '500' },
-  reviewValue:  { fontSize: 13, color: '#111827', fontWeight: '600', maxWidth: '60%', textAlign: 'right' },
-  consentBox:   { flexDirection: 'row', alignItems: 'flex-start', gap: 9, backgroundColor: NAVY + '08', borderRadius: 14, borderWidth: 1, borderColor: NAVY + '15', padding: 13, marginBottom: 20 },
-  consentText:  { flex: 1, fontSize: 12, color: '#374151', lineHeight: 18 },
+  reviewRowBorder: { borderBottomWidth: 1, borderBottomColor: theme.background },
+  reviewLabel:  { fontSize: 13, color: theme.textSecondary, fontWeight: '500' },
+  reviewValue:  { fontSize: 13, color: theme.text, fontWeight: '600', maxWidth: '60%', textAlign: 'right' },
+  consentBox:   { flexDirection: 'row', alignItems: 'flex-start', gap: 9, backgroundColor: theme.navy + '08', borderRadius: 14, borderWidth: 1, borderColor: theme.navy + '15', padding: 13, marginBottom: 20 },
+  consentText:  { flex: 1, fontSize: 12, color: theme.text, lineHeight: 18 },
 
   // Centre states (pending / verified)
   centreState:   { alignItems: 'center', paddingTop: 20, gap: 12 },
-  pendingRing:   { width: 88, height: 88, borderRadius: 44, borderWidth: 2, borderColor: GOLD + '55', backgroundColor: GOLD + '10', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  verifiedRing:  { width: 88, height: 88, borderRadius: 44, borderWidth: 2, borderColor: GREEN + '55', backgroundColor: GREEN + '10', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  centreTitle:   { fontSize: 24, fontWeight: '900', color: NAVY, textAlign: 'center' },
-  centreSub:     { fontSize: 14, color: '#6b7280', textAlign: 'center', lineHeight: 22, paddingHorizontal: 8 },
+  pendingRing:   { width: 88, height: 88, borderRadius: 44, borderWidth: 2, borderColor: theme.gold + '55', backgroundColor: theme.gold + '10', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  verifiedRing:  { width: 88, height: 88, borderRadius: 44, borderWidth: 2, borderColor: theme.green + '55', backgroundColor: theme.green + '10', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  centreTitle:   { fontSize: 24, fontWeight: '900', color: theme.navy, textAlign: 'center' },
+  centreSub:     { fontSize: 14, color: theme.textSecondary, textAlign: 'center', lineHeight: 22, paddingHorizontal: 8 },
 
-  pendingSteps:   { width: '100%', backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 16, gap: 14, marginTop: 8 },
+  pendingSteps:   { width: '100%', backgroundColor: theme.card, borderRadius: 16, borderWidth: 1, borderColor: theme.border, padding: 16, gap: 14, marginTop: 8 },
   pendingStep:    { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  pendingDot:     { width: 26, height: 26, borderRadius: 13, backgroundColor: '#f3f4f6', borderWidth: 1.5, borderColor: '#e5e7eb', alignItems: 'center', justifyContent: 'center' },
-  pendingDotDone: { backgroundColor: GREEN, borderColor: GREEN },
-  pendingLabel:   { fontSize: 14, color: '#9ca3af', fontWeight: '500' },
-  pendingLabelDone: { color: '#111827', fontWeight: '600' },
+  pendingDot:     { width: 26, height: 26, borderRadius: 13, backgroundColor: theme.background === '#121212' ? '#2c2c2c' : '#f3f4f6', borderWidth: 1.5, borderColor: theme.border, alignItems: 'center', justifyContent: 'center' },
+  pendingDotDone: { backgroundColor: theme.green, borderColor: theme.green },
+  pendingLabel:   { fontSize: 14, color: theme.textSecondary, fontWeight: '500' },
+  pendingLabelDone: { color: theme.text, fontWeight: '600' },
 
-  verifiedCard:  { width: '100%', backgroundColor: '#f0fdf4', borderRadius: 16, borderWidth: 1, borderColor: '#bbf7d0', padding: 16, gap: 12 },
+  verifiedCard:  { width: '100%', backgroundColor: theme.badgeSuccessBg, borderRadius: 16, borderWidth: 1, borderColor: theme.green + '30', padding: 16, gap: 12 },
   verifiedRow:   { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  verifiedText:  { fontSize: 14, color: '#166534', fontWeight: '500' },
+  verifiedText:  { fontSize: 14, color: theme.successText, fontWeight: '500' },
 
   // Shared buttons
-  btnPrimary:  { backgroundColor: NAVY, borderRadius: 14, paddingVertical: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 4, width: '100%' },
-  btnText:     { color: '#fff', fontWeight: '700', fontSize: 16 },
+  btnPrimary:  { backgroundColor: theme.navy, borderRadius: 14, paddingVertical: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 4, width: '100%' },
+  btnText:     { color: theme.background === '#121212' ? '#121212' : '#fff', fontWeight: '700', fontSize: 16 },
   btnGhost:    { paddingVertical: 12, alignItems: 'center' },
-  btnGhostText: { fontSize: 13, color: '#9ca3af', fontWeight: '500' },
+  btnGhostText: { fontSize: 13, color: theme.textSecondary, fontWeight: '500' },
 
-  errBox:  { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#fef2f2', borderWidth: 1, borderColor: '#fecaca', borderRadius: 10, padding: 12, marginBottom: 16 },
-  errText: { color: '#dc2626', fontSize: 13, flex: 1 },
+  errBox:  { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: theme.background === '#121212' ? '#7f1d1d' : '#fef2f2', borderWidth: 1, borderColor: theme.errorText + '50', borderRadius: 10, padding: 12, marginBottom: 16 },
+  errText: { color: theme.errorText, fontSize: 13, flex: 1 },
 });

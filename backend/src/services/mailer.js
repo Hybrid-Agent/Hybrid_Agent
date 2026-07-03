@@ -34,30 +34,37 @@ async function send({ to, subject, text }) {
   return { ok: true, channel: "sendgrid" };
 }
 
-const claimLink = (listingId) => `${config.appBaseUrl}/claim?listingId=${listingId}`;
+const approveLink = (listingId) => `${config.appBaseUrl}/claim?listingId=${listingId}&action=approve`;
+const withdrawLink = (listingId) => `${config.appBaseUrl}/claim?listingId=${listingId}&action=withdraw`;
 
 function sendListingNotice({ to, ownerName, agentName, title, listingId }) {
   return send({
     to,
-    subject: `${agentName} listed your property on HybridAgent`,
+    subject: `Action required: ${agentName} listed your property on HybridAgent`,
     text:
       `Hi ${ownerName || "there"},\n\n` +
-      `${agentName} has listed "${title}" for sale on HybridAgent on your behalf.\n` +
-      `A secure wallet has been reserved for you using this email address. When the ` +
-      `sale completes, your proceeds are paid there automatically — no one can ` +
-      `intercept them.\n\n` +
-      `Verify & track your sale:\n${claimLink(listingId)}\n`,
+      `${agentName} has listed "${title}" for sale on HybridAgent on your behalf.\n\n` +
+      `WHAT YOU NEED TO DO:\n` +
+      `Please review the listing and confirm you authorised ${agentName} to list this asset. ` +
+      `This takes less than a minute — just click the link below, sign in with this email address, and tap Approve.\n\n` +
+      `➡  Review & approve your listing:\n${approveLink(listingId)}\n\n` +
+      `Once approved, a secure wallet has been reserved for you at this email. When the sale completes, ` +
+      `your proceeds are paid there automatically.\n\n` +
+      `If you did NOT authorise this listing, please ignore this email and contact us.\n`,
   });
 }
 
 function sendClaimReady({ to, title, listingId }) {
   return send({
     to,
-    subject: "Your funds are ready to claim",
+    subject: `Your funds are ready to withdraw — "${title}" has sold`,
     text:
-      `Good news — the sale of "${title}" has completed and your funds are ready.\n\n` +
-      `Sign in with this email (magic link) to open your wallet and withdraw:\n` +
-      `${claimLink(listingId)}\n`,
+      `Great news!\n\n` +
+      `The sale of "${title}" has completed and your proceeds are waiting in your reserved wallet.\n\n` +
+      `WITHDRAW YOUR FUNDS:\n` +
+      `Sign in with this email (magic link) to open your wallet and transfer your USDC to any address you choose:\n\n` +
+      `➡  Withdraw your funds:\n${withdrawLink(listingId)}\n\n` +
+      `Your funds are secured on-chain and only you can access them with this email address.\n`,
   });
 }
 

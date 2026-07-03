@@ -100,6 +100,17 @@ async function attachOwner(id, ownerAddress) {
   return getById(id);
 }
 
+async function approveListing(id) {
+  const listing = await db.get(`${RECORDS}${id}.json`);
+  if (!listing) return null;
+  listing.owner_status = "approved";
+  await db.put(`${RECORDS}${id}.json`, listing);
+  if (listing.created_by) {
+    await db.put(`${BY_CREATOR}${listing.created_by}/${id}.json`, listing);
+  }
+  return getById(id);
+}
+
 // Used by the indexer to update listing status from on-chain events.
 async function setStatusByRef(listingRef, status) {
   const idx = await db.get(`${BY_REF}${encodeURIComponent(listingRef)}.json`);
@@ -113,4 +124,4 @@ async function setStatusByRef(listingRef, status) {
   }
 }
 
-module.exports = { list, listByCreator, getById, getByRef, create, attachOwner, setStatusByRef };
+module.exports = { list, listByCreator, getById, getByRef, create, attachOwner, approveListing, setStatusByRef };

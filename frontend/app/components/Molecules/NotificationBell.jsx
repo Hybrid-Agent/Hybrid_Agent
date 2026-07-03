@@ -47,7 +47,7 @@ const NotificationBell = () => {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 max-w-[90vw] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-50 animate-scale-in origin-top-right overflow-hidden">
+        <div className="fixed top-[70px] right-4 sm:absolute sm:top-full sm:right-0 sm:mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-[360px] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-50 animate-scale-in origin-top-right overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
             <h4 className="text-sm font-bold text-gray-900 dark:text-white">Notifications</h4>
             {items.length > 0 && (
@@ -74,7 +74,7 @@ const NotificationBell = () => {
                     <Icon className={`${color} flex-shrink-0 mt-0.5`} size={18} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{n.title}</p>
-                      {n.message && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 break-words">{n.message}</p>}
+                      {n.message && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 break-words break-all">{n.message}</p>}
                       <p className="text-[10px] text-gray-400 mt-1">{timeAgo(n.at)}</p>
                     </div>
                     <button

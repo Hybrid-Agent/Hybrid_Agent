@@ -62,6 +62,7 @@ export const api = {
   // agent
   myListings: () => request('/listings/mine'),
   claim: (listingId) => request(`/claim/${listingId}`, { auth: false }),
+  approveClaim: (listingId) => request(`/claim/${listingId}/approve`, { method: 'PATCH', auth: false }),
   wallet: () => request('/wallet'),
   withdraw: (to) => request('/wallet/withdraw', { method: 'POST', body: { to } }),
   createListing: (formData) => request('/listings', { method: 'POST', body: formData, isForm: true }),

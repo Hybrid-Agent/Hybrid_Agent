@@ -23,16 +23,35 @@ const get = asyncHandler(async (req, res) => {
     title: listing.title,
     image: listing.image,
     assetType: listing.asset_type,
+    description: listing.description,
     status: listing.status, // open | pending | sold
-    ownerStatus: listing.owner_status,
+    ownerStatus: listing.owner_status, // pending_verification | approved | confirmed
     ownerWallet: listing.owner_address,
     ownerEmail: listing.owner_email,
+    ownerName: listing.owner_name,
     agentName: listing.agent_name,
     totalPriceUsdc: listing.price_usdc,
+    commissionBps: listing.commission_bps,
     payoutUsdc: fmt(payout),
     commissionUsdc: fmt(commission),
     settled: listing.status === "sold",
   });
 });
 
-module.exports = { get };
+// PATCH /claim/:listingId/approve — owner approves the listing (confirms they
+// authorised the agent to list their asset). No auth required beyond the email
+// magic-link flow on the frontend; the listing's ownerEmail is the implicit guard.
+const approve = asyncHandler(async (req, res) => {
+  const listing = await listingModel.getById(req.params.listingId);
+  if (!listing) throw ApiError.notFound("listing not found");
+  if (listing.listing_type !== "agent_brokered") {
+    throw ApiError.badRequest("only agent-brokered listings require owner approval");
+  }
+  if (listing.owner_status === "approved" || listing.owner_status === "confirmed") {
+    return res.json({ ok: true, message: "already approved", ownerStatus: listing.owner_status });
+  }
+  const updated = await listingModel.approveListing(listing.id);
+  res.json({ ok: true, ownerStatus: updated.owner_status });
+});
+
+module.exports = { get, approve };

@@ -48,15 +48,15 @@ const config = {
     appSecret: process.env.PRIVY_APP_SECRET || "",
   },
 
-  // Transactional email via Brevo API. Logs to console when unconfigured.
+  // Transactional email via SendGrid API. Logs to console when unconfigured.
   email: {
     from: process.env.EMAIL_FROM || "HybridAgent <no-reply@hybridagent.local>",
-    brevoApiKey: process.env.BREVO_API_KEY || "",
+    sendgridApiKey: process.env.SENDGRID_API_KEY || "",
   },
 };
 
 config.privy.configured = Boolean(config.privy.appId && config.privy.appSecret);
-config.email.configured = Boolean(config.email.brevoApiKey);
+config.email.configured = Boolean(config.email.sendgridApiKey);
 
 config.chainConfigured = Boolean(
   config.rpcUrl && config.mandateRegistryAddress && config.hybridEscrowAddress

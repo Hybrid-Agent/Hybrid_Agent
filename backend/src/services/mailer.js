@@ -1,4 +1,4 @@
-// Sends email via Brevo transactional API (works on any host — no SMTP ports needed).
+// Sends email via SendGrid transactional API
 const config = require("../config");
 
 async function send({ to, subject, text }) {
@@ -7,26 +7,31 @@ async function send({ to, subject, text }) {
     return { ok: true, channel: "console" };
   }
 
-  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+  // Parse "Name <email@domain.com>" format
+  const fromMatches = config.email.from.match(/(.*)<(.+)>/);
+  const fromEmail = fromMatches ? fromMatches[2].trim() : config.email.from.trim();
+  const fromName = fromMatches ? fromMatches[1].trim() : "HybridAgent";
+
+  const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "api-key": config.email.brevoApiKey,
+      "Authorization": `Bearer ${config.email.sendgridApiKey}`,
     },
     body: JSON.stringify({
-      sender: { name: "HybridAgent", email: config.email.from.replace(/.*<(.+)>/, "$1") },
-      to: [{ email: to }],
+      personalizations: [{ to: [{ email: to }] }],
+      from: { email: fromEmail, name: fromName },
       subject,
-      textContent: text,
+      content: [{ type: "text/plain", value: text }],
     }),
   });
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Brevo API error ${res.status}: ${err}`);
+    throw new Error(`SendGrid API error ${res.status}: ${err}`);
   }
 
-  return { ok: true, channel: "brevo" };
+  return { ok: true, channel: "sendgrid" };
 }
 
 const claimLink = (listingId) => `${config.appBaseUrl}/claim?listingId=${listingId}`;

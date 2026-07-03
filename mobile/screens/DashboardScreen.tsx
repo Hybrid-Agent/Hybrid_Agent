@@ -171,7 +171,7 @@ export default function DashboardScreen() {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.heroCta} onPress={() => nav.navigate('ListingsTab')}>
+          <TouchableOpacity style={styles.heroCta} onPress={() => (nav as any).navigate('ListingsTab', { screen: 'ListingsFeed' })}>
             <Text style={styles.heroCtaText}>Browse Listings</Text>
             <Ionicons name="arrow-forward" size={14} color={NAVY} style={{ marginLeft: 6 }} />
           </TouchableOpacity>
@@ -205,7 +205,7 @@ export default function DashboardScreen() {
               activeOpacity={0.8}
               onPress={() => {
                 if (a.label === 'New Listing') nav.navigate('CreateListing');
-                if (a.label === 'Browse') nav.navigate('ListingsTab');
+                if (a.label === 'Browse') (nav as any).navigate('ListingsTab', { screen: 'ListingsFeed' });
                 if (a.label === 'Leaderboard') nav.navigate('Leaderboard');
                 if (a.label === 'Profile') nav.navigate('Profile');
               }}
@@ -219,12 +219,10 @@ export default function DashboardScreen() {
         </View>
 
         {/* Recent listings */}
-        <View style={styles.sectionHeader}>
+        <TouchableOpacity style={styles.sectionHeader} onPress={() => (nav as any).navigate('ListingsTab', { screen: 'ListingsFeed' })}>
           <Text style={styles.sectionTitle}>Recent Listings</Text>
-          <TouchableOpacity onPress={() => nav.navigate('ListingsTab')}>
-            <Text style={styles.seeAll}>See all</Text>
-          </TouchableOpacity>
-        </View>
+          <Text style={styles.seeAll}>See all</Text>
+        </TouchableOpacity>
 
         {recent.length === 0 ? (
           <View style={styles.emptyRecent}>

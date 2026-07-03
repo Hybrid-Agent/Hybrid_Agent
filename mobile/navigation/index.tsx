@@ -76,7 +76,17 @@ function MainTabs() {
       })}
     >
       <Tab.Screen name="Home"          component={DashboardScreen} />
-      <Tab.Screen name="ListingsTab"   component={ListingsStack}        options={{ title: 'Listings' }} />
+      <Tab.Screen 
+        name="ListingsTab"   
+        component={ListingsStack}        
+        options={{ title: 'Listings' }} 
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            (navigation as any).navigate('ListingsTab', { screen: 'ListingsFeed' });
+          },
+        })}
+      />
       <Tab.Screen name="Activity"      component={ActivityScreen}       options={{ title: 'Activity' }} />
       <Tab.Screen name="Leaderboard"   component={LeaderboardScreen} />
       <Tab.Screen name="Profile"       component={ProfileScreen} />

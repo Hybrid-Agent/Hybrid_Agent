@@ -31,6 +31,7 @@ export default function ActivityScreen() {
   const [wallet,  setWallet]  = useState<WalletData | null>(null);
   const [loading, setLoading] = useState(true);
   const [userType, setUserType] = useState<string>('');
+  const [activities, setActivities] = useState<any[]>([]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -40,7 +41,19 @@ export default function ActivityScreen() {
         storage.getUser(),
       ]);
       if (walletData) setWallet(walletData);
+      
+      const isAgent = user?.user_type === 'agent';
       if (user?.user_type) setUserType(user.user_type);
+
+      const [buyerReqs, agentReqs] = await Promise.all([
+        api.myPurchaseRequests().catch(() => []),
+        isAgent ? api.incomingRequests().catch(() => []) : Promise.resolve([])
+      ]);
+      const mappedBuyer = buyerReqs.map(r => ({ ...r, _type: 'buyer' }));
+      const mappedAgent = agentReqs.map(r => ({ ...r, _type: 'agent' }));
+      const allActs = [...mappedBuyer, ...mappedAgent].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+      
+      setActivities(allActs);
     } catch (_) {}
     setLoading(false);
   }, []);
@@ -129,13 +142,83 @@ export default function ActivityScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Recent History</Text>
 
-            <View style={styles.emptyCard}>
-              <Ionicons name="time-outline" size={36} color="#d1d5db" />
-              <Text style={styles.emptyTitle}>No recent activity</Text>
-              <Text style={styles.emptySub}>
-                Your transaction and activity history will appear here once you start using the platform.
-              </Text>
-            </View>
+            {activities.length === 0 ? (
+              <View style={styles.emptyCard}>
+                <Ionicons name="time-outline" size={36} color="#d1d5db" />
+                <Text style={styles.emptyTitle}>No recent activity</Text>
+                <Text style={styles.emptySub}>
+                  Your transaction and activity history will appear here once you start using the platform.
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.notifList}>
+                {activities.map((item, index) => {
+                  const isAgentReq = item._type === 'agent';
+                  
+                  let title = 'Activity';
+                  let body = `Update on ${item.listing_title}`;
+                  let icon = 'time-outline';
+                  let iconColor = GOLD;
+
+                  if (isAgentReq) {
+                    if (item.status === 'requested') {
+                      title = 'New Purchase Request';
+                      body = `${item.buyer_name || 'A buyer'} wants to buy ${item.listing_title}`;
+                      icon = 'person-add-outline';
+                    } else if (item.status === 'approved') {
+                      title = 'Waiting for Escrow';
+                      body = `You approved the request for ${item.listing_title}.`;
+                      icon = 'hourglass-outline';
+                    } else if (item.status === 'deal_created') {
+                      title = 'Escrow Created';
+                      body = `Escrow deal created for ${item.listing_title}.`;
+                      icon = 'shield-checkmark-outline';
+                      iconColor = GREEN;
+                    }
+                  } else {
+                    if (item.status === 'requested') {
+                      title = 'Request Sent';
+                      body = `You requested to buy ${item.listing_title}. Waiting for agent approval.`;
+                      icon = 'paper-plane-outline';
+                    } else if (item.status === 'approved') {
+                      title = 'Request Approved';
+                      body = `Agent approved your request for ${item.listing_title}. Waiting for escrow to be created.`;
+                      icon = 'checkmark-circle-outline';
+                    } else if (item.status === 'deal_created') {
+                      title = 'Escrow Ready';
+                      body = `Escrow is ready for ${item.listing_title}. Please fund it.`;
+                      icon = 'shield-checkmark-outline';
+                      iconColor = GREEN;
+                    }
+                  }
+
+                  const dateStr = new Date(item.updated_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+
+                  return (
+                    <TouchableOpacity 
+                      key={item.id} 
+                      style={[styles.notifRow, index < activities.length - 1 && styles.notifRowBorder]}
+                      onPress={() => {
+                        (nav as any).navigate('ListingsTab', { screen: 'ListingDetail', params: { id: item.listing_id } });
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <View style={[styles.notifIcon, { backgroundColor: '#ffffff10' }]}>
+                        <Ionicons name={icon as any} size={20} color={iconColor} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <View style={styles.notifTitleRow}>
+                          <Text style={styles.notifTitle}>{title}</Text>
+                          {item.status === 'requested' && <View style={styles.unreadDot} />}
+                        </View>
+                        <Text style={styles.notifBody}>{body}</Text>
+                      </View>
+                      <Text style={styles.notifTime}>{dateStr}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
           </View>
 
           {/* ── QUICK ACTIONS ─────────────────────────────────────────── */}

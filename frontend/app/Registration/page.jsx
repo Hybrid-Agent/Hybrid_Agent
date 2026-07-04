@@ -274,7 +274,7 @@ const RegistrationPage = () => {
               type="button"
               onClick={next}
               disabled={submitting}
-              className="flex items-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-semibold py-2.5 px-6 rounded-xl disabled:opacity-70 transition-colors min-w-[130px] justify-center"
+              className="flex items-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-semibold py-2.5 px-6 rounded-xl disabled:opacity-70 transition-colors min-w-[130px] justify-center"
             >
               {submitting ? (
                 <Spinner size={18} />

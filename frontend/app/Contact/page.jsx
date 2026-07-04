@@ -136,7 +136,7 @@ const ContactPage = () => {
               <p className='text-sm text-gray-600 dark:text-gray-400 flex-grow'>{desc}</p>
               <button
                 onClick={() => toast('Feature coming soon!', { icon: '🚀' })}
-                className='mt-5 text-sm bg-white/10 hover:bg-teal-600 px-4 py-2 self-start rounded-lg text-white font-semibold transition-colors'
+                className="mt-5 text-sm bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 px-4 py-2 self-start rounded-lg text-white font-semibold transition-colors"
               >
                 {btnLabel}
               </button>
@@ -184,7 +184,7 @@ const ContactPage = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex justify-center py-3 px-4 rounded-lg text-sm font-semibold text-white bg-white/10 hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex justify-center py-3 px-4 rounded-lg text-sm font-semibold text-white bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
               >
                 {isSubmitting ? 'Sending...' : 'Send Message'}
               </button>

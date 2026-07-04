@@ -301,7 +301,7 @@ const ProfilePage = () => {
                 </button>
               </div>
               {tier.level < 2 ? (
-                <button onClick={handleVerify} disabled={verifying} className="flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white text-sm font-semibold px-5 rounded-xl py-2.5 disabled:opacity-70 transition-colors">
+                <button onClick={handleVerify} disabled={verifying} className="flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white text-sm font-semibold px-5 rounded-xl py-2.5 disabled:opacity-70 transition-colors">
                   {verifying ? <Spinner size={16} /> : <><FiShield size={15} /> Verify identity</>}
                 </button>
               ) : (
@@ -448,7 +448,7 @@ const ProfilePage = () => {
 
                 <button
                   onClick={() => setWithdrawOpen(true)}
-                  className="mt-3 w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-semibold py-2.5 rounded-xl transition-colors"
+                  className="mt-3 w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-semibold py-2.5 rounded-xl transition-colors"
                 >
                   <FiDollarSign size={15} /> Withdraw
                 </button>
@@ -515,7 +515,7 @@ const ProfilePage = () => {
                 <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Destination <span className="text-gray-400">(optional — defaults to your wallet)</span></label>
                 <input value={withdrawTo} onChange={(e) => setWithdrawTo(e.target.value)} placeholder="0x external wallet" className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-white/5 rounded-xl p-3 text-sm font-mono outline-none focus:ring-2 focus:ring-teal-500" />
               </div>
-              <button type="submit" disabled={withdrawing} className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60 transition-colors">
+              <button type="submit" disabled={withdrawing} className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60 transition-colors">
                 {withdrawing ? <Spinner size={18} /> : 'Withdraw funds'}
               </button>
               <p className="text-[11px] text-center text-gray-400">On-chain transfer executes via your email wallet once escrow contracts are live.</p>
@@ -531,7 +531,7 @@ const EmptyState = ({ title, body, cta }) => (
   <div className="text-center py-16 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-gray-800">
     <p className="font-semibold text-gray-700 dark:text-gray-200">{title}</p>
     <p className="text-sm text-gray-400 mt-1 mb-4">{body}</p>
-    {cta && <Link href="/Listings" className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-teal-600 text-white font-semibold py-2 px-5 rounded-lg text-sm transition-colors">Browse listings <FiExternalLink size={14} /></Link>}
+    {cta && <Link href="/Listings" className="inline-flex items-center gap-1.5 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-semibold py-2 px-5 rounded-lg text-sm transition-colors">Browse listings <FiExternalLink size={14} /></Link>}
   </div>
 );
 

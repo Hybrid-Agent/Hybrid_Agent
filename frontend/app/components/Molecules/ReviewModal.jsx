@@ -91,7 +91,7 @@ const ReviewModal = ({ agentId, agentName, onClose, onDone }) => {
               placeholder="Share how the agent communicated and handled the deal…"
               className="w-full bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-gray-700 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-teal-500 resize-none"
             />
-            <button type="submit" disabled={submitting} className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60 transition-colors">
+            <button type="submit" disabled={submitting} className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60 transition-colors">
               {submitting ? <Spinner size={20} /> : 'Submit review'}
             </button>
           </form>

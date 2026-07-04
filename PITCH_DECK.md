@@ -145,7 +145,22 @@ The owner can revoke a mandate before it is consumed by a deal, but **not after*
 
 ---
 
-## Slide 9 — What's Built vs What's Next
+## Slide 9 — Market Size & Business Model
+
+### The Opportunity
+- **TAM (Total Addressable Market):** The global real estate market is valued at over $300 Trillion. The global used car market adds another $1.5 Trillion.
+- **SAM (Serviceable Addressable Market):** Real estate and vehicle broker commissions account for over $100 Billion annually in the US alone.
+- **SOM (Serviceable Obtainable Market):** Capturing just 1% of the brokerage market represents a $1 Billion+ revenue opportunity.
+
+### How We Make Money
+HybridAgent employs a simple, transparent fee structure extracted atomically at the moment of settlement:
+1. **Platform Fee:** A flat 1% to 2% fee on every successful transaction.
+2. **Premium Agent Features:** (Future) Monthly subscription for top-tier agents providing advanced analytics, featured listings, and CRM integrations.
+3. **Yield Generation:** (Future) Generating yield on funds held in escrow during the 7-day settlement window.
+
+---
+
+## Slide 10 — What's Built vs What's Next
 
 | Feature | Status |
 |---|---|
@@ -164,7 +179,7 @@ The owner can revoke a mandate before it is consumed by a deal, but **not after*
 
 ---
 
-## Slide 10 — Technology Stack
+## Slide 11 — Technology Stack
 
 | Layer | Technology |
 |---|---|
@@ -179,7 +194,7 @@ The owner can revoke a mandate before it is consumed by a deal, but **not after*
 
 ---
 
-## Slide 11 — Summary
+## Slide 12 — Summary
 
 | The old way | HybridAgent |
 |---|---|

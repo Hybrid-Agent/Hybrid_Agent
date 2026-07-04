@@ -318,7 +318,7 @@ function WithdrawView({ claim, listingId }) {
               <button
                 onClick={login}
                 disabled={!ready}
-                className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60 transition-colors"
+                className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60 transition-colors"
               >
                 {!ready ? <Spinner size={18} /> : <><FiMail size={16} /> Sign in to withdraw <FiArrowRight size={16} /></>}
               </button>
@@ -370,7 +370,7 @@ function WithdrawView({ claim, listingId }) {
                 <button
                   type="submit"
                   disabled={!hasFunds || withdrawing}
-                  className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-50 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-50 transition-colors"
                 >
                   {withdrawing ? <Spinner size={18} /> : <><FiLock size={15} /> {hasFunds ? 'Withdraw funds' : 'No funds to withdraw yet'}</>}
                 </button>

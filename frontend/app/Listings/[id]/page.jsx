@@ -229,7 +229,7 @@ const ItemDetailsPage = () => {
       <div className="text-center">
         <p className="text-7xl font-bold text-teal-500 mb-4">404</p>
         <p className="text-2xl font-semibold mb-6">Listing not found</p>
-        <Link href="/Listings" className="bg-white/10 hover:bg-teal-600 text-white font-bold py-3 px-6 rounded-xl transition-colors">← Back to Listings</Link>
+        <Link href="/Listings" className="bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-bold py-3 px-6 rounded-xl transition-colors">← Back to Listings</Link>
       </div>
     </div>
   );
@@ -307,7 +307,7 @@ const ItemDetailsPage = () => {
                     {!wallet ? (
                       <button
                         onClick={connectPrivy}
-                        className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors"
+                        className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors"
                       >
                         <FiShield size={16} /> Connect wallet to pay
                       </button>
@@ -315,7 +315,7 @@ const ItemDetailsPage = () => {
                       <button
                         onClick={() => fundDeal(pr.deal_id)}
                         disabled={!!buyStep}
-                        className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
+                        className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
                       >
                         {buyStep === 'approving' ? <><Spinner size={16} /> Approving USDC…</> :
                          buyStep === 'funding' ? <><Spinner size={16} /> Funding escrow…</> :
@@ -341,7 +341,7 @@ const ItemDetailsPage = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button onClick={openBuy} className="flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-bold py-3 px-6 rounded-xl transition-colors">
+                    <button onClick={openBuy} className="flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-bold py-3 px-6 rounded-xl transition-colors">
                       <FiShoppingCart size={18} /> Buy now
                     </button>
                     <button onClick={openChat} disabled={opening} className="flex items-center justify-center gap-2 border border-gray-300 dark:border-gray-600 hover:border-teal-500 font-bold py-3 px-6 rounded-xl transition-colors disabled:opacity-60">
@@ -471,7 +471,7 @@ const ItemDetailsPage = () => {
               <button
                 onClick={submitRequest}
                 disabled={buyStep === 'requesting'}
-                className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
+                className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
               >
                 {buyStep === 'requesting' ? <><Spinner size={16} /> Sending request…</> : <><FiArrowRight size={16} /> Request purchase</>}
               </button>
@@ -540,7 +540,7 @@ const AgentActions = ({ item, prList, buyStep, wallet, onConnectWallet, onCreate
           {!wallet ? (
             <button
               onClick={onConnectWallet}
-              className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
+              className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
             >
               <FiShield size={14} /> Connect wallet to create deal
             </button>
@@ -548,7 +548,7 @@ const AgentActions = ({ item, prList, buyStep, wallet, onConnectWallet, onCreate
             <button
               onClick={() => onCreateDeal(r.buyer_address, r.buyer_id)}
               disabled={!!buyStep}
-              className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-bold py-2.5 rounded-xl transition-colors text-sm disabled:opacity-60"
+              className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-bold py-2.5 rounded-xl transition-colors text-sm disabled:opacity-60"
             >
               {buyStep === 'escrow' ? <><Spinner size={14} /> Creating deal…</> : <><FiShield size={14} /> Create escrow deal</>}
             </button>

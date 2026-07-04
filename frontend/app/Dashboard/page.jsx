@@ -326,7 +326,7 @@ const DashboardPage = () => {
               </label>
             </div>
 
-            <button type="submit" disabled={submitting || !verified} className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60 transition-colors">
+            <button type="submit" disabled={submitting || !verified} className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60 transition-colors">
               {submitting ? <Spinner size={20} /> : <>Publish listing <FiCheck size={16} /></>}
             </button>
           </form>
@@ -429,14 +429,14 @@ const DashboardPage = () => {
                               <Link href={`/Listings/${r.listing_id}`} className="underline font-semibold">Open listing to attach it.</Link>
                             </div>
                           ) : !wallet ? (
-                            <button onClick={connectPrivy} className="flex items-center gap-2 bg-white/10 hover:bg-teal-600 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors">
+                            <button onClick={connectPrivy} className="flex items-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors">
                               <FiShield size={14} /> Connect wallet to create deal
                             </button>
                           ) : (
                             <button
                               onClick={() => createDeal(r)}
                               disabled={!!dealStep}
-                              className="flex items-center gap-2 bg-white/10 hover:bg-teal-600 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors disabled:opacity-60"
+                              className="flex items-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors disabled:opacity-60"
                             >
                               {isProcessing ? <><Spinner size={14} /> Creating escrow…</> : <><FiShield size={14} /> Create escrow deal</>}
                             </button>

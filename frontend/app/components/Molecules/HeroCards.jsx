@@ -38,7 +38,7 @@ const HeroCards = () => {
         <div className='mt-8 flex flex-col sm:flex-row items-center md:items-start gap-3'>
           <Link
             href="/Registration"
-            className='bg-white/10 hover:bg-teal-600 transition-all text-white font-bold py-3 px-8 w-full sm:w-auto rounded-xl shadow-lg shadow-teal-900/20 hover:shadow-teal-900/30'
+            className="bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white transition-all font-bold py-3 px-8 w-full sm:w-auto rounded-xl shadow-lg shadow-teal-900/20 hover:shadow-teal-900/30"
           >
             Get Started
           </Link>

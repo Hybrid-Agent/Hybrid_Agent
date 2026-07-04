@@ -60,7 +60,7 @@ const LearnMorePage = () => {
               everywhere.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-              <Link href="/Registration" className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-teal-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-teal-900/20 transition-all">
+              <Link href="/Registration" className="inline-flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-teal-900/20 transition-all">
                 Get started <FiArrowRight size={16} />
               </Link>
               <Link href="/Listings" className="inline-flex items-center justify-center gap-2 border border-gray-300 dark:border-gray-600 hover:border-teal-500 font-bold py-3 px-8 rounded-xl transition-all">
@@ -168,9 +168,9 @@ const LearnMorePage = () => {
         </div>
 
         {/* CTA */}
-        <div className="text-center bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-10 md:p-14">
-          <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-3">Get paid what you earned.</h2>
-          <p className="text-teal-50 mb-7 max-w-xl mx-auto">Join HybridAgent and let the contract guarantee your commission — locally and across borders.</p>
+        <div className="text-center bg-teal-700 dark:bg-white/5 border border-teal-800 dark:border-white/10 rounded-3xl p-10 md:p-14 text-white">
+          <h2 className="text-2xl md:text-3xl font-extrabold mb-3">Get paid what you earned.</h2>
+          <p className="text-teal-100 mb-7 max-w-xl mx-auto">Join HybridAgent and let the contract guarantee your commission — locally and across borders.</p>
           <Link href="/Registration" className="inline-flex items-center gap-2 bg-white text-teal-700 font-bold py-3 px-8 rounded-xl hover:bg-teal-50 transition-colors">
             Create your account <FiArrowRight size={16} />
           </Link>

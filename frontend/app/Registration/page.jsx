@@ -102,7 +102,7 @@ const RegistrationPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-black dark:bg-[url('/bgttt.avif')] bg-cover bg-center pt-24 pb-12 px-4 transition-colors duration-300">
       <div className="w-full max-w-xl">
-        <div className="bg-white dark:bg-black/80 backdrop-blur-sm rounded-3xl shadow-xl dark:shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+        <div className="bg-white/60 dark:bg-black/60 backdrop-blur-xl rounded-3xl shadow-xl dark:shadow-2xl border border-black/10 dark:border-white/10 overflow-hidden">
           {/* Header + progress */}
           <div className="px-8 pt-8 pb-6 border-b border-gray-100 dark:border-gray-800">
             <h3 className="text-2xl font-bold text-teal-600 dark:text-teal-500">Create your account</h3>

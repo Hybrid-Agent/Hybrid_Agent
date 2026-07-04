@@ -22,7 +22,7 @@ const navLinks = [
 
 const MobileNavLink = ({ href, label, icon: Icon, onClick }) => (
   <Link
-    className='group flex items-center gap-4 px-6 py-4 text-[17px] font-medium border-b border-gray-100 dark:border-gray-800/60 hover:bg-gray-50 dark:hover:bg-[#121212]/40 hover:text-teal-600 dark:hover:text-teal-400 transition-all duration-200'
+    className="group flex items-center gap-4 px-6 py-4 text-[17px] font-medium border-b border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5 hover:text-teal-600 dark:hover:text-teal-400 transition-all duration-200"
     href={href}
     onClick={onClick}
   >
@@ -71,8 +71,8 @@ const Navbar = () => {
         className={`fixed top-0 left-0 w-full z-40 flex justify-between items-center px-4 py-3 md:py-4 md:px-8 lg:px-12 xl:px-20 2xl:px-60 transition-all duration-300 ${
           scrolled || navOpen
             ? isDark
-              ? 'bg-black/80 backdrop-blur-xl border-b border-gray-800/50 shadow-sm'
-              : 'bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm'
+              ? 'bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-sm'
+              : 'bg-white/60 backdrop-blur-xl border-b border-black/10 shadow-sm'
             : 'bg-transparent border-transparent'
         }`}
       >
@@ -177,9 +177,9 @@ const Navbar = () => {
       />
 
       <div
-        className={`lg:hidden fixed top-0 right-0 h-[100dvh] w-[85%] max-w-[360px] z-40 transform transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col shadow-2xl ${
+        className={`lg:hidden fixed top-0 right-0 h-[100dvh] w-[85%] max-w-[360px] z-40 transform transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col shadow-2xl backdrop-blur-xl ${
           navOpen ? 'translate-x-0' : 'translate-x-full'
-        } ${isDark ? 'bg-[#0a0a0a] border-l border-gray-800/50' : 'bg-white border-l border-gray-100'}`}
+        } ${isDark ? 'bg-black/60 border-l border-white/10' : 'bg-white/60 border-l border-black/10'}`}
       >
         <div className="flex-1 overflow-y-auto pt-24 pb-24 scrollbar-hide">
           <div className="flex flex-col">
@@ -193,15 +193,15 @@ const Navbar = () => {
             <div className="flex flex-col gap-3">
               {isLoggedIn ? (
                 <>
-                  <Link href="/Profile" onClick={closeNav} className={`flex items-center gap-3 p-3.5 rounded-xl transition-colors ${
-                    isDark ? 'bg-[#121212]/50 hover:bg-[#1e1e1e] text-gray-200' : 'bg-gray-50 hover:bg-gray-100 text-gray-800'
+                  <Link href="/Profile" onClick={closeNav} className={`flex items-center gap-3 p-3.5 rounded-xl transition-colors border ${
+                    isDark ? 'bg-white/5 border-white/5 hover:bg-white/10 text-gray-200' : 'bg-black/5 border-black/5 hover:bg-black/10 text-gray-800'
                   }`}>
                     <CgProfile size={22} className="text-teal-500" />
                     <span className="font-medium">My Profile</span>
                   </Link>
                   <button
                     onClick={() => { handleLogout(); closeNav(); }}
-                    className={`flex items-center gap-3 p-3.5 rounded-xl transition-colors text-red-500 ${
+                    className={`flex items-center gap-3 p-3.5 rounded-xl transition-colors text-red-500 border border-transparent ${
                       isDark ? 'hover:bg-red-500/10' : 'hover:bg-red-50'
                     }`}
                   >
@@ -212,7 +212,7 @@ const Navbar = () => {
               ) : (
                 <>
                   <Link href="/Login" onClick={closeNav} className={`flex justify-center items-center gap-2 p-3.5 rounded-xl font-semibold transition-colors border ${
-                    isDark ? 'border-gray-700 text-gray-300 hover:bg-[#1e1e1e] hover:text-white' : 'border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    isDark ? 'border-white/15 text-gray-300 hover:bg-white/5 hover:text-white' : 'border-black/15 text-gray-700 hover:bg-black/5 hover:text-gray-900'
                   }`}>
                     <FiLogIn size={20} />
                     Login
@@ -228,8 +228,8 @@ const Navbar = () => {
         </div>
         
         {/* Mobile footer area */}
-        <div className={`absolute bottom-0 left-0 w-full p-6 text-center text-sm pointer-events-none ${
-          isDark ? 'bg-[#0a0a0a]/90 text-gray-500' : 'bg-white/90 text-gray-400'
+        <div className={`absolute bottom-0 left-0 w-full p-6 text-center text-sm pointer-events-none border-t ${
+          isDark ? 'bg-black/40 text-gray-500 border-white/5' : 'bg-white/40 text-gray-400 border-black/5'
         }`}>
           &copy; {new Date().getFullYear()} HybridAgent
         </div>

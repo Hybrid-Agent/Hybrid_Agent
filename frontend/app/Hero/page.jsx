@@ -70,8 +70,8 @@ const Hero = () => {
 
       {/* Trust stats band */}
       <div className="relative z-10 w-full max-w-4xl mx-auto px-4 mt-4 mb-4">
-        <div className={`grid grid-cols-3 gap-3 rounded-2xl border p-4 backdrop-blur-sm ${
-          isDark ? 'bg-white/[0.03] border-white/10' : 'bg-white/70 border-neutral-200 shadow-sm'
+        <div className={`grid grid-cols-3 gap-3 rounded-2xl border p-4 backdrop-blur-md shadow-lg ${
+          isDark ? 'bg-black/40 border-white/10' : 'bg-white/40 border-black/10'
         }`}>
           {stats.map(({ icon: Icon, value, label }) => (
             <div key={label} className="flex flex-col items-center text-center gap-1">
@@ -91,8 +91,8 @@ const Hero = () => {
       {/* Feature pills */}
       <div className="relative z-10 flex flex-wrap justify-center gap-3 px-4 pb-16">
         {features.map(({ icon: Icon, label }) => (
-          <div key={label} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-            isDark ? 'bg-white/[0.03] border-white/10 text-neutral-300' : 'bg-white border-neutral-200 text-neutral-600 shadow-sm'
+          <div key={label} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border backdrop-blur-md transition-colors ${
+            isDark ? 'bg-black/40 border-white/10 text-neutral-300 hover:bg-white/5' : 'bg-white/40 border-black/10 text-neutral-600 shadow-sm hover:bg-black/5'
           }`}>
             <Icon size={14} className="text-neutral-400 dark:text-neutral-300" />
             {label}

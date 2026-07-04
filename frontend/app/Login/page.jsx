@@ -38,7 +38,7 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-black dark:bg-[url('/bgttt.avif')] bg-cover bg-center py-12 px-4 transition-colors duration-300">
-      <div className="w-full max-w-md bg-white dark:bg-black/85 backdrop-blur-sm rounded-3xl shadow-xl dark:shadow-2xl p-8 sm:p-10 border border-gray-200 dark:border-gray-800 animate-fade-up">
+      <div className="w-full max-w-md bg-white/60 dark:bg-black/60 backdrop-blur-xl rounded-3xl shadow-xl dark:shadow-2xl p-8 sm:p-10 border border-black/10 dark:border-white/10 animate-fade-up">
         <h3 className="text-2xl md:text-3xl text-center font-bold text-teal-600 dark:text-teal-500 mb-2">Welcome back</h3>
         <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-8">Sign in to continue to your account.</p>
 

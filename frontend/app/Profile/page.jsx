@@ -468,8 +468,8 @@ const ProfilePage = () => {
 
       {/* Edit social modal */}
       {editOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in" onClick={() => setEditOpen(false)}>
-          <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl w-full max-w-md animate-scale-in" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in" onClick={() => setEditOpen(false)}>
+          <div className="bg-white/80 dark:bg-black/60 border border-black/10 dark:border-white/10 rounded-2xl shadow-2xl w-full max-w-md backdrop-blur-xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-bold text-teal-600 dark:text-teal-400">Edit social links</h3>
               <button onClick={() => setEditOpen(false)} className="text-gray-400 hover:text-gray-700 dark:hover:text-white"><FiX size={22} /></button>
@@ -500,8 +500,8 @@ const ProfilePage = () => {
 
       {/* Withdraw modal */}
       {withdrawOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in" onClick={() => setWithdrawOpen(false)}>
-          <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl w-full max-w-md animate-scale-in" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in" onClick={() => setWithdrawOpen(false)}>
+          <div className="bg-white/80 dark:bg-black/60 border border-black/10 dark:border-white/10 rounded-2xl shadow-2xl w-full max-w-md backdrop-blur-xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-bold">Withdraw USDC</h3>
               <button onClick={() => setWithdrawOpen(false)} className="text-gray-400 hover:text-gray-700 dark:hover:text-white"><FiX size={22} /></button>

@@ -14,7 +14,7 @@ import { useNotifications } from '../components/Atoms/NotificationProvider';
 import { Spinner, Skeleton, PageLoader } from '../components/Atoms/Loaders';
 import PaymentActivity from '../components/Molecules/PaymentActivity';
 import { api } from '@/lib/api';
-import { withdrawUsdc, pickEmbeddedWallet } from '@/lib/wallet';
+import { withdrawUsdc, pickEmbeddedWallet, getUsdcBalance, clearChainConfigCache } from '@/lib/wallet';
 import { shortAddress, formatUsdc, tierInfo, TIERS } from '@/lib/format';
 
 const StatCard = ({ icon: Icon, label, value, loading }) => (
@@ -61,6 +61,9 @@ const ProfilePage = () => {
   const [withdrawing, setWithdrawing] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [socials, setSocials] = useState({ twitter: '', linkedin: '', facebook: '' });
+  const [onChainBalance, setOnChainBalance] = useState(null);
+  const [onChainLoading, setOnChainLoading] = useState(false);
+  const [resendingNoticeId, setResendingNoticeId] = useState(null);
 
   const wallet = user?.wallet_address?.toLowerCase();
   const tier = tierInfo(user);
@@ -79,6 +82,21 @@ const ProfilePage = () => {
       /* ignore */
     }
   }, [user?.id]);
+
+  const fetchOnChainBalance = useCallback(async () => {
+    if (!wallet) return;
+    setOnChainLoading(true);
+    try {
+      clearChainConfigCache(); // always use the latest USDC address from backend
+      const { formatted } = await getUsdcBalance(wallet);
+      setOnChainBalance(parseFloat(formatted).toFixed(2));
+    } catch {
+      // RPC unavailable — fall back gracefully
+      setOnChainBalance(null);
+    } finally {
+      setOnChainLoading(false);
+    }
+  }, [wallet]);
 
   const loadData = useCallback(async () => {
     if (!wallet) return;
@@ -105,8 +123,11 @@ const ProfilePage = () => {
   }, [wallet]);
 
   useEffect(() => {
-    if (wallet) loadData();
-  }, [wallet, loadData]);
+    if (wallet) {
+      loadData();
+      fetchOnChainBalance();
+    }
+  }, [wallet, loadData, fetchOnChainBalance]);
 
   if (loading || !user) return <div className="min-h-screen bg-white dark:bg-black pt-24"><PageLoader label="Loading your profile" /></div>;
 
@@ -198,6 +219,20 @@ const ProfilePage = () => {
     localStorage.setItem(`profile-extras:${user.id}`, JSON.stringify(socials));
     setEditOpen(false);
     notifications.success('Profile updated', 'Your links were saved.');
+  };
+
+  const handleResendNotice = async (e, id) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setResendingNoticeId(id);
+    try {
+      await api.resendOwnerNotice(id);
+      notifications.success('Reminder sent', 'The owner has been notified again via email.');
+    } catch (err) {
+      notifications.error('Failed to send reminder', err.message);
+    } finally {
+      setResendingNoticeId(null);
+    }
   };
 
   const memberSince = user.created_at ? new Date(user.created_at).getFullYear() : new Date().getFullYear();
@@ -320,6 +355,45 @@ const ProfilePage = () => {
 
         <PaymentActivity />
 
+        {/* USDC Funded Section */}
+        <div className="bg-gradient-to-r from-teal-600 to-teal-800 dark:from-teal-900/60 dark:to-teal-900/40 border border-teal-500/20 text-white rounded-3xl p-6 sm:p-8 mb-6 shadow-lg relative overflow-hidden">
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-teal-100 flex items-center gap-2 mb-2 uppercase tracking-wider">
+                <FiDollarSign size={16} /> Wallet Balance
+              </h3>
+              <p className="text-xl sm:text-2xl font-semibold mb-1">USDC funded for property payments</p>
+              <p className="text-sm text-teal-100/70 max-w-lg">
+                Your current embedded wallet balance. This balance is used to fund escrow for your property purchases, or receives payouts from your sales and commissions.
+              </p>
+            </div>
+            <div className="bg-black/20 backdrop-blur-md rounded-2xl p-5 border border-white/10 min-w-[220px] text-center">
+              <p className="text-xs text-teal-100 mb-1 font-medium">On-Chain Balance</p>
+              {onChainLoading ? (
+                <Skeleton className="h-8 w-24 mx-auto my-1 bg-white/20" />
+              ) : (
+                <p className="text-3xl font-extrabold">
+                  {onChainBalance !== null ? onChainBalance : (walletInfo ? walletInfo.balanceUsdc : '0.00')}
+                  <span className="text-lg font-semibold text-teal-200"> USDC</span>
+                </p>
+              )}
+              {onChainBalance === null && !onChainLoading && (
+                <p className="text-[10px] text-teal-200/60 mt-1">RPC unavailable — showing estimated earnings</p>
+              )}
+              <button
+                onClick={fetchOnChainBalance}
+                disabled={onChainLoading}
+                className="mt-3 text-[11px] text-teal-200 hover:text-white border border-white/20 hover:border-white/40 rounded-lg px-3 py-1 transition-colors disabled:opacity-50"
+              >
+                {onChainLoading ? 'Refreshing...' : '↻ Refresh'}
+              </button>
+            </div>
+          </div>
+          {/* Decorative background elements */}
+          <div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-teal-500/20 blur-3xl rounded-full pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-48 h-48 bg-teal-900/40 blur-3xl rounded-full pointer-events-none"></div>
+        </div>
+
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <StatCard icon={FiList} label="Listings" value={listings.length} loading={dataLoading} />
@@ -379,17 +453,46 @@ const ProfilePage = () => {
                 {[0, 1, 2].map((i) => <Skeleton key={i} className="h-56 w-full" />)}
               </div>
             ) : listings.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {listings.map((l) => (
-                  <div key={l.id} className="bg-white dark:bg-white/5 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
-                    {l.image && <img src={l.image} alt={l.title} className="w-full h-40 object-cover" />}
-                    <div className="p-4">
-                      <h3 className="font-bold text-sm truncate">{l.title}</h3>
-                      <p className="text-teal-600 dark:text-teal-400 text-sm font-semibold mt-1">{l.price_usdc} USDC</p>
-                      <span className="text-xs text-gray-400 capitalize">{l.listing_type.replace('_', '-')} · {l.status}</span>
-                    </div>
-                  </div>
-                ))}
+              <div>
+                <div className="flex justify-end mb-4">
+                  <Link href="/Dashboard" className="inline-flex items-center gap-1.5 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors">
+                    Add Listing <FiExternalLink size={14} />
+                  </Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {listings.map((l) => (
+                    <Link key={l.id} href={`/Listings/${l.id}`} className="bg-white dark:bg-white/5 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-teal-500 transition-all group block">
+                      {l.image && <img src={l.image} alt={l.title} className="w-full h-40 object-cover group-hover:opacity-90 transition-opacity" />}
+                      <div className="p-4">
+                        <h3 className="font-bold text-sm truncate group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{l.title}</h3>
+                        <p className="text-teal-600 dark:text-teal-400 text-sm font-semibold mt-1">{l.price_usdc} USDC</p>
+                        <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
+                          <span className="text-xs text-gray-400 capitalize">{l.listing_type.replace('_', '-')} · {l.status}</span>
+                          {l.listing_type === 'agent_brokered' && (
+                            <div className="flex items-center gap-1.5">
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                l.owner_status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300' :
+                                (l.owner_status === 'pending_verification' || l.owner_status === 'pending') ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300' :
+                                'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300'
+                              }`}>
+                                {l.owner_status === 'approved' ? 'Owner Approved' : 'Pending Owner'}
+                              </span>
+                              {(l.owner_status === 'pending_verification' || l.owner_status === 'pending') && (
+                                <button
+                                  onClick={(e) => handleResendNotice(e, l.id)}
+                                  disabled={resendingNoticeId === l.id}
+                                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-300 hover:bg-teal-200 dark:hover:bg-teal-500/40 transition-colors disabled:opacity-50"
+                                >
+                                  {resendingNoticeId === l.id ? 'Sending...' : 'Remind'}
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
             ) : (
               <EmptyState title="No listings yet" body="Create a listing to start selling on-chain." cta />

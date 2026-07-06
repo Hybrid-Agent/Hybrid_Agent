@@ -20,7 +20,7 @@ import { timeAgo, shortAddress } from '@/lib/format';
 import { pickEmbeddedWallet, getChainConfig } from '@/lib/wallet';
 
 const ESCROW_ABI = [
-  'function createDeal(address buyer, address seller, address agent, uint256 price, bytes32 listingRef, uint256 mandateId) returns (uint256)',
+  'function createDeal(address buyer, address seller, address agent, uint256 price, bytes32 listingRef, uint16 commissionBps) returns (uint256)',
   'event DealCreated(uint256 indexed id, address indexed buyer, address indexed seller, address agent, uint256 price, uint16 commissionBps, uint16 platformFeeBps, bytes32 listingRef, uint256 mandateId)',
 ];
 
@@ -157,9 +157,10 @@ const DashboardPage = () => {
         ? ethers.ZeroAddress
         : (r.agent_address || ethers.ZeroAddress);
       const priceBase = BigInt(Math.round(Number(r.price_usdc) * 1e6));
+      const commissionBps = r.commission_bps ? Number(r.commission_bps) : 0;
 
       notifications.info('Creating escrow…', 'Waiting for transaction to confirm.');
-      const tx = await escrow.createDeal(r.buyer_address, seller, agent, priceBase, r.listing_ref, 0);
+      const tx = await escrow.createDeal(r.buyer_address, seller, agent, priceBase, r.listing_ref, commissionBps);
       const receipt = await tx.wait();
 
       const iface = escrow.interface;

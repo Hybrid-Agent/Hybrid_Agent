@@ -9,6 +9,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { api, type WalletData } from '../lib/api';
+import { getUsdcBalance, clearConfigCache } from '../lib/contracts';
+import { storage } from '../lib/storage';
 import { useAppTheme, type Theme } from '../lib/theme';
 
 type Panel = 'none' | 'receive' | 'send';
@@ -19,8 +21,14 @@ export default function WalletScreen() {
   const theme  = useAppTheme();
   const styles = makeStyles(theme);
 
-  const [wallet, setWallet]     = useState<WalletData | null>(null);
-  const [fetching, setFetching] = useState(true);
+  const panelAnim   = useRef(new Animated.Value(0)).current;
+  const sendToRef   = useRef<TextInput>(null);
+  const sendAmtRef  = useRef<TextInput>(null);
+
+  const [wallet, setWallet]               = useState<WalletData | null>(null);
+  const [fetching, setFetching]           = useState(true);
+  const [onChainBal, setOnChainBal]       = useState<string | null>(null);
+  const [chainFetching, setChainFetching] = useState(false);
 
   const [panel, setPanel]       = useState<Panel>('none');
   const [copied, setCopied]     = useState(false);
@@ -30,16 +38,51 @@ export default function WalletScreen() {
   const [sendDone, setSendDone] = useState(false);
   const [sendErr, setSendErr]   = useState('');
 
-  const panelAnim   = useRef(new Animated.Value(0)).current;
-  const sendToRef   = useRef<TextInput>(null);
-  const sendAmtRef  = useRef<TextInput>(null);
+  const fetchOnChain = useCallback(async (address: string) => {
+    if (!address) return;
+    setChainFetching(true);
+    try {
+      clearConfigCache(); // always use latest USDC address from backend
+      const bal = await getUsdcBalance(address);
+      setOnChainBal(parseFloat(bal).toFixed(2));
+    } catch (e) {
+      console.warn('[WalletScreen] on-chain balance failed:', e);
+      setOnChainBal(null);
+    } finally {
+      setChainFetching(false);
+    }
+  }, []);
+
+  const loadAll = useCallback(async () => {
+    setFetching(true);
+    try {
+      // Get wallet address from local storage immediately so on-chain fetch can start at once
+      const cachedUser = await storage.getUser();
+      const walletAddr: string = cachedUser?.wallet_address ?? '';
+
+      // Fire both in parallel — on-chain balance does NOT depend on backend /wallet
+      const [walletData] = await Promise.allSettled([
+        api.wallet(),
+        walletAddr ? fetchOnChain(walletAddr) : Promise.resolve(),
+      ]);
+
+      if (walletData.status === 'fulfilled') {
+        setWallet(walletData.value);
+        // If we didn't have an address from cache, fetch on-chain now using backend address
+        if (!walletAddr && walletData.value?.address) {
+          fetchOnChain(walletData.value.address);
+        }
+      }
+    } catch (e) {
+      console.warn('[WalletScreen] loadAll error:', e);
+    } finally {
+      setFetching(false);
+    }
+  }, [fetchOnChain]);
 
   useFocusEffect(useCallback(() => {
-    let active = true;
-    api.wallet().then(data => { if (active) { setWallet(data); setFetching(false); } })
-               .catch(() => { if (active) setFetching(false); });
-    return () => { active = false; };
-  }, []));
+    loadAll();
+  }, [loadAll]));
 
   const openPanel = (p: Panel) => {
     setPanel(p);
@@ -82,7 +125,9 @@ export default function WalletScreen() {
   const fmt = (addr: string) => `${addr.slice(0, 6)}···${addr.slice(-4)}`;
 
   const address    = wallet?.address ?? '';
-  const usdcBal    = wallet ? Number(wallet.balanceUsdc).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—';
+  // Prefer on-chain balance (real USDC), fall back to backend-calculated earnings
+  const displayBal = onChainBal !== null ? onChainBal : (wallet ? Number(wallet.balanceUsdc).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—');
+  const usdcBal    = displayBal;
   const ethBal     = wallet ? Number(wallet.balanceBase).toFixed(4) : '—';
   const lowGas     = wallet ? Number(wallet.balanceBase) < 0.015 : false;
 
@@ -95,8 +140,16 @@ export default function WalletScreen() {
           <Ionicons name="arrow-back" size={20} color={theme.navy} />
         </TouchableOpacity>
         <Text style={styles.topTitle}>Wallet</Text>
-        <TouchableOpacity style={styles.backBtn}>
-          <Ionicons name="ellipsis-horizontal" size={20} color={theme.navy} />
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={loadAll}
+          disabled={fetching || chainFetching}
+        >
+          <Ionicons
+            name="refresh-outline"
+            size={20}
+            color={(fetching || chainFetching) ? '#9ca3af' : theme.navy}
+          />
         </TouchableOpacity>
       </View>
 
@@ -117,8 +170,25 @@ export default function WalletScreen() {
               )}
 
               <Text style={styles.balanceLabel}>USDC Balance</Text>
-              <Text style={styles.balanceAmount}>{usdcBal}</Text>
+              {chainFetching ? (
+                <ActivityIndicator color={theme.gold} size="large" style={{ marginVertical: 10 }} />
+              ) : (
+                <Text style={styles.balanceAmount}>{usdcBal}</Text>
+              )}
               <Text style={styles.balanceUnit}>USDC</Text>
+              {onChainBal === null && !chainFetching && (
+                <Text style={{ fontSize: 10, color: '#9ca3af', marginBottom: 4 }}>Showing estimated earnings (RPC unavailable)</Text>
+              )}
+              <TouchableOpacity
+                onPress={() => fetchOnChain(wallet?.address ?? '')}
+                disabled={chainFetching}
+                style={[styles.refreshBtn, chainFetching && { opacity: 0.5 }]}
+              >
+                <Ionicons name="refresh-outline" size={14} color="#fff" />
+                <Text style={styles.refreshBtnText}>
+                  {chainFetching ? 'Refreshing…' : 'Refresh Balance'}
+                </Text>
+              </TouchableOpacity>
 
               <View style={styles.ethRow}>
                 <Ionicons name={"diamond-outline" as any} size={14} color="#94a3b8" />
@@ -404,4 +474,7 @@ const makeStyles = (theme: Theme) => StyleSheet.create({
 
   securityNote: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginHorizontal: 16, marginTop: 12, backgroundColor: theme.card, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.border },
   securityText: { flex: 1, fontSize: 12, color: theme.textSecondary, lineHeight: 18 },
+
+  refreshBtn:     { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: theme.navy, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, marginBottom: 12 },
+  refreshBtnText: { fontSize: 12, fontWeight: '700', color: '#fff' },
 });

@@ -120,20 +120,15 @@ contract HybridEscrow is Ownable, ReentrancyGuard {
         address agent,
         uint256 price,
         bytes32 listingRef,
-        uint256 mandateId
+        uint16 commissionBps
     ) external returns (uint256 id) {
         require(buyer != address(0) && seller != address(0), "bad party");
         require(buyer != seller, "buyer is seller");
         require(price > 0, "bad price");
         require(msg.sender == seller || msg.sender == agent || msg.sender == owner(), "not seller side");
 
-        uint16 commissionBps = 0;
-        if (agent != address(0)) {
-            (bool ok, uint16 c) = mandates.validate(mandateId, seller, agent, listingRef);
-            require(ok, "invalid mandate");
-            commissionBps = c;
-        } else {
-            require(mandateId == 0, "no agent");
+        if (agent == address(0)) {
+            require(commissionBps == 0, "no agent");
         }
 
         require(uint256(commissionBps) + platformFeeBps <= 10_000, "splits exceed 100%");
@@ -146,14 +141,14 @@ contract HybridEscrow is Ownable, ReentrancyGuard {
             price: price,
             commissionBps: commissionBps,
             platformFeeBps: platformFeeBps,
-            mandateId: mandateId,
+            mandateId: 0,
             listingRef: listingRef,
             state: DealState.Created,
             fundedAt: 0,
             disputeDeadline: 0
         });
 
-        emit DealCreated(id, buyer, seller, agent, price, commissionBps, platformFeeBps, listingRef, mandateId);
+        emit DealCreated(id, buyer, seller, agent, price, commissionBps, platformFeeBps, listingRef, 0);
     }
 
     /// @notice Buyer deposits the full price in USDC. Requires prior approve().

@@ -30,6 +30,9 @@ export interface ChainConfig {
 
 let _config: ChainConfig | null = null;
 
+// Call this to bust the config cache (e.g. after a backend redeploy).
+export function clearConfigCache() { _config = null; }
+
 async function getConfig(): Promise<ChainConfig> {
   if (_config) return _config;
   _config = await api.chainConfig();

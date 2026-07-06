@@ -26,7 +26,7 @@ const ERC20_ABI = [
   'function allowance(address owner, address spender) view returns (uint256)',
 ];
 const ESCROW_ABI = [
-  'function createDeal(address buyer, address seller, address agent, uint256 price, bytes32 listingRef, uint256 mandateId) returns (uint256)',
+  'function createDeal(address buyer, address seller, address agent, uint256 price, bytes32 listingRef, uint16 commissionBps) returns (uint256)',
   'function fundDeal(uint256 id)',
   'event DealCreated(uint256 indexed id, address indexed buyer, address indexed seller, address agent, uint256 price, uint16 commissionBps, uint16 platformFeeBps, bytes32 listingRef, uint256 mandateId)',
 ];
@@ -150,12 +150,13 @@ const ItemDetailsPage = () => {
       const escrow = new ethers.Contract(cfg.contracts.hybridEscrow, ESCROW_ABI, signer);
 
       const seller = item.owner_address;
-      if (!seller) throw new Error('Owner payout address not set — attach it first.');
+      if (!seller) throw new Error('Owner payout address not set. Cannot create deal.');
       const agent = item.listing_type === 'owner_direct' ? ethers.ZeroAddress : (item.agent_address || ethers.ZeroAddress);
-      const listingRef = item.listing_ref; // bytes32 hex string
+      const priceBase = BigInt(Math.round(Number(item.price_usdc) * 1e6));
+      const commissionBps = item.commission_bps ? Number(item.commission_bps) : 0;
 
-      const tx = await escrow.createDeal(buyerAddress, seller, agent, priceBase, listingRef, 0);
-      notifications.info('Creating escrow…', 'Waiting for transaction to confirm.');
+      notifications.info('Creating escrow…', 'Waiting for transaction confirmation');
+      const tx = await escrow.createDeal(buyerAddress, seller, agent, priceBase, item.listing_ref, commissionBps);
       const receipt = await tx.wait();
 
       // Parse DealCreated event to get dealId

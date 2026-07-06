@@ -31,6 +31,7 @@ const config = {
   usdcAddress: process.env.USDC_ADDRESS || "",
   mandateRegistryAddress: process.env.MANDATE_REGISTRY_ADDRESS || "",
   hybridEscrowAddress: process.env.HYBRID_ESCROW_ADDRESS || "",
+  deployerPrivateKey: process.env.DEPLOYER_PRIVATE_KEY || "",
 
   startBlock: Number(process.env.START_BLOCK || 0),
   pollIntervalMs: Number(process.env.POLL_INTERVAL_MS || 8000),

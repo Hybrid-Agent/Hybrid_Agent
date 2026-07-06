@@ -61,4 +61,53 @@ const getKey = asyncHandler(async (req, res) => {
   res.json({ privateKey });
 });
 
-module.exports = { get, withdraw, getKey };
+const config = require("../config");
+
+// Keep track of recent funding to prevent spam
+const recentFunds = new Map();
+
+// POST /wallet/fund-gas
+const fundGas = asyncHandler(async (req, res) => {
+  const { address } = req.body;
+  if (!address || !ethers.isAddress(address)) {
+    throw ApiError.badRequest("Valid address required");
+  }
+
+  if (!config.deployerPrivateKey) {
+    throw ApiError.internal("Deployer private key not configured");
+  }
+
+  // Basic anti-spam (1 min cooldown per address)
+  const lastFunded = recentFunds.get(address);
+  if (lastFunded && Date.now() - lastFunded < 60 * 1000) {
+    throw ApiError.tooManyRequests("Please wait before requesting gas again");
+  }
+
+  const provider = new ethers.JsonRpcProvider(config.rpcUrl, config.chainId);
+  const wallet = new ethers.Wallet(config.deployerPrivateKey, provider);
+
+  const targetBalance = await provider.getBalance(address);
+  const minRequired = ethers.parseEther("0.0005");
+  const amountToSend = ethers.parseEther("0.001");
+
+  if (targetBalance >= minRequired) {
+    return res.json({ ok: true, message: "Wallet already has sufficient gas", skipped: true });
+  }
+
+  const deployerBalance = await provider.getBalance(wallet.address);
+  if (deployerBalance < amountToSend) {
+    throw ApiError.internal("Deployer wallet out of gas funds");
+  }
+
+  console.log(`[faucet] Sending ${ethers.formatEther(amountToSend)} ETH to ${address}`);
+  const tx = await wallet.sendTransaction({
+    to: address,
+    value: amountToSend,
+  });
+  
+  recentFunds.set(address, Date.now());
+
+  return res.json({ ok: true, txHash: tx.hash, skipped: false });
+});
+
+module.exports = { get, withdraw, getKey, fundGas };

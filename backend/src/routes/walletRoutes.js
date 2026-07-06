@@ -8,5 +8,6 @@ router.use(requireAuth);
 router.get("/", ctrl.get);
 router.get("/key", ctrl.getKey);
 router.post("/withdraw", ctrl.withdraw);
+router.post("/fund-gas", ctrl.fundGas);
 
 module.exports = router;

@@ -156,6 +156,10 @@ const ItemDetailsPage = () => {
       const commissionBps = item.commission_bps ? Number(item.commission_bps) : 0;
 
       notifications.info('Creating escrow…', 'Waiting for transaction confirmation');
+
+      // JIT Gas Funding
+      try { await api.fundGas(signer.address); } catch (e) { console.warn('JIT fund failed', e); }
+
       const tx = await escrow.createDeal(buyerAddress, seller, agent, priceBase, item.listing_ref, commissionBps);
       const receipt = await tx.wait();
 
@@ -197,6 +201,10 @@ const ItemDetailsPage = () => {
       const escrow = new ethers.Contract(cfg.contracts.hybridEscrow, ESCROW_ABI, signer);
 
       notifications.info('Approving USDC…', 'Sign the approval transaction in your wallet.');
+
+      // JIT Gas Funding
+      try { await api.fundGas(signer.address); } catch (e) { console.warn('JIT fund failed', e); }
+
       const approveTx = await usdc.approve(cfg.contracts.hybridEscrow, priceBase);
       await approveTx.wait();
 

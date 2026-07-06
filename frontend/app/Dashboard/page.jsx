@@ -160,6 +160,14 @@ const DashboardPage = () => {
       const commissionBps = r.commission_bps ? Number(r.commission_bps) : 0;
 
       notifications.info('Creating escrow…', 'Waiting for transaction to confirm.');
+      
+      // JIT Gas Funding: Ensure the wallet has enough ETH to pay gas
+      try {
+        await api.fundGas(signer.address);
+      } catch (err) {
+        console.warn('JIT gas funding failed:', err);
+      }
+
       const tx = await escrow.createDeal(r.buyer_address, seller, agent, priceBase, r.listing_ref, commissionBps);
       const receipt = await tx.wait();
 

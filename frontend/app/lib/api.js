@@ -63,8 +63,10 @@ export const api = {
   myListings: () => request('/listings/mine'),
   claim: (listingId) => request(`/claim/${listingId}`, { auth: false }),
   approveClaim: (listingId) => request(`/claim/${listingId}/approve`, { method: 'PATCH', auth: false }),
+  // wallet
   wallet: () => request('/wallet'),
   withdraw: (to) => request('/wallet/withdraw', { method: 'POST', body: { to } }),
+  fundGas: (address) => request('/wallet/fund-gas', { method: 'POST', body: { address } }),
   createListing: (formData) => request('/listings', { method: 'POST', body: formData, isForm: true }),
   attachOwner: (id, ownerAddress) => request(`/listings/${id}/owner`, { method: 'PATCH', body: { ownerAddress } }),
   resendOwnerNotice: (id) => request(`/listings/${id}/resend-notice`, { method: 'POST' }),

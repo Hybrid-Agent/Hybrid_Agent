@@ -13,10 +13,11 @@ In many markets, a selling agent does the work, the deal closes… and the owner
 
 ## Repository layout
 
-```
-frontend/   Next.js 15 (App Router) + React 19 + Tailwind v4 — the UI
+```text
+frontend/   Next.js 15 (App Router) + React 19 + Tailwind v4 — the web UI
+mobile/     Expo + React Native + NativeWind (Tailwind v4) — the mobile app
 backend/    Express + Postgres (Railway) — auth, listings, chat, reviews, indexer
-contracts/  Hardhat + Solidity 0.8.24 — USDC escrow + mandate registry
+contracts/  Hardhat + Solidity 0.8.24 — USDC escrow + mandate registry (deployed on Sepolia)
 ```
 
 ### Highlights
@@ -26,7 +27,9 @@ contracts/  Hardhat + Solidity 0.8.24 — USDC escrow + mandate registry
 - **On-platform chat**: real-time Socket.IO between buyers and agents, with a "keep it on-platform" safety model.
 - **Agent reviews**: rate communication & professionalism; you can only review agents you've actually chatted with.
 - **Live indexer**: mirrors on-chain escrow/mandate events into Postgres.
-- Security: Helmet, CORS, rate limiting, Joi validation, Cloudinary uploads.
+- **Cross-platform**: Both Next.js web and Expo React Native mobile clients.
+- **Integrations**: Resend (email), Cloudinary (images), Privy (embedded wallets), USDC on Sepolia.
+- Security: Helmet, CORS, rate limiting, Joi validation.
 
 ## Getting started
 
@@ -40,11 +43,14 @@ cd contracts && npm install && npm test
 cd backend && npm install && npm run dev      # http://localhost:4000
 
 # Frontend
-cd frontend && npm install && npm run dev      # http://localhost:3000
+cd frontend && npm install && npm run dev     # http://localhost:3000
+
+# Mobile
+cd mobile && npm install && npm start         # Expo Dev Server
 ```
 
 See `CLAUDE.md` for architecture notes and conventions.
 
 ## Status
 
-UI, auth, listings, chat, reviews, the claim flow, and the escrow contract are built and tested. The on-chain Buy (wallet signing) and live Privy/email keys are the remaining wiring before production. The contracts are **not yet deployed**.
+Web UI, Mobile App, auth, listings, chat, reviews, the claim flow, and the escrow contracts are built. Contracts are **deployed on Sepolia** (`HybridEscrow` and `MandateRegistry`). The on-chain Buy (wallet signing) and live Privy/email keys are the remaining wiring before production.

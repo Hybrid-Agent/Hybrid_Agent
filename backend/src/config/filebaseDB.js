@@ -69,8 +69,11 @@ async function del(key) {
   }
 }
 
-// List all object keys under a prefix.
-async function listKeys(prefix) {
+// List object keys under a prefix, in ascending lexicographic order.
+// `maxKeys` caps how many keys to return so callers never enumerate the whole
+// prefix; `startAfter` restricts the listing to keys strictly greater than it
+// (range scan support for cursor pagination).
+async function listKeys(prefix, { maxKeys, startAfter } = {}) {
   const keys = [];
   let token;
   do {
@@ -78,13 +81,15 @@ async function listKeys(prefix) {
       new ListObjectsV2Command({
         Bucket: BUCKET(),
         Prefix: prefix,
-        ContinuationToken: token,
+        ...(startAfter !== undefined ? { StartAfter: startAfter } : {}),
+        ...(maxKeys !== undefined ? { MaxKeys: maxKeys } : {}),
+        ...(token ? { ContinuationToken: token } : {}),
       })
     );
     for (const obj of res.Contents || []) keys.push(obj.Key);
     token = res.IsTruncated ? res.NextContinuationToken : undefined;
-  } while (token);
-  return keys;
+  } while (token && (maxKeys === undefined || keys.length < maxKeys));
+  return maxKeys === undefined ? keys : keys.slice(0, maxKeys);
 }
 
 // Fetch all JSON objects under a prefix in parallel.

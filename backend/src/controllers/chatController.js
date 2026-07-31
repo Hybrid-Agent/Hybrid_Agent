@@ -23,11 +23,18 @@ const listConversations = asyncHandler(async (req, res) => {
 });
 
 // GET /chat/conversations/:id/messages  — history (members only).
+// Supports ?limit= (1-100, default 50) and ?before= (opaque cursor for the page
+// of older messages, taken from a previous response's `nextCursor`).
 const getMessages = asyncHandler(async (req, res) => {
   const conversation = await chatModel.getById(req.params.id);
   if (!conversation) throw ApiError.notFound("conversation not found");
   if (!chatModel.isMember(conversation, req.user.id)) throw ApiError.forbidden();
-  res.json(await chatModel.messages(req.params.id));
+
+  const rawLimit = Number.parseInt(req.query.limit, 10);
+  const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(rawLimit, 1), 100) : 50;
+  const before = typeof req.query.before === "string" ? req.query.before : undefined;
+
+  res.json(await chatModel.messages(req.params.id, { limit, before }));
 });
 
 module.exports = { openConversation, listConversations, getMessages };

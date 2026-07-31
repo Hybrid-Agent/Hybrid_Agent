@@ -80,7 +80,13 @@ export const api = {
   // chat
   openConversation: (listingId) => request('/chat/conversations', { method: 'POST', body: { listingId } }),
   conversations: () => request('/chat/conversations'),
-  messages: (id) => request(`/chat/conversations/${id}/messages`),
+  messages: (id, { limit, before } = {}) => {
+    const params = new URLSearchParams();
+    if (limit) params.set('limit', String(limit));
+    if (before) params.set('before', before);
+    const qs = params.toString();
+    return request(`/chat/conversations/${id}/messages${qs ? `?${qs}` : ''}`);
+  },
   // agents + reviews
   agents: () => request('/agents', { auth: false }),
   agent: (id) => request(`/agents/${id}`, { auth: false }),

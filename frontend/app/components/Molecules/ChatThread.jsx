@@ -16,11 +16,29 @@ const ChatThread = ({ conversationId, className = '' }) => {
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [nextCursor, setNextCursor] = useState(null);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const endRef = useRef(null);
+  const scrollRef = useRef(null);
+  const topRef = useRef(null);
 
   const scrollDown = useCallback(() => {
     requestAnimationFrame(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }));
   }, []);
+
+  const loadOlder = useCallback(async () => {
+    if (!nextCursor || loadingOlder) return;
+    setLoadingOlder(true);
+    try {
+      const data = await api.messages(conversationId, { limit: 50, before: nextCursor });
+      setMessages((prev) => [...data.messages, ...prev]);
+      setNextCursor(data.nextCursor);
+    } catch {
+      /* ignore */
+    } finally {
+      setLoadingOlder(false);
+    }
+  }, [conversationId, nextCursor, loadingOlder]);
 
   useEffect(() => {
     if (!conversationId) return;
@@ -31,8 +49,8 @@ const ChatThread = ({ conversationId, className = '' }) => {
 
     (async () => {
       try {
-        const history = await api.messages(conversationId);
-        if (active) { setMessages(history); scrollDown(); }
+        const data = await api.messages(conversationId, { limit: 50 });
+        if (active) { setMessages(data.messages); setNextCursor(data.nextCursor); scrollDown(); }
       } catch {
         /* ignore */
       } finally {
@@ -58,6 +76,19 @@ const ChatThread = ({ conversationId, className = '' }) => {
     };
   }, [conversationId, scrollDown]);
 
+  // Load older history when the thread is scrolled to the top.
+  useEffect(() => {
+    const node = topRef.current;
+    const root = scrollRef.current;
+    if (!node || !root) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) loadOlder(); },
+      { root, rootMargin: '80px' }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [loadOlder]);
+
   const send = (e) => {
     e.preventDefault();
     const body = text.trim();
@@ -78,23 +109,30 @@ const ChatThread = ({ conversationId, className = '' }) => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3">
         {loading ? (
           <div className="flex justify-center pt-10 text-teal-500"><Spinner size={24} /></div>
         ) : messages.length === 0 ? (
           <p className="text-center text-sm text-gray-400 pt-10">No messages yet. Say hello 👋</p>
         ) : (
-          messages.map((m) => {
-            const mine = m.sender_id === user?.id;
-            return (
-              <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[75%] px-3.5 py-2 rounded-2xl text-sm ${mine ? 'bg-teal-600 text-white rounded-br-sm' : 'bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white rounded-bl-sm'}`}>
-                  {!mine && <p className="text-[10px] font-semibold text-teal-600 dark:text-teal-400 mb-0.5">{m.sender_name}</p>}
-                  <p className="break-words">{m.body}</p>
+          <>
+            <div ref={topRef} className="-mb-3">
+              {loadingOlder && (
+                <div className="flex justify-center py-2 text-teal-500"><Spinner size={18} /></div>
+              )}
+            </div>
+            {messages.map((m) => {
+              const mine = m.sender_id === user?.id;
+              return (
+                <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[75%] px-3.5 py-2 rounded-2xl text-sm ${mine ? 'bg-teal-600 text-white rounded-br-sm' : 'bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white rounded-bl-sm'}`}>
+                    {!mine && <p className="text-[10px] font-semibold text-teal-600 dark:text-teal-400 mb-0.5">{m.sender_name}</p>}
+                    <p className="break-words">{m.body}</p>
+                  </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            })}
+          </>
         )}
         <div ref={endRef} />
       </div>

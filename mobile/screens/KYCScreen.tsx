@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, Pressable, ScrollView, StyleSheet,
   StatusBar, TextInput, Image, ActivityIndicator,
@@ -19,6 +19,10 @@ const DOC_TYPES: DocType[] = ['Passport', 'National ID', "Driver's Licence"];
 const NATIONALITIES = ['Nigerian', 'Ghanaian', 'Kenyan', 'South African', 'British', 'American', 'Other'];
 
 const STEP_LABELS = ['Personal', 'Document', 'Selfie', 'Review'];
+
+// How often to re-check GET /auth/me while waiting for the backend to flip the
+// user's kyc_status to "verified" (real KYC providers approve asynchronously).
+const POLL_MS = 5000;
 
 // ── What KYC unlocks ─────────────────────────────────────────────────────────
 const UNLOCKS = [
@@ -91,16 +95,46 @@ export default function KYCScreen() {
     setError('');
     try {
       await api.kycVerify();
-      // refresh cached user so Profile shows verified status
+      // Refresh cached user so Profile shows the latest status.
       const { user } = await api.me();
       await storage.setUser(user);
-      setState('pending');
+      // The backend may verify instantly (MVP mock) or asynchronously (real KYC
+      // provider). If still pending, the effect below polls until verified.
+      setState(user.kyc_status === 'verified' ? 'verified' : 'pending');
     } catch (e: any) {
       setError(e.message ?? 'KYC submission failed.');
     } finally {
       setSubmitting(false);
     }
   };
+
+  // While waiting for approval, poll /auth/me and flip to the verified screen
+  // as soon as the backend reports kyc_status === "verified". No client-side
+  // bypass: the UI only ever reflects what the server says.
+  useEffect(() => {
+    if (state !== 'pending') return;
+    let cancelled = false;
+
+    const tick = async () => {
+      try {
+        const { user } = await api.me();
+        if (cancelled) return;
+        if (user.kyc_status === 'verified') {
+          await storage.setUser(user);
+          if (!cancelled) setState('verified');
+        }
+      } catch {
+        // Transient network error — keep polling.
+      }
+    };
+
+    tick();
+    const timer = setInterval(tick, POLL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [state]);
 
   const pickImage = async (onPick: (uri: string) => void, camera = false) => {
     const picker = camera ? ImagePicker.launchCameraAsync : ImagePicker.launchImageLibraryAsync;
@@ -357,7 +391,7 @@ export default function KYCScreen() {
               </View>
               <Text style={styles.centreTitle}>Verification submitted</Text>
               <Text style={styles.centreSub}>
-                Your documents are being reviewed. This usually takes less than 24 hours. We'll notify you when it's done.
+                Your documents are being reviewed. This usually takes less than 24 hours. This screen updates automatically once you're approved.
               </Text>
 
               <View style={styles.pendingSteps}>
@@ -374,11 +408,6 @@ export default function KYCScreen() {
                   </View>
                 ))}
               </View>
-
-              {/* Simulate verified for demo */}
-              <TouchableOpacity style={styles.btnGhost} onPress={() => setState('verified')}>
-                <Text style={styles.btnGhostText}>Simulate approval (demo)</Text>
-              </TouchableOpacity>
             </View>
           )}
 
@@ -631,8 +660,6 @@ const makeStyles = (theme: Theme) => StyleSheet.create({
   // Shared buttons
   btnPrimary:  { backgroundColor: theme.navy, borderRadius: 14, paddingVertical: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 4, width: '100%' },
   btnText:     { color: theme.background === '#121212' ? '#121212' : '#fff', fontWeight: '700', fontSize: 16 },
-  btnGhost:    { paddingVertical: 12, alignItems: 'center' },
-  btnGhostText: { fontSize: 13, color: theme.textSecondary, fontWeight: '500' },
 
   errBox:  { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: theme.background === '#121212' ? '#7f1d1d' : '#fef2f2', borderWidth: 1, borderColor: theme.errorText + '50', borderRadius: 10, padding: 12, marginBottom: 16 },
   errText: { color: theme.errorText, fontSize: 13, flex: 1 },

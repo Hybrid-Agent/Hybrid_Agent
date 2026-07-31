@@ -41,7 +41,7 @@ export interface AuthUser {
   user_name: string;
   email: string;
   phone_number?: string;
-  kyc_status: 'pending' | 'verified';
+  kyc_status: 'unverified' | 'pending' | 'verified';
   user_type: UserType;
   wallet_address?: string;
   avatar?: string;

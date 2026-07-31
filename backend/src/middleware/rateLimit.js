@@ -1,9 +1,14 @@
 const rateLimit = require("express-rate-limit");
 const config = require("../config");
 
+const rl = config.rateLimit || {};
+const windowMs = rl.windowMs || 15 * 60 * 1000;
+const max = rl.max || 100;
+const authMax = rl.authMax || 10;
+
 const apiLimiter = rateLimit({
-  windowMs: config.rateLimit.windowMs,
-  max: config.rateLimit.max,
+  windowMs,
+  max,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "too many requests, slow down" },
@@ -11,8 +16,8 @@ const apiLimiter = rateLimit({
 
 // Stricter limit for auth endpoints to blunt credential stuffing / brute force.
 const authLimiter = rateLimit({
-  windowMs: config.rateLimit.windowMs,
-  max: config.rateLimit.authMax,
+  windowMs,
+  max: authMax,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "too many auth attempts, try again later" },

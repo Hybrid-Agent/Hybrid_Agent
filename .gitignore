@@ -8,6 +8,8 @@ contracts/cache
 contracts/artifacts
 contracts/typechain-types
 contracts/deployments
+contracts-soroban/**/target
+contracts-soroban/target
 
 # env — never commit (includes .env, .env.local, .env.example)
 **/.env*

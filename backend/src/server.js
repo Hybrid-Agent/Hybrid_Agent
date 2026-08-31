@@ -3,6 +3,7 @@ const app = require("./app");
 const config = require("./config");
 const db = require("./config/db");
 const indexer = require("./indexer");
+const sorobanIndexer = require("./indexer/soroban");
 const { initSocket } = require("./socket");
 
 async function main() {
@@ -21,6 +22,7 @@ async function main() {
   server.listen(config.port, () => {
     console.log(`[api] listening on http://localhost:${config.port}`);
     indexer.start();
+    sorobanIndexer.start();
   });
 }
 

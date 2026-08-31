@@ -1,0 +1,6 @@
+[target.wasm32v1-none]
+# The Stellar / Soroban VM does not support WASM SIMD. Building with SIMD
+# enabled produces a contract that fails on-chain with:
+#   HostError: Error(WasmVm, InvalidAction) ... "SIMD support is not enabled"
+# so we explicitly disable it.
+rustflags = ["-C", "target-feature=-simd128"]

@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = [
+    "hybrid_escrow",
+    "mandate_registry",
+]
+
+[workspace.dependencies]
+soroban-sdk = "27.0"

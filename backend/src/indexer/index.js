@@ -10,6 +10,40 @@ const LAST_BLOCK_KEY = `indexer:lastBlock:${String(config.hybridEscrowAddress).t
 const MAX_RANGE = config.indexerMaxRange;
 const ZERO = "0x0000000000000000000000000000000000000000";
 
+// Detect RPC rate-limit / transient errors so we can back off instead of
+// aborting the whole sync (which otherwise leaves the cursor stuck and re-fires
+// the same burst on every poll).
+const MAX_ATTEMPTS = 5;
+const BASE_BACKOFF_MS = 1500;
+
+function isThrottled(err) {
+  const code = err?.code || err?.error?.code || err?.error?.error?.code;
+  const msg = String(err?.message || err?.reason || "");
+  return (
+    code === 429 ||
+    code === "RATE_LIMITED" ||
+    /429|rate limit|rate-limit|compute units|too many requests|throttl/i.test(msg)
+  );
+}
+
+async function withBackoff(fn) {
+  let attempt = 0;
+  for (;;) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (!isThrottled(err)) throw err;
+      attempt += 1;
+      if (attempt >= MAX_ATTEMPTS) {
+        throw new Error(`[indexer] still rate-limited after ${MAX_ATTEMPTS} attempts: ${err.message}`);
+      }
+      const delay = BASE_BACKOFF_MS * Math.pow(2, attempt - 1) + Math.random() * 500;
+      console.warn(`[indexer] RPC rate-limited (attempt ${attempt}/${MAX_ATTEMPTS}), backing off ${Math.round(delay)}ms`);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+}
+
 async function markListingForDeal(dealId, status) {
   const ref = await dealModel.listingRefFor(dealId);
   if (ref) await listingModel.setStatusByRef(ref, status);
@@ -82,8 +116,12 @@ async function handleEscrowEvent(name, args, log) {
 }
 
 async function syncRange(fromBlock, toBlock) {
-  const mandateLogs = await mandateRegistry.queryFilter("*", fromBlock, toBlock);
-  const escrowLogs = await hybridEscrow.queryFilter("*", fromBlock, toBlock);
+  const mandateLogs = await withBackoff(() =>
+    mandateRegistry.queryFilter("*", fromBlock, toBlock)
+  );
+  const escrowLogs = await withBackoff(() =>
+    hybridEscrow.queryFilter("*", fromBlock, toBlock)
+  );
 
   for (const log of mandateLogs) {
     const parsed = mandateRegistry.interface.parseLog(log);

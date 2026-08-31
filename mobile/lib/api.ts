@@ -211,9 +211,6 @@ export const api = {
   messages: (conversationId: string) =>
     request<any[]>(`/chat/conversations/${conversationId}/messages`),
 
-  // Wallet key (MVP custodial only — replaced by Privy in prod)
-  walletKey: () => request<{ privateKey: string }>('/wallet/key'),
-
   // Chain config (deployed contract addresses)
   chainConfig: () =>
     request<{

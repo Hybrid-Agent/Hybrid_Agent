@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, Pressable, ScrollView, StyleSheet,
   StatusBar, TextInput, Image, ActivityIndicator,
@@ -53,6 +53,23 @@ export default function KYCScreen() {
   const [selfie, setSelfie] = useState<string | null>(null);
 
   const stepIndex = (['personal', 'document', 'selfie', 'review'] as KYCState[]).indexOf(state);
+
+  // Poll for KYC approval while in pending state
+  useEffect(() => {
+    if (state !== 'pending') return;
+    const interval = setInterval(async () => {
+      try {
+        const { user } = await api.me();
+        await storage.setUser(user);
+        if (user.kyc_status === 'verified') {
+          setState('verified');
+        }
+      } catch {
+        // ignore transient errors — keep polling
+      }
+    }, 15_000);
+    return () => clearInterval(interval);
+  }, [state]);
 
   const validate = (): boolean => {
     setError('');
@@ -375,10 +392,6 @@ export default function KYCScreen() {
                 ))}
               </View>
 
-              {/* Simulate verified for demo */}
-              <TouchableOpacity style={styles.btnGhost} onPress={() => setState('verified')}>
-                <Text style={styles.btnGhostText}>Simulate approval (demo)</Text>
-              </TouchableOpacity>
             </View>
           )}
 

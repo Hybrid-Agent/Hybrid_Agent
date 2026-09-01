@@ -18,10 +18,6 @@ export function clearChainConfigCache() { _config = null; }
 export async function getChainConfig() {
   if (_config) return _config;
   _config = await api.config();
-  // Override escrow address for hackathon demo to bypass mandate checks
-  if (_config && _config.contracts) {
-    _config.contracts.hybridEscrow = '0x882B65d50E46440eA2A13701c5772A258CcA82b9';
-  }
   return _config;
 }
 

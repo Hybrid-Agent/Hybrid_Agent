@@ -26,8 +26,8 @@ const config = {
     folder: process.env.FILEBASE_FOLDER || "hybrid-agent",
   },
 
-  chainId: Number(process.env.CHAIN_ID || 84532),
-  rpcUrl: process.env.RPC_URL || "https://sepolia.base.org",
+  chainId: Number(process.env.CHAIN_ID || 11155111),
+  rpcUrl: process.env.RPC_URL || "https://ethereum-sepolia-rpc.publicnode.com",
   usdcAddress: process.env.USDC_ADDRESS || "",
   mandateRegistryAddress: process.env.MANDATE_REGISTRY_ADDRESS || "",
   hybridEscrowAddress: process.env.HYBRID_ESCROW_ADDRESS || "",

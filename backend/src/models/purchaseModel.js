@@ -68,6 +68,32 @@ async function approve(listingId, buyerId) {
   return pr;
 }
 
+// Upsert a purchase request row so a route can record a deal without requiring a
+// prior explicit request step.
+async function ensureForBuyer(listingId, buyerId, buyerAddress) {
+  const existing = await getByListingAndBuyer(listingId, buyerId);
+  if (existing) return existing;
+  return create(listingId, buyerId, buyerAddress);
+}
+
+// Record a Soroban (Stellar rail) deal + funding hashes on the purchase request.
+async function recordStellarDeal({ listingId, buyerId, dealId, method, hashes, xlmAmount, rate }) {
+  const key = recordKey(listingId, buyerId);
+  const pr = await db.get(key);
+  if (!pr) return null;
+  pr.deal_id = dealId;
+  pr.status = "funded";
+  pr.rail = "stellar";
+  pr.stellar_method = method;
+  pr.stellar_hashes = hashes;
+  if (xlmAmount != null) pr.xlm_amount = xlmAmount;
+  if (rate != null) pr.xlm_rate = rate;
+  pr.updated_at = new Date().toISOString();
+  await db.put(key, pr);
+  await syncIndexes(pr);
+  return pr;
+}
+
 async function markFunded(listingId, buyerAddress) {
   const keys = await db.listKeys(`${RECORDS}${listingId}/`);
   const all = await Promise.all(keys.map((k) => db.get(k)));
@@ -137,6 +163,8 @@ module.exports = {
   create,
   approve,
   recordDeal,
+  recordStellarDeal,
+  ensureForBuyer,
   markFunded,
   getByBuyer,
   getIncomingForAgent,

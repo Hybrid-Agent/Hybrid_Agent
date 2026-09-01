@@ -5,6 +5,7 @@ const { requireAuth, requireKyc } = require("../middleware/auth");
 const { createListingSchema, attachOwnerSchema } = require("../utils/validators");
 const ctrl = require("../controllers/listingController");
 const purchaseCtrl = require("../controllers/purchaseController");
+const stellarPayCtrl = require("../controllers/stellarPaymentController");
 
 const router = express.Router();
 
@@ -33,6 +34,10 @@ router.post("/:id/purchase", requireAuth, purchaseCtrl.request);
 router.get("/:id/purchase", requireAuth, purchaseCtrl.get);
 router.patch("/:id/purchase/approve", requireAuth, purchaseCtrl.approve);
 router.patch("/:id/purchase", requireAuth, purchaseCtrl.recordDeal);
+
+// Stellar rail payments (buyer pays through the Soroban escrow / XLM on-ramp).
+router.get("/:id/pay/stellar", requireAuth, stellarPayCtrl.quote);
+router.post("/:id/pay/stellar", requireAuth, stellarPayCtrl.pay);
 
 // Resend the owner notification email (agent triggers this if owner didn't receive it).
 router.post("/:id/resend-notice", requireAuth, ctrl.resendOwnerNotice);

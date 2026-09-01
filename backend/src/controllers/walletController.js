@@ -2,6 +2,7 @@ const { ethers } = require("ethers");
 const asyncHandler = require("../utils/asyncHandler");
 const ApiError = require("../utils/ApiError");
 const dealModel = require("../models/dealModel");
+const stellarWallet = require("../services/stellarWallet");
 
 const fmt = (base) => (Number(base) / 1e6).toLocaleString(undefined, { maximumFractionDigits: 2 });
 
@@ -26,12 +27,19 @@ const get = asyncHandler(async (req, res) => {
   }
 
   const total = commission + proceeds;
+  let stellar = null;
+  try {
+    stellar = await stellarWallet.getForUser(req.user);
+  } catch (e) {
+    stellar = { error: e.message };
+  }
   res.json({
     address: req.user.wallet_address,
     balanceUsdc: fmt(total),
     balanceBase: total.toString(),
     breakdown: { commissionUsdc: fmt(commission), proceedsUsdc: fmt(proceeds) },
     completedDeals: asAgent.length + asSeller.length,
+    stellar,
   });
 });
 
@@ -99,4 +107,34 @@ const fundGas = asyncHandler(async (req, res) => {
   return res.json({ ok: true, txHash: tx.hash, skipped: false });
 });
 
-module.exports = { get, withdraw, fundGas };
+// POST /wallet/stellar/activate — fund the user's derived Stellar wallet
+// (testnet friendbot) and create its USDC trustline so it can hold XLM/USDC.
+const stellarActivate = asyncHandler(async (req, res) => {
+  if (!stellarWallet.configured()) {
+    throw ApiError.internal("Stellar rail is not configured (SOROBAN_*)");
+  }
+  const keypair = stellarWallet.keypairFor(req.user);
+  const balances = await stellarWallet.activate(keypair);
+  res.json({ ok: true, address: keypair.publicKey(), balances });
+});
+
+// POST /wallet/stellar/withdraw — send XLM or USDC (Stellar) from the user's
+// derived Stellar wallet to a destination Stellar address.
+const stellarWithdraw = asyncHandler(async (req, res) => {
+  if (!stellarWallet.configured()) {
+    throw ApiError.internal("Stellar rail is not configured (SOROBAN_*)");
+  }
+  const { asset, to, amount } = req.body || {};
+  if (!to) throw ApiError.badRequest("destination Stellar address is required");
+  const keypair = stellarWallet.keypairFor(req.user);
+
+  const result = await stellarWallet.transfer({
+    keypair,
+    to,
+    asset,
+    amountStr: amount,
+  });
+  res.json({ ok: true, ...result });
+});
+
+module.exports = { get, withdraw, fundGas, stellarActivate, stellarWithdraw };

@@ -7,6 +7,7 @@ import {
   FiMail, FiPhone, FiEdit, FiX, FiList, FiBarChart2, FiDollarSign, FiCalendar,
   FiCopy, FiCheck, FiShield, FiAward, FiTwitter, FiLinkedin, FiFacebook,
   FiCreditCard, FiActivity, FiSettings, FiLogOut, FiExternalLink, FiCamera,
+  FiSend, FiZap,
 } from 'react-icons/fi';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useAuth } from '../components/Atoms/AuthProvider';
@@ -64,6 +65,12 @@ const ProfilePage = () => {
   const [onChainBalance, setOnChainBalance] = useState(null);
   const [onChainLoading, setOnChainLoading] = useState(false);
   const [resendingNoticeId, setResendingNoticeId] = useState(null);
+  const [stellarOpen, setStellarOpen] = useState(false);
+  const [stellarTo, setStellarTo] = useState('');
+  const [stellarAsset, setStellarAsset] = useState('usdc');
+  const [stellarAmount, setStellarAmount] = useState('');
+  const [stellarSubmitting, setStellarSubmitting] = useState(false);
+  const [stellarActivating, setStellarActivating] = useState(false);
 
   const wallet = user?.wallet_address?.toLowerCase();
   const tier = tierInfo(user);
@@ -193,6 +200,53 @@ const ProfilePage = () => {
       notifications.error('Withdrawal failed', err?.shortMessage || err?.message || 'Transaction was rejected.');
     } finally {
       setWithdrawing(false);
+    }
+  };
+
+  const handleStellarActivate = async () => {
+    setStellarActivating(true);
+    try {
+      const res = await api.activateStellar();
+      notifications.success('Stellar wallet activated', `XLM + USDC trustline ready on ${res.address.slice(0, 10)}…`);
+      setWalletInfo(await api.wallet().catch(() => walletInfo));
+    } catch (err) {
+      notifications.error('Stellar activation failed', err?.message || 'Could not fund the Stellar account (testnet faucet may be unreachable).');
+    } finally {
+      setStellarActivating(false);
+    }
+  };
+
+  const handleStellarWithdraw = async (e) => {
+    e.preventDefault();
+    if (!stellarTo.trim()) {
+      notifications.error('Destination required', 'Enter a Stellar address (G…) to withdraw to.');
+      return;
+    }
+    setStellarSubmitting(true);
+    try {
+      const res = await api.withdrawStellar({
+        asset: stellarAsset,
+        to: stellarTo.trim(),
+        amount: stellarAmount.trim() || undefined,
+      });
+      notifications.success('Stellar withdrawal sent', `${res.asset.toUpperCase()} → ${res.hash.slice(0, 12)}…`);
+      setStellarOpen(false);
+      setStellarTo('');
+      setStellarAmount('');
+      setWalletInfo(await api.wallet().catch(() => walletInfo));
+    } catch (err) {
+      notifications.error('Stellar withdrawal failed', err?.message || 'The transfer was rejected.');
+    } finally {
+      setStellarSubmitting(false);
+    }
+  };
+
+  const copyStellar = async (addr) => {
+    try {
+      await navigator.clipboard.writeText(addr);
+      notifications.flash('info', 'Copied', 'Stellar address copied.');
+    } catch {
+      /* ignore */
     }
   };
 
@@ -392,6 +446,71 @@ const ProfilePage = () => {
           {/* Decorative background elements */}
           <div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-teal-500/20 blur-3xl rounded-full pointer-events-none"></div>
           <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-48 h-48 bg-teal-900/40 blur-3xl rounded-full pointer-events-none"></div>
+        </div>
+
+        {/* Stellar wallet card */}
+        <div className="bg-gradient-to-r from-slate-700 to-slate-900 dark:from-slate-800/60 dark:to-slate-900/40 border border-slate-500/20 text-white rounded-3xl p-6 sm:p-8 mb-6 shadow-lg relative overflow-hidden">
+          <div className="relative z-10">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-5">
+              <div className="flex-1">
+                <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2 mb-2 uppercase tracking-wider">
+                  <FiSend size={15} /> Stellar Wallet
+                </h3>
+                {walletInfo?.stellar?.active ? (
+                  <p className="text-sm text-slate-300/80 max-w-lg">
+                    Funds for Stellar payments, payouts and XLM transfers live here. Withdraw USDC (Stellar) or XLM to any address.
+                  </p>
+                ) : (
+                  <p className="text-sm text-slate-300/80 max-w-lg">
+                    Activate your Stellar wallet to receive XLM + USDC (testnet faucet) and enable Stellar payments &amp; withdrawals.
+                  </p>
+                )}
+              </div>
+
+              <div className="bg-black/20 backdrop-blur-md rounded-2xl p-5 border border-white/10 min-w-[220px] text-center">
+                <p className="text-xs text-slate-200 mb-1 font-medium">Address</p>
+                <button onClick={() => copyStellar(walletInfo.stellar.address)} title="Copy address" className="font-mono text-sm font-semibold break-all hover:text-teal-300 transition-colors">
+                  {walletInfo?.stellar?.address ? shortAddress(walletInfo.stellar.address) : '…'}
+                </button>
+                {walletInfo?.stellar?.active && (
+                  <div className="grid grid-cols-2 gap-3 mt-3 text-left">
+                    <div>
+                      <p className="text-[10px] text-slate-300/70 font-medium">XLM</p>
+                      <p className="text-sm font-extrabold">{Number(walletInfo.stellar.xlm).toFixed(2)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-slate-300/70 font-medium">USDC</p>
+                      <p className="text-sm font-extrabold">{walletInfo.stellar.usdcDisplay || '0'}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 mt-5">
+              {!walletInfo?.stellar?.active && (
+                <button
+                  onClick={handleStellarActivate}
+                  disabled={stellarActivating || !walletInfo?.stellar?.configured}
+                  className="flex items-center gap-2 bg-white/10 hover:bg-teal-600 text-white text-sm font-semibold px-4 py-2 rounded-xl disabled:opacity-50 transition-colors"
+                >
+                  {stellarActivating ? <><Spinner size={15} /> Activating…</> : <><FiZap size={14} /> Activate Stellar wallet</>}
+                </button>
+              )}
+              {walletInfo?.stellar?.active && (
+                <button
+                  onClick={() => setStellarOpen(true)}
+                  className="flex items-center gap-2 bg-white/10 hover:bg-teal-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+                >
+                  <FiSend size={14} /> Withdraw
+                </button>
+              )}
+              {!walletInfo?.stellar?.configured && (
+                <p className="text-[11px] text-amber-300/80">Stellar rail not configured on the backend (SOROBAN_*).</p>
+              )}
+            </div>
+          </div>
+          <div className="absolute bottom-0 right-0 -mb-16 -mr-16 w-56 h-56 bg-slate-500/20 blur-3xl rounded-full pointer-events-none"></div>
         </div>
 
         {/* Stats */}
@@ -622,6 +741,48 @@ const ProfilePage = () => {
                 {withdrawing ? <Spinner size={18} /> : 'Withdraw funds'}
               </button>
               <p className="text-[11px] text-center text-gray-400">On-chain transfer executes via your email wallet once escrow contracts are live.</p>
+            </form>
+          </div>
+        </div>
+      )}
+    {/* Stellar withdraw modal */}
+      {stellarOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in" onClick={() => setStellarOpen(false)}>
+          <div className="bg-white/80 dark:bg-black/60 border border-black/10 dark:border-white/10 rounded-2xl shadow-2xl w-full max-w-md backdrop-blur-xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-bold">Withdraw from Stellar</h3>
+              <button onClick={() => setStellarOpen(false)} className="text-gray-400 hover:text-gray-700 dark:hover:text-white"><FiX size={22} /></button>
+            </div>
+            <form onSubmit={handleStellarWithdraw} className="p-5 space-y-4">
+              <div className="grid grid-cols-2 gap-2">
+                {(['usdc', 'xlm']).map((a) => (
+                  <button
+                    key={a}
+                    type="button"
+                    onClick={() => setStellarAsset(a)}
+                    className={`rounded-xl py-2 text-sm font-semibold border transition-colors ${
+                      stellarAsset === a
+                        ? 'bg-teal-700 text-white border-teal-600'
+                        : 'bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'
+                    }`}
+                  >
+                    {a === 'usdc' ? 'USDC' : 'XLM'}
+                    {a === 'usdc' && <span className="hidden"> (Stellar)</span>}
+                  </button>
+                ))}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Destination <span className="text-gray-400">(Stellar address)</span></label>
+                <input value={stellarTo} onChange={(e) => setStellarTo(e.target.value)} placeholder="G… Stellar address" className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-white/5 rounded-xl p-3 text-sm font-mono outline-none focus:ring-2 focus:ring-teal-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Amount <span className="text-gray-400">(optional — defaults to full balance)</span></label>
+                <input value={stellarAmount} onChange={(e) => setStellarAmount(e.target.value)} placeholder={stellarAsset === 'xlm' ? 'e.g. 25.5 XLM' : 'e.g. 100 USDC'} className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-white/5 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-teal-500" />
+              </div>
+              <button type="submit" disabled={stellarSubmitting} className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60 transition-colors">
+                {stellarSubmitting ? <><Spinner size={18} /> Sending…</> : `Withdraw ${stellarAsset === 'xlm' ? 'XLM' : 'USDC'}`}
+              </button>
+              <p className="text-[11px] text-center text-gray-400">On-chain on Stellar testnet via your deterministic wallet.</p>
             </form>
           </div>
         </div>

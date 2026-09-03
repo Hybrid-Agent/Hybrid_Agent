@@ -38,8 +38,8 @@ function opsConfigured() {
 // simulate -> assembleTransaction -> sign -> send -> poll.
 // `sourceKeypair` is the account that must authorize the call (the contract does
 // `caller.require_auth()` / `buyer.require_auth()`).
-async function invoke({ contractId, method, args, sourceKeypair, memo }) {
-  const { Account, Memo, Operation, TransactionBuilder } = require("@stellar/stellar-sdk");
+async function invoke({ contractId, method, args, sourceKeypair }) {
+  const { Account, Operation, TransactionBuilder } = require("@stellar/stellar-sdk");
   const { rpc: sdkRpc } = require("@stellar/stellar-sdk");
   const rpc = new sdkRpc.Server(config.rpcUrl, {
     allowHttp: config.rpcUrl.startsWith("http://"),
@@ -54,10 +54,10 @@ async function invoke({ contractId, method, args, sourceKeypair, memo }) {
     throw new Error(`Stellar account ${pubkey.slice(0, 10)}… is not funded on testnet — activate it first`);
   }
 
+  // Soroban transactions do not support memos — omit memo entirely.
   const tx = new TransactionBuilder(source, {
     fee: INVOKE_FEE,
     networkPassphrase: config.networkPassphrase,
-    memo: memo ? Memo.text(memo) : undefined,
   })
     .addOperation(
       Operation.invokeContractFunction({
@@ -132,7 +132,6 @@ async function createDeal({ sellerKp, buyerPubkey, agentPubkey, priceUsdc7, list
       scvU64(mandateId),
     ],
     sourceKeypair: sellerKp,
-    memo: `HA deal ${String(listingRef).slice(0, 12)}`,
   });
 
   // Pull deal_id from the returned events (DealCreated publishes deal_id).
@@ -160,7 +159,6 @@ async function fundDeal({ buyerKp, dealId }) {
     method: "fund_deal",
     args: [scvU64(dealId)],
     sourceKeypair: buyerKp,
-    memo: `HA fund #${dealId}`,
   });
   return { hash: result.hash };
 }

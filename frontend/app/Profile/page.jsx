@@ -472,18 +472,22 @@ const ProfilePage = () => {
                 <button onClick={() => copyStellar(walletInfo.stellar.address)} title="Copy address" className="font-mono text-sm font-semibold break-all hover:text-teal-300 transition-colors">
                   {walletInfo?.stellar?.address ? shortAddress(walletInfo.stellar.address) : '…'}
                 </button>
-                {walletInfo?.stellar?.active && (
-                  <div className="grid grid-cols-2 gap-3 mt-3 text-left">
+                <div className="grid grid-cols-2 gap-3 mt-3 text-left">
                     <div>
                       <p className="text-[10px] text-slate-300/70 font-medium">XLM</p>
-                      <p className="text-sm font-extrabold">{Number(walletInfo.stellar.xlm).toFixed(2)}</p>
+                      <p className="text-sm font-extrabold">{walletInfo?.stellar?.xlm != null ? Number(walletInfo.stellar.xlm).toFixed(2) : '—'}</p>
                     </div>
                     <div>
                       <p className="text-[10px] text-slate-300/70 font-medium">USDC</p>
-                      <p className="text-sm font-extrabold">{walletInfo.stellar.usdcDisplay || '0'}</p>
+                      <p className="text-sm font-extrabold">{walletInfo?.stellar?.usdcDisplay || '—'}</p>
                     </div>
                   </div>
-                )}
+                  {!walletInfo?.stellar?.active && walletInfo?.stellar?.funded !== false && (
+                    <p className="text-[10px] text-amber-300/80 mt-2">Activate to enable payments &amp; withdrawals</p>
+                  )}
+                  {walletInfo?.stellar?.funded === false && (
+                    <p className="text-[10px] text-amber-300/80 mt-2">Not yet funded — click Activate below</p>
+                  )}
               </div>
             </div>
 

@@ -18,3 +18,4 @@ contracts-soroban/target
 backend/data
 *.log
 .DS_Store
+.vercel

@@ -1,5 +1,7 @@
 # HybridAgent
 
+**Live:** https://hybrid-agent-one.vercel.app
+
 **A global Web2/Web3 escrow marketplace for property & vehicle sales — where agents who own nothing earn by helping owners sell, and their commission is guaranteed on-chain.**
 
 In many markets, a selling agent does the work, the deal closes… and the owner refuses to pay the commission. HybridAgent fixes this: the buyer's payment settles through a **USDC escrow smart contract** that, on completion, atomically splits the funds — **agent commission**, **platform fee**, and **owner proceeds** — so no party can be cheated.

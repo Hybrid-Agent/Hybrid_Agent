@@ -1,0 +1,8 @@
+backend/
+contracts/
+contracts-soroban/
+scripts/
+.git/
+**/node_modules/
+**/.next/
+*.md

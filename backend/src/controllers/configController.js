@@ -2,7 +2,7 @@ const config = require("../config");
 const sorobanConfig = require("../config/soroban");
 
 // GET /config — public chain config the frontend needs to talk to the contracts.
-// Includes both the EVM rail (ethers on Ethereum Sepolia) and the Stellar rail.
+// Includes the EVM rail (Ethereum Sepolia), the Base rail, and the Stellar rail.
 function get(req, res) {
   res.json({
     chainId: config.chainId,
@@ -13,6 +13,16 @@ function get(req, res) {
       hybridEscrow: config.hybridEscrowAddress,
     },
     chainConfigured: config.chainConfigured,
+    // Base Sepolia settlement rail.
+    base: {
+      chainId: config.base.chainId,
+      rpcUrl: config.base.rpcUrl,
+      configured: Boolean(config.base.usdcAddress && config.base.hybridEscrowAddress),
+      contracts: {
+        usdc: config.base.usdcAddress,
+        hybridEscrow: config.base.hybridEscrowAddress,
+      },
+    },
     stellar: {
       configured: sorobanConfig.configured,
       usdcAddress: sorobanConfig.usdcAddress,

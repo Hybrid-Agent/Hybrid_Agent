@@ -33,6 +33,14 @@ const config = {
   hybridEscrowAddress: process.env.HYBRID_ESCROW_ADDRESS || "",
   deployerPrivateKey: process.env.DEPLOYER_PRIVATE_KEY || "",
 
+  // Base Sepolia (chainId 84532) — second EVM settlement rail.
+  base: {
+    chainId: Number(process.env.BASE_CHAIN_ID || 84532),
+    rpcUrl: process.env.BASE_RPC_URL || "https://sepolia.base.org",
+    usdcAddress: process.env.BASE_USDC_ADDRESS || "",
+    hybridEscrowAddress: process.env.BASE_HYBRID_ESCROW_ADDRESS || "",
+  },
+
   startBlock: Number(process.env.START_BLOCK || 0),
   pollIntervalMs: Number(process.env.POLL_INTERVAL_MS || 8000),
   // Max blocks per eth_getLogs page. Alchemy free tier caps this at 10.

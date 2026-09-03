@@ -31,7 +31,11 @@ const ESCROW_ABI = [
   'event DealCreated(uint256 indexed id, address indexed buyer, address indexed seller, address agent, uint256 price, uint16 commissionBps, uint16 platformFeeBps, bytes32 listingRef, uint256 mandateId)',
 ];
 
-const EXPLORER = 'https://sepolia.etherscan.io/tx/';
+// Chain-specific block explorer roots.
+const EXPLORERS = {
+  sepolia: 'https://sepolia.etherscan.io/tx/',
+  base:    'https://sepolia.basescan.org/tx/',
+};
 
 const DetailRow = ({ icon: Icon, label, value }) => (
   <div className="flex items-center gap-3 bg-gray-100 dark:bg-white/10 rounded-lg p-3">
@@ -65,8 +69,9 @@ const ItemDetailsPage = () => {
   const [buyOpen, setBuyOpen] = useState(false);
   const [buyStep, setBuyStep] = useState(''); // '', 'requesting', 'escrow', 'approving', 'funding', 'done'
   const [fundTx, setFundTx] = useState(null);
+  const [fundTxChain, setFundTxChain] = useState('sepolia'); // 'sepolia' | 'base'
 
-  // Payment method: 'evm-usdc' (default, Ethereum Sepolia) | 'stellar-usdc' | 'stellar-xlm'
+  // Payment method: 'evm-usdc' (Ethereum Sepolia) | 'base-usdc' (Base Sepolia) | 'stellar-usdc' | 'stellar-xlm'
   const [payMethod, setPayMethod] = useState('evm-usdc');
   const [stellarQuoteData, setStellarQuoteData] = useState(null);
   const [stellarPaying, setStellarPaying] = useState(false);
@@ -125,15 +130,17 @@ const ItemDetailsPage = () => {
     catch { setQuote(null); }
   };
 
-  // Fetch an XLM quote when the buyer picks the Stellar XLM option.
+  // Fetch an XLM quote whenever the buyer picks the Stellar XLM option
+  // — works both in the initial buy modal AND the "fund escrow" panel.
   useEffect(() => {
-    if (!buyOpen || payMethod !== 'stellar-xlm') return;
+    if (payMethod !== 'stellar-xlm') return;
     let cancelled = false;
-    api.stellarQuote(item.id)
+    setStellarQuoteData(null);
+    api.stellarQuote(item?.id)
       .then((q) => { if (!cancelled) setStellarQuoteData(q); })
       .catch(() => { if (!cancelled) setStellarQuoteData(null); });
     return () => { cancelled = true; };
-  }, [buyOpen, payMethod, item?.id]);
+  }, [payMethod, item?.id]);
 
   // Step (Stellar): buyer pays directly through the Soroban escrow.
   const payStellar = async () => {
@@ -222,7 +229,7 @@ const ItemDetailsPage = () => {
     }
   };
 
-  // Step 3 (buyer): approve USDC + fund the escrow deal
+  // Step 3a (buyer): approve USDC + fund the escrow deal on Ethereum Sepolia
   const fundDeal = async (dealId) => {
     if (!wallet) { connectPrivy(); return; }
     setBuyStep('approving');
@@ -247,15 +254,54 @@ const ItemDetailsPage = () => {
 
       setBuyStep('funding');
       notifications.info('Funding escrow…', 'Sign the funding transaction in your wallet.');
-      const fundTx = await escrow.fundDeal(dealId);
-      const receipt = await fundTx.wait();
+      const fundTxRes = await escrow.fundDeal(dealId);
+      const receipt = await fundTxRes.wait();
 
       setFundTx(receipt.hash);
+      setFundTxChain('sepolia');
       setBuyStep('done');
       await loadPr();
       notifications.success('Escrow funded!', 'Your payment is secured in escrow. The agent will proceed with the sale.');
     } catch (err) {
       notifications.error('Payment failed', err?.shortMessage || err.message);
+      setBuyStep('');
+    }
+  };
+
+  // Step 3b (buyer): approve USDC + fund the escrow deal on Base Sepolia
+  const fundDealOnBase = async (dealId) => {
+    if (!wallet) { connectPrivy(); return; }
+    setBuyStep('approving');
+    try {
+      const cfg = await getChainConfig();
+      const baseCfg = cfg?.base;
+      if (!baseCfg?.configured) throw new Error('Base Sepolia escrow not configured on this platform yet.');
+      if (!baseCfg.contracts?.usdc || !baseCfg.contracts?.hybridEscrow) throw new Error('Base contracts not configured');
+
+      await wallet.switchChain(baseCfg.chainId);
+      const provider = new ethers.BrowserProvider(await wallet.getEthereumProvider());
+      const signer = await provider.getSigner();
+
+      const usdc = new ethers.Contract(baseCfg.contracts.usdc, ERC20_ABI, signer);
+      const escrow = new ethers.Contract(baseCfg.contracts.hybridEscrow, ESCROW_ABI, signer);
+
+      notifications.info('Approving USDC on Base…', 'Sign the approval transaction in your wallet.');
+
+      const approveTx = await usdc.approve(baseCfg.contracts.hybridEscrow, priceBase);
+      await approveTx.wait();
+
+      setBuyStep('funding');
+      notifications.info('Funding escrow on Base…', 'Sign the funding transaction in your wallet.');
+      const fundTxRes = await escrow.fundDeal(dealId);
+      const receipt = await fundTxRes.wait();
+
+      setFundTx(receipt.hash);
+      setFundTxChain('base');
+      setBuyStep('done');
+      await loadPr();
+      notifications.success('Escrow funded on Base!', 'Your USDC payment is secured on Base Sepolia. The agent will proceed.');
+    } catch (err) {
+      notifications.error('Base payment failed', err?.shortMessage || err.message);
       setBuyStep('');
     }
   };
@@ -342,7 +388,7 @@ const ItemDetailsPage = () => {
                 ) : alreadyFunded ? (
                   <div className="bg-teal-50 dark:bg-[#121212]/15 border border-teal-200 dark:border-teal-800 rounded-xl p-4 text-sm text-teal-700 dark:text-teal-300 font-semibold flex items-center gap-2">
                     <FiCheck size={16} /> Escrow funded — your payment is secured.
-                    {fundTx && <a href={`${EXPLORER}${fundTx}`} target="_blank" rel="noreferrer" className="ml-auto text-xs flex items-center gap-1 hover:underline"><FiExternalLink size={12} /> Tx</a>}
+                    {fundTx && <a href={`${EXPLORERS[fundTxChain] ?? EXPLORERS.sepolia}${fundTx}`} target="_blank" rel="noreferrer" className="ml-auto text-xs flex items-center gap-1 hover:underline"><FiExternalLink size={12} /> Tx</a>}
                   </div>
                 ) : dealReady ? (
                   <div className="space-y-3">
@@ -350,22 +396,63 @@ const ItemDetailsPage = () => {
                       <p className="font-semibold text-amber-800 dark:text-amber-300 mb-1">Escrow deal is ready — fund it now</p>
                       <p className="text-amber-700 dark:text-amber-400 text-xs">Deal #{pr.deal_id} · {Number(item.price_usdc).toLocaleString()} USDC will be held in escrow until you confirm receipt.</p>
                     </div>
-                    {!wallet ? (
+
+                    {/* Token / network selector */}
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Choose payment token &amp; network</p>
+                      {[
+                        { k: 'evm-usdc',    title: 'USDC',           sub: 'Ethereum Sepolia · EVM escrow' },
+                        { k: 'base-usdc',   title: 'USDC (Base)',     sub: 'Base Sepolia · EVM escrow (L2)' },
+                        { k: 'stellar-usdc',title: 'USDC (Stellar)',  sub: 'Stellar network · Soroban escrow' },
+                        { k: 'stellar-xlm', title: 'XLM (Stellar)',   sub: 'Pay in XLM · platform converts to USDC' },
+                      ].map((opt) => (
+                        <button
+                          key={opt.k}
+                          type="button"
+                          onClick={() => { setPayMethod(opt.k); setStellarQuoteData(null); setStellarResult(null); }}
+                          className={`w-full flex items-center justify-between gap-2 border rounded-xl px-3 py-2.5 text-left transition-colors ${
+                            payMethod === opt.k
+                              ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/20 ring-1 ring-teal-500'
+                              : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5'
+                          }`}
+                        >
+                          <span>
+                            <span className="block text-sm font-semibold text-gray-900 dark:text-white">{opt.title}</span>
+                            <span className="block text-[11px] text-gray-500 dark:text-gray-400">{opt.sub}</span>
+                          </span>
+                          <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${payMethod === opt.k ? 'border-teal-600 bg-teal-600' : 'border-gray-300 dark:border-gray-600'}`} />
+                        </button>
+                      ))}
+                      {payMethod === 'stellar-xlm' && (
+                        <div className="text-[11px] text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-white/5 rounded-lg p-2.5">
+                          {stellarQuoteData
+                            ? <>You’ll pay <span className="font-mono font-semibold">{stellarQuoteData.xlmAmount} XLM</span> (rate: 1 XLM ≈ {stellarQuoteData.rate.toLocaleString()} USDC). USDC equivalent lands in escrow.</>
+                            : <span className="flex items-center gap-1.5"><Spinner size={12} /> Loading XLM quote…</span>}
+                        </div>
+                      )}
+                    </div>
+
+                    {payMethod.startsWith('stellar') ? (
                       <button
-                        onClick={connectPrivy}
-                        className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors"
+                        onClick={payStellar}
+                        disabled={stellarPaying || (payMethod === 'stellar-xlm' && !stellarQuoteData)}
+                        className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
                       >
+                        {stellarPaying ? <><Spinner size={16} /> Paying on Stellar…</> : <><FiArrowRight size={16} /> Pay with {payMethod === 'stellar-xlm' ? 'XLM' : 'Stellar USDC'}</>}
+                      </button>
+                    ) : !wallet ? (
+                      <button onClick={connectPrivy} className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors">
                         <FiShield size={16} /> Connect wallet to pay
                       </button>
                     ) : (
                       <button
-                        onClick={() => fundDeal(pr.deal_id)}
+                        onClick={() => payMethod === 'base-usdc' ? fundDealOnBase(pr.deal_id) : fundDeal(pr.deal_id)}
                         disabled={!!buyStep}
                         className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 dark:bg-white/10 dark:hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
                       >
                         {buyStep === 'approving' ? <><Spinner size={16} /> Approving USDC…</> :
-                         buyStep === 'funding' ? <><Spinner size={16} /> Funding escrow…</> :
-                         <><FiShield size={16} /> Fund escrow · {Number(item.price_usdc).toLocaleString()} USDC</>}
+                         buyStep === 'funding'   ? <><Spinner size={16} /> Funding escrow…</> :
+                         <><FiShield size={16} /> Fund escrow · {Number(item.price_usdc).toLocaleString()} USDC {payMethod === 'base-usdc' ? '(Base)' : ''}</>}
                       </button>
                     )}
                     <button onClick={openChat} className="w-full flex items-center justify-center gap-2 border border-gray-300 dark:border-gray-600 hover:border-teal-500 font-bold py-3 rounded-xl transition-colors text-sm">
@@ -517,14 +604,15 @@ const ItemDetailsPage = () => {
               <div className="space-y-1.5">
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Payment method</p>
                 {[
-                  { k: 'evm-usdc', title: 'USDC', sub: 'Ethereum Sepolia · default' },
-                  { k: 'stellar-usdc', title: 'USDC (Stellar)', sub: 'Stellar network · same escrow' },
-                  { k: 'stellar-xlm', title: 'XLM (Stellar)', sub: 'Pay in XLM · platform converts to USDC' },
+                  { k: 'evm-usdc',     title: 'USDC',           sub: 'Ethereum Sepolia · default' },
+                  { k: 'base-usdc',    title: 'USDC (Base)',     sub: 'Base Sepolia · L2 · low fees' },
+                  { k: 'stellar-usdc', title: 'USDC (Stellar)',  sub: 'Stellar network · same escrow' },
+                  { k: 'stellar-xlm',  title: 'XLM (Stellar)',   sub: 'Pay in XLM · platform converts to USDC' },
                 ].map((opt) => (
                   <button
                     key={opt.k}
                     type="button"
-                    onClick={() => setPayMethod(opt.k)}
+                    onClick={() => { setPayMethod(opt.k); setStellarQuoteData(null); }}
                     className={`w-full flex items-center justify-between gap-2 border rounded-xl px-3 py-2.5 text-left transition-colors ${
                       payMethod === opt.k
                         ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/20 ring-1 ring-teal-500'
@@ -535,13 +623,13 @@ const ItemDetailsPage = () => {
                       <span className="block text-sm font-semibold text-gray-900 dark:text-white">{opt.title}</span>
                       <span className="block text-[11px] text-gray-500 dark:text-gray-400">{opt.sub}</span>
                     </span>
-                    <span className={`w-4 h-4 rounded-full border-2 ${payMethod === opt.k ? 'border-teal-600 bg-teal-600' : 'border-gray-300 dark:border-gray-600'}`} />
+                    <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${payMethod === opt.k ? 'border-teal-600 bg-teal-600' : 'border-gray-300 dark:border-gray-600'}`} />
                   </button>
                 ))}
                 {payMethod === 'stellar-xlm' && (
                   <div className="text-[11px] text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-white/5 rounded-lg p-2.5">
                     {stellarQuoteData
-                      ? <>You'll pay <span className="font-mono font-semibold">{stellarQuoteData.xlmAmount} XLM</span> (rate: 1 XLM ≈ {stellarQuoteData.rate.toLocaleString()} USDC). USDC equivalent lands in escrow.</>
+                      ? <>You’ll pay <span className="font-mono font-semibold">{stellarQuoteData.xlmAmount} XLM</span> (rate: 1 XLM ≈ {stellarQuoteData.rate.toLocaleString()} USDC). USDC equivalent lands in escrow.</>
                       : <span className="flex items-center gap-1.5"><Spinner size={12} /> Loading XLM quote…</span>}
                   </div>
                 )}
@@ -560,6 +648,8 @@ const ItemDetailsPage = () => {
               <p className="text-[11px] text-center text-gray-400">
                 {payMethod.startsWith('stellar')
                   ? 'The Soroban escrow secures your payment and splits commission + fees atomically on completion.'
+                  : payMethod === 'base-usdc'
+                  ? 'Base Sepolia — same escrow logic, lower gas. The agent will create your deal; fund it once ready.'
                   : "The agent will create your escrow deal on-chain. You'll fund it once it's ready."}
               </p>
             </div>

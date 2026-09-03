@@ -364,7 +364,7 @@ const ItemDetailsPage = () => {
 
               {item.description && <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-6">{item.description}</p>}
 
-              <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                 <DetailRow icon={FiDollarSign} label="Price" value={`${item.price_usdc} USDC`} />
                 <DetailRow icon={isVehicle ? FiTruck : FiHome} label="Type" value={item.asset_type} />
                 {item.listing_type === 'agent_brokered' && <DetailRow icon={FiUser} label="Sold by agent" value="Brokered" />}

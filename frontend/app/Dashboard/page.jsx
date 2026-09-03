@@ -224,7 +224,7 @@ const DashboardPage = () => {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-1 p-1 bg-gray-100 dark:bg-white/5 rounded-xl w-full sm:w-fit mb-6 overflow-x-auto">
+        <div className="flex flex-wrap gap-1 p-1 bg-gray-100 dark:bg-white/5 rounded-xl w-full sm:w-fit mb-6">
           {tabs.map((t) => (
             <button key={t.id} onClick={() => { setTab(t.id); if (t.id === 'incoming') loadAll(); }}
               className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
@@ -474,8 +474,8 @@ const DashboardPage = () => {
 
         {/* ── Messages ── */}
         {tab === 'messages' && (
-          <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden grid md:grid-cols-[300px_1fr] h-[72vh] animate-fade-in">
-            <div className={`md:border-r border-gray-200 dark:border-gray-800 overflow-y-auto ${selectedConv ? 'hidden md:block' : 'block'}`}>
+          <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden grid md:grid-cols-[300px_1fr] h-auto md:h-[72vh] animate-fade-in">
+            <div className={`md:border-r border-gray-200 dark:border-gray-800 overflow-y-auto max-h-[50vh] md:max-h-none ${selectedConv ? 'hidden md:block' : 'block'}`}>
               {loadingLists ? (
                 <div className="p-4 space-y-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
               ) : conversations.length === 0 ? (

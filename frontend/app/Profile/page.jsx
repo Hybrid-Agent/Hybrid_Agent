@@ -537,7 +537,7 @@ const ProfilePage = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 p-1 bg-gray-100 dark:bg-white/5 rounded-xl w-full sm:w-fit mb-6 overflow-x-auto">
+        <div className="flex flex-wrap gap-1 p-1 bg-gray-100 dark:bg-white/5 rounded-xl w-full sm:w-fit mb-6">
           {tabs.map((t) => (
             <button
               key={t.id}
@@ -635,30 +635,22 @@ const ProfilePage = () => {
 
           {tab === 'activity' && (
             dataLoading ? <Skeleton className="h-40 w-full" /> : deals.length > 0 ? (
-              <div className="overflow-x-auto bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 rounded-2xl">
-                <table className="w-full text-sm">
-                  <thead className="text-left text-gray-400 border-b border-gray-200 dark:border-gray-800">
-                    <tr>
-                      <th className="px-4 py-3 font-semibold">Deal</th>
-                      <th className="px-4 py-3 font-semibold">Role</th>
-                      <th className="px-4 py-3 font-semibold">Price</th>
-                      <th className="px-4 py-3 font-semibold">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {deals.map((d) => {
-                      const role = d.agent_address === wallet ? 'Agent' : d.seller_address === wallet ? 'Seller' : 'Buyer';
-                      return (
-                        <tr key={d.deal_id} className="border-b border-gray-100 dark:border-gray-800/60 last:border-0">
-                          <td className="px-4 py-3 font-medium">#{d.deal_id}</td>
-                          <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{role}</td>
-                          <td className="px-4 py-3 font-mono">{formatUsdc(d.price)} USDC</td>
-                          <td className="px-4 py-3"><StateBadge state={d.state} /></td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 rounded-2xl divide-y divide-gray-100 dark:divide-gray-800/60">
+                {deals.map((d) => {
+                  const role = d.agent_address === wallet ? 'Agent' : d.seller_address === wallet ? 'Seller' : 'Buyer';
+                  return (
+                    <div key={d.deal_id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3.5 text-sm">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="font-semibold whitespace-nowrap">#{d.deal_id}</span>
+                        <span className="text-gray-500 dark:text-gray-400">{role}</span>
+                      </div>
+                      <div className="flex items-center gap-3 sm:gap-6 ml-auto">
+                        <span className="font-mono whitespace-nowrap">{formatUsdc(d.price)} USDC</span>
+                        <StateBadge state={d.state} />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <EmptyState title="No deals yet" body="Your escrow deals (as buyer, seller, or agent) will show up here." />

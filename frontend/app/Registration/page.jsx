@@ -187,7 +187,7 @@ const RegistrationPage = () => {
                 <>
                   <div>
                     <label className={labelClass}>I am an</label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {[
                         { v: 'agent', t: 'Agent', d: 'I sell for others & earn commission' },
                         { v: 'owner', t: 'Owner', d: 'I sell my own property/vehicle' },

@@ -208,4 +208,4 @@ HybridAgent employs a simple, transparent fee structure extracted atomically at 
 
 ---
 
-*Built for ProdfestHackathon · hybrid-agent-ecru.vercel.app*
+*Built for ProdfestHackathon · hybrid-agent-one.vercel.app*

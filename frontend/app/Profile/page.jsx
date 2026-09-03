@@ -409,94 +409,81 @@ const ProfilePage = () => {
 
         <PaymentActivity />
 
-        {/* USDC Funded Section */}
-        <div className="bg-gradient-to-r from-teal-600 to-teal-800 dark:from-teal-900/60 dark:to-teal-900/40 border border-teal-500/20 text-white rounded-3xl p-6 sm:p-8 mb-6 shadow-lg relative overflow-hidden">
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex-1">
-              <h3 className="text-sm font-bold text-teal-100 flex items-center gap-2 mb-2 uppercase tracking-wider">
-                <FiDollarSign size={16} /> Wallet Balance
-              </h3>
-              <p className="text-xl sm:text-2xl font-semibold mb-1">USDC funded for property payments</p>
-              <p className="text-sm text-teal-100/70 max-w-lg">
-                Your current embedded wallet balance. This balance is used to fund escrow for your property purchases, or receives payouts from your sales and commissions.
-              </p>
-            </div>
-            <div className="bg-black/20 backdrop-blur-md rounded-2xl p-5 border border-white/10 min-w-[220px] text-center">
-              <p className="text-xs text-teal-100 mb-1 font-medium">On-Chain Balance</p>
-              {onChainLoading ? (
-                <Skeleton className="h-8 w-24 mx-auto my-1 bg-white/20" />
-              ) : (
-                <p className="text-3xl font-extrabold">
-                  {onChainBalance !== null ? onChainBalance : (walletInfo ? walletInfo.balanceUsdc : '0.00')}
-                  <span className="text-lg font-semibold text-teal-200"> USDC</span>
-                </p>
-              )}
-              {onChainBalance === null && !onChainLoading && (
-                <p className="text-[10px] text-teal-200/60 mt-1">RPC unavailable — showing estimated earnings</p>
-              )}
-              <button
-                onClick={fetchOnChainBalance}
-                disabled={onChainLoading}
-                className="mt-3 text-[11px] text-teal-200 hover:text-white border border-white/20 hover:border-white/40 rounded-lg px-3 py-1 transition-colors disabled:opacity-50"
-              >
-                {onChainLoading ? 'Refreshing...' : '↻ Refresh'}
-              </button>
-            </div>
-          </div>
-          {/* Decorative background elements */}
-          <div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-teal-500/20 blur-3xl rounded-full pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-48 h-48 bg-teal-900/40 blur-3xl rounded-full pointer-events-none"></div>
-        </div>
-
-        {/* Stellar wallet card */}
-        <div className="bg-gradient-to-r from-slate-700 to-slate-900 dark:from-slate-800/60 dark:to-slate-900/40 border border-slate-500/20 text-white rounded-3xl p-6 sm:p-8 mb-6 shadow-lg relative overflow-hidden">
+        {/* Unified Payment Wallets Card */}
+        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 border border-gray-700/50 text-white rounded-3xl p-6 sm:p-8 mb-6 shadow-lg relative overflow-hidden">
           <div className="relative z-10">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-5">
-              <div className="flex-1">
-                <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2 mb-2 uppercase tracking-wider">
-                  <FiSend size={15} /> Stellar Wallet
-                </h3>
-                {walletInfo?.stellar?.active ? (
-                  <p className="text-sm text-slate-300/80 max-w-lg">
-                    Funds for Stellar payments, payouts and XLM transfers live here. Withdraw USDC (Stellar) or XLM to any address.
-                  </p>
-                ) : (
-                  <p className="text-sm text-slate-300/80 max-w-lg">
-                    Activate your Stellar wallet to receive XLM + USDC (testnet faucet) and enable Stellar payments &amp; withdrawals.
-                  </p>
-                )}
-              </div>
+            <h3 className="text-sm font-bold text-gray-200 flex items-center gap-2 mb-5 uppercase tracking-wider">
+              <FiCreditCard size={16} /> Payment Wallets
+            </h3>
 
-              <div className="bg-black/20 backdrop-blur-md rounded-2xl p-5 border border-white/10 min-w-[220px] text-center">
-                <p className="text-xs text-slate-200 mb-1 font-medium">Address</p>
-                <button onClick={() => copyStellar(walletInfo.stellar.address)} title="Copy address" className="font-mono text-sm font-semibold break-all hover:text-teal-300 transition-colors">
-                  {walletInfo?.stellar?.address ? shortAddress(walletInfo.stellar.address) : '…'}
-                </button>
-                <div className="grid grid-cols-2 gap-3 mt-3 text-left">
-                    <div>
-                      <p className="text-[10px] text-slate-300/70 font-medium">XLM</p>
-                      <p className="text-sm font-extrabold">{walletInfo?.stellar?.xlm != null ? Number(walletInfo.stellar.xlm).toFixed(2) : '—'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-slate-300/70 font-medium">USDC</p>
-                      <p className="text-sm font-extrabold">{walletInfo?.stellar?.usdcDisplay || '—'}</p>
-                    </div>
+            {/* Section: Ethereum (EVM) */}
+            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 mb-4">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                    <p className="text-xs font-bold text-gray-200 uppercase tracking-wider">Ethereum Sepolia</p>
+                    <span className="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full font-medium">EVM</span>
                   </div>
-                  {!walletInfo?.stellar?.active && walletInfo?.stellar?.funded !== false && (
-                    <p className="text-[10px] text-amber-300/80 mt-2">Activate to enable payments &amp; withdrawals</p>
+                  <p className="text-[11px] text-gray-400 mb-2">USDC • Escrow settlement</p>
+                  <button onClick={copyWallet} className="font-mono text-xs text-gray-400 hover:text-teal-300 transition-colors break-all" title="Copy address">
+                    {user.wallet_address ? shortAddress(user.wallet_address, 16) : '…'}
+                  </button>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-gray-400 font-medium mb-1">Balance</p>
+                  {onChainLoading ? (
+                    <Skeleton className="h-7 w-20 ml-auto bg-white/10" />
+                  ) : (
+                    <p className="text-2xl font-extrabold">
+                      {onChainBalance !== null ? onChainBalance : (walletInfo ? walletInfo.balanceUsdc : '0.00')}
+                      <span className="text-sm font-semibold text-gray-400"> USDC</span>
+                    </p>
                   )}
-                  {walletInfo?.stellar?.funded === false && (
-                    <p className="text-[10px] text-amber-300/80 mt-2">Not yet funded — click Activate below</p>
-                  )}
+                  <button onClick={fetchOnChainBalance} disabled={onChainLoading} className="text-[10px] text-teal-400 hover:text-teal-300 mt-1 transition-colors disabled:opacity-50">
+                    {onChainLoading ? 'Refreshing...' : '↻ Refresh'}
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 mt-5">
+            {/* Section: Stellar */}
+            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="w-2 h-2 rounded-full bg-purple-400"></span>
+                    <p className="text-xs font-bold text-gray-200 uppercase tracking-wider">Stellar</p>
+                    <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-medium">XLM + USDC</span>
+                  </div>
+                  <p className="text-[11px] text-gray-400 mb-2">Soroban escrow • Multi-asset payments</p>
+                  <button onClick={() => copyStellar(walletInfo?.stellar?.address)} className="font-mono text-xs text-gray-400 hover:text-purple-300 transition-colors break-all" title="Copy address">
+                    {walletInfo?.stellar?.address ? shortAddress(walletInfo.stellar.address, 16) : '…'}
+                  </button>
+                </div>
+                <div className="flex gap-5">
+                  <div className="text-right">
+                    <p className="text-[10px] text-gray-400 font-medium mb-1">XLM</p>
+                    <p className="text-lg font-extrabold">{walletInfo?.stellar?.xlm != null ? Number(walletInfo.stellar.xlm).toFixed(2) : '—'}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] text-gray-400 font-medium mb-1">USDC</p>
+                    <p className="text-lg font-extrabold">{walletInfo?.stellar?.usdcDisplay || '—'}</p>
+                  </div>
+                </div>
+              </div>
+              {!walletInfo?.stellar?.active && walletInfo?.stellar?.funded === false && (
+                <p className="text-[10px] text-amber-300/80 mt-2">Not yet funded — activate below to enable Stellar payments</p>
+              )}
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex flex-wrap items-center gap-2 mt-4">
               {!walletInfo?.stellar?.active && (
                 <button
                   onClick={handleStellarActivate}
                   disabled={stellarActivating || !walletInfo?.stellar?.configured}
-                  className="flex items-center gap-2 bg-white/10 hover:bg-teal-600 text-white text-sm font-semibold px-4 py-2 rounded-xl disabled:opacity-50 transition-colors"
+                  className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold px-4 py-2 rounded-xl disabled:opacity-50 transition-colors"
                 >
                   {stellarActivating ? <><Spinner size={15} /> Activating…</> : <><FiZap size={14} /> Activate Stellar wallet</>}
                 </button>
@@ -504,17 +491,18 @@ const ProfilePage = () => {
               {walletInfo?.stellar?.active && (
                 <button
                   onClick={() => setStellarOpen(true)}
-                  className="flex items-center gap-2 bg-white/10 hover:bg-teal-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+                  className="flex items-center gap-2 bg-white/10 hover:bg-purple-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
                 >
-                  <FiSend size={14} /> Withdraw
+                  <FiSend size={14} /> Withdraw Stellar
                 </button>
               )}
               {!walletInfo?.stellar?.configured && (
-                <p className="text-[11px] text-amber-300/80">Stellar rail not configured on the backend (SOROBAN_*).</p>
+                <p className="text-[11px] text-amber-300/80">Stellar rail not configured (SOROBAN_*).</p>
               )}
             </div>
           </div>
-          <div className="absolute bottom-0 right-0 -mb-16 -mr-16 w-56 h-56 bg-slate-500/20 blur-3xl rounded-full pointer-events-none"></div>
+          <div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-purple-500/10 blur-3xl rounded-full pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-48 h-48 bg-blue-500/10 blur-3xl rounded-full pointer-events-none"></div>
         </div>
 
         {/* Stats */}

@@ -416,76 +416,81 @@ const ProfilePage = () => {
               <FiCreditCard size={16} /> Payment Wallets
             </h3>
 
-            {/* Section: Ethereum (EVM) */}
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 mb-4">
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-                    <p className="text-xs font-bold text-gray-200 uppercase tracking-wider">Ethereum Sepolia</p>
-                    <span className="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full font-medium">EVM</span>
+            {/* USDC Rails */}
+            <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-2">Stablecoin (USDC)</p>
+            <div className="space-y-2 mb-5">
+              {[
+                { label: 'ETH Sepolia', color: 'bg-blue-400', badge: 'EVM', addr: user.wallet_address, copy: copyWallet, bal: onChainBalance !== null ? onChainBalance : (walletInfo ? walletInfo.balanceUsdc : '0.00'), balLabel: 'USDC', loading: onChainLoading },
+                { label: 'Base Sepolia', color: 'bg-blue-500', badge: 'EVM', addr: user.wallet_address, copy: copyWallet, bal: '—', balLabel: 'USDC' },
+                { label: 'Stellar', color: 'bg-purple-400', badge: 'Soroban', addr: walletInfo?.stellar?.address, copy: () => copyStellar(walletInfo?.stellar?.address), bal: walletInfo?.stellar?.usdcDisplay || '—', balLabel: 'USDC' },
+              ].map((r) => (
+                <div key={r.label} className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-3 border border-white/5">
+                  <span className={`w-2 h-2 rounded-full ${r.color} flex-shrink-0`}></span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-gray-200">{r.label}</span>
+                      <span className="text-[9px] bg-white/10 text-gray-400 px-1.5 py-0.5 rounded font-medium">{r.badge}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="font-mono text-[11px] text-gray-500 truncate">{r.addr ? shortAddress(r.addr, 18) : '—'}</span>
+                      {r.addr && (
+                        <button onClick={r.copy} className="text-gray-500 hover:text-teal-400 transition-colors flex-shrink-0" title="Copy address">
+                          {copied && r.copy === copyWallet ? <FiCheck size={11} className="text-teal-400" /> : <FiCopy size={11} />}
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-[11px] text-gray-400 mb-2">USDC • Escrow settlement</p>
-                  <button onClick={copyWallet} className="font-mono text-xs text-gray-400 hover:text-teal-300 transition-colors break-all" title="Copy address">
-                    {user.wallet_address ? shortAddress(user.wallet_address, 16) : '…'}
-                  </button>
+                  <div className="text-right flex-shrink-0">
+                    {r.loading ? <Skeleton className="h-4 w-12 bg-white/10" /> : (
+                      <p className="text-sm font-extrabold">{r.bal} <span className="text-[10px] font-medium text-gray-500">{r.balLabel}</span></p>
+                    )}
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-[10px] text-gray-400 font-medium mb-1">Balance</p>
-                  {onChainLoading ? (
-                    <Skeleton className="h-7 w-20 ml-auto bg-white/10" />
-                  ) : (
-                    <p className="text-2xl font-extrabold">
-                      {onChainBalance !== null ? onChainBalance : (walletInfo ? walletInfo.balanceUsdc : '0.00')}
-                      <span className="text-sm font-semibold text-gray-400"> USDC</span>
-                    </p>
-                  )}
-                  <button onClick={fetchOnChainBalance} disabled={onChainLoading} className="text-[10px] text-teal-400 hover:text-teal-300 mt-1 transition-colors disabled:opacity-50">
-                    {onChainLoading ? 'Refreshing...' : '↻ Refresh'}
-                  </button>
-                </div>
-              </div>
+              ))}
             </div>
 
-            {/* Section: Stellar */}
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="w-2 h-2 rounded-full bg-purple-400"></span>
-                    <p className="text-xs font-bold text-gray-200 uppercase tracking-wider">Stellar</p>
-                    <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-medium">XLM + USDC</span>
+            {/* Native / Gas Rails */}
+            <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-2">Native (Gas)</p>
+            <div className="space-y-2 mb-5">
+              {[
+                { label: 'ETH Sepolia', color: 'bg-blue-400', addr: user.wallet_address, copy: copyWallet, bal: '—', balLabel: 'ETH' },
+                { label: 'Base Sepolia', color: 'bg-blue-500', addr: user.wallet_address, copy: copyWallet, bal: '—', balLabel: 'ETH' },
+                { label: 'Stellar', color: 'bg-purple-400', addr: walletInfo?.stellar?.address, copy: () => copyStellar(walletInfo?.stellar?.address), bal: walletInfo?.stellar?.xlm != null ? Number(walletInfo.stellar.xlm).toFixed(2) : '—', balLabel: 'XLM' },
+              ].map((r) => (
+                <div key={r.label + r.balLabel} className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-3 border border-white/5">
+                  <span className={`w-2 h-2 rounded-full ${r.color} flex-shrink-0`}></span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-xs font-bold text-gray-200">{r.label}</span>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="font-mono text-[11px] text-gray-500 truncate">{r.addr ? shortAddress(r.addr, 18) : '—'}</span>
+                      {r.addr && (
+                        <button onClick={r.copy} className="text-gray-500 hover:text-teal-400 transition-colors flex-shrink-0" title="Copy address">
+                          <FiCopy size={11} />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-[11px] text-gray-400 mb-2">Soroban escrow • Multi-asset payments</p>
-                  <button onClick={() => copyStellar(walletInfo?.stellar?.address)} className="font-mono text-xs text-gray-400 hover:text-purple-300 transition-colors break-all" title="Copy address">
-                    {walletInfo?.stellar?.address ? shortAddress(walletInfo.stellar.address, 16) : '…'}
-                  </button>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-sm font-extrabold">{r.bal} <span className="text-[10px] font-medium text-gray-500">{r.balLabel}</span></p>
+                  </div>
                 </div>
-                <div className="flex gap-5">
-                  <div className="text-right">
-                    <p className="text-[10px] text-gray-400 font-medium mb-1">XLM</p>
-                    <p className="text-lg font-extrabold">{walletInfo?.stellar?.xlm != null ? Number(walletInfo.stellar.xlm).toFixed(2) : '—'}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] text-gray-400 font-medium mb-1">USDC</p>
-                    <p className="text-lg font-extrabold">{walletInfo?.stellar?.usdcDisplay || '—'}</p>
-                  </div>
-                </div>
-              </div>
-              {!walletInfo?.stellar?.active && walletInfo?.stellar?.funded === false && (
-                <p className="text-[10px] text-amber-300/80 mt-2">Not yet funded — activate below to enable Stellar payments</p>
-              )}
+              ))}
             </div>
+
+            {/* Stellar activation */}
+            {!walletInfo?.stellar?.active && walletInfo?.stellar?.funded === false && (
+              <p className="text-[10px] text-amber-300/80 mb-3">Stellar wallet not yet funded — activate below to enable Stellar payments</p>
+            )}
 
             {/* Action buttons */}
-            <div className="flex flex-wrap items-center gap-2 mt-4">
+            <div className="flex flex-wrap items-center gap-2">
               {!walletInfo?.stellar?.active && (
                 <button
                   onClick={handleStellarActivate}
                   disabled={stellarActivating || !walletInfo?.stellar?.configured}
                   className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold px-4 py-2 rounded-xl disabled:opacity-50 transition-colors"
                 >
-                  {stellarActivating ? <><Spinner size={15} /> Activating…</> : <><FiZap size={14} /> Activate Stellar wallet</>}
+                  {stellarActivating ? <><Spinner size={15} /> Activating…</> : <><FiZap size={14} /> Activate Stellar</>}
                 </button>
               )}
               {walletInfo?.stellar?.active && (
@@ -496,9 +501,9 @@ const ProfilePage = () => {
                   <FiSend size={14} /> Withdraw Stellar
                 </button>
               )}
-              {!walletInfo?.stellar?.configured && (
-                <p className="text-[11px] text-amber-300/80">Stellar rail not configured (SOROBAN_*).</p>
-              )}
+              <button onClick={fetchOnChainBalance} disabled={onChainLoading} className="flex items-center gap-1.5 bg-white/10 hover:bg-white/15 text-white text-xs font-semibold px-3 py-2 rounded-xl transition-colors disabled:opacity-50">
+                {onChainLoading ? <><Spinner size={12} /> Refreshing</> : '↻ Refresh balances'}
+              </button>
             </div>
           </div>
           <div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-purple-500/10 blur-3xl rounded-full pointer-events-none"></div>

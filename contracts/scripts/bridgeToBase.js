@@ -7,14 +7,14 @@ const RPC_URL     = process.env.RPC_URL || 'https://ethereum-sepolia-rpc.publicn
 const AMOUNT_ETH  = process.env.AMOUNT_ETH || '0.0002';
 
 // Base Sepolia OptimismPortal2 on Ethereum Sepolia (official)
-const OPTIMISM_PORTAL = '0x49f53e41452C74589536e6C5BD0b7f015defd895';
+const OPTIMISM_PORTAL = '0x49f53e41452C74589E85cA1677426Ba426459e85';
 
 async function rpc(method, params = []) {
   const res = await fetch(RPC_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(30000),
   });
   const json = await res.json();
   if (json.error) throw new Error(json.error.message);

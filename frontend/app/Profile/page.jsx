@@ -72,6 +72,12 @@ const ProfilePage = () => {
   const [stellarSubmitting, setStellarSubmitting] = useState(false);
   const [stellarActivating, setStellarActivating] = useState(false);
 
+  // On-chain native ETH balances (fetched via raw RPC to avoid ethers provider timeouts)
+  const [ethSepoliaEth, setEthSepoliaEth] = useState(null);
+  const [baseSepoliaEth, setBaseSepoliaEth] = useState(null);
+  const [baseSepoliaUsdc, setBaseSepoliaUsdc] = useState(null);
+  const [chainBalLoading, setChainBalLoading] = useState(false);
+
   const wallet = user?.wallet_address?.toLowerCase();
   const tier = tierInfo(user);
 
@@ -93,15 +99,67 @@ const ProfilePage = () => {
   const fetchOnChainBalance = useCallback(async () => {
     if (!wallet) return;
     setOnChainLoading(true);
+    setChainBalLoading(true);
     try {
-      clearChainConfigCache(); // always use the latest USDC address from backend
+      clearChainConfigCache();
+      const cfg = await getChainConfig();
+
+      // ── Ethereum Sepolia USDC (existing)
       const { formatted } = await getUsdcBalance(wallet);
       setOnChainBalance(parseFloat(formatted).toFixed(2));
+
+      // ── Helper: raw eth_getBalance via fetch (avoids ethers provider detection timeout)
+      const getEthBal = async (rpcUrl, address) => {
+        try {
+          const res = await fetch(rpcUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [address, 'latest'] }),
+          });
+          const { result } = await res.json();
+          const wei = BigInt(result);
+          return parseFloat((Number(wei) / 1e18).toFixed(6));
+        } catch { return null; }
+      };
+
+      // ── Helper: raw ERC-20 balanceOf
+      const getErc20Bal = async (rpcUrl, tokenAddr, ownerAddr, decimals = 6) => {
+        try {
+          // balanceOf(address) selector = 0x70a08231
+          const data = '0x70a08231' + ownerAddr.replace('0x', '').padStart(64, '0');
+          const res = await fetch(rpcUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'eth_call', params: [{ to: tokenAddr, data }, 'latest'] }),
+          });
+          const { result } = await res.json();
+          const raw = BigInt(result);
+          return parseFloat((Number(raw) / 10 ** decimals).toFixed(2));
+        } catch { return null; }
+      };
+
+      // ── Ethereum Sepolia native ETH
+      const sepoliaRpc = cfg?.rpcUrl || 'https://ethereum-sepolia-rpc.publicnode.com';
+      const ethBal = await getEthBal(sepoliaRpc, wallet);
+      setEthSepoliaEth(ethBal !== null ? ethBal.toFixed(4) : null);
+
+      // ── Base Sepolia native ETH + USDC
+      const baseRpc = cfg?.base?.rpcUrl || 'https://sepolia.base.org';
+      const baseEth = await getEthBal(baseRpc, wallet);
+      setBaseSepoliaEth(baseEth !== null ? baseEth.toFixed(4) : null);
+
+      const baseUsdcAddr = cfg?.base?.contracts?.usdc;
+      if (baseUsdcAddr) {
+        const baseUsdc = await getErc20Bal(baseRpc, baseUsdcAddr, wallet);
+        setBaseSepoliaUsdc(baseUsdc !== null ? baseUsdc.toFixed(2) : null);
+      } else {
+        setBaseSepoliaUsdc(null);
+      }
     } catch {
-      // RPC unavailable — fall back gracefully
       setOnChainBalance(null);
     } finally {
       setOnChainLoading(false);
+      setChainBalLoading(false);
     }
   }, [wallet]);
 
@@ -420,9 +478,9 @@ const ProfilePage = () => {
             <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-2">Stablecoin (USDC)</p>
             <div className="space-y-2 mb-5">
               {[
-                { label: 'ETH Sepolia', color: 'bg-blue-400', badge: 'EVM', addr: user.wallet_address, copy: copyWallet, bal: onChainBalance !== null ? onChainBalance : (walletInfo ? walletInfo.balanceUsdc : '0.00'), balLabel: 'USDC', loading: onChainLoading },
-                { label: 'Base Sepolia', color: 'bg-blue-500', badge: 'EVM', addr: user.wallet_address, copy: copyWallet, bal: '—', balLabel: 'USDC' },
-                { label: 'Stellar', color: 'bg-purple-400', badge: 'Soroban', addr: walletInfo?.stellar?.address, copy: () => copyStellar(walletInfo?.stellar?.address), bal: walletInfo?.stellar?.usdcDisplay || '—', balLabel: 'USDC' },
+                { label: 'ETH Sepolia', color: 'bg-blue-400', badge: 'EVM',     addr: user.wallet_address, copy: copyWallet, bal: onChainBalance !== null ? onChainBalance : (walletInfo ? walletInfo.balanceUsdc : '0.00'), balLabel: 'USDC', loading: onChainLoading },
+                { label: 'Base Sepolia', color: 'bg-blue-500', badge: 'EVM',    addr: user.wallet_address, copy: copyWallet, bal: baseSepoliaUsdc !== null ? baseSepoliaUsdc : '—', balLabel: 'USDC', loading: chainBalLoading },
+                { label: 'Stellar',     color: 'bg-purple-400', badge: 'Soroban', addr: walletInfo?.stellar?.address, copy: () => copyStellar(walletInfo?.stellar?.address), bal: walletInfo?.stellar?.usdcDisplay || '—', balLabel: 'USDC' },
               ].map((r) => (
                 <div key={r.label} className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-3 border border-white/5">
                   <span className={`w-2 h-2 rounded-full ${r.color} flex-shrink-0`}></span>
@@ -453,9 +511,9 @@ const ProfilePage = () => {
             <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-2">Native (Gas)</p>
             <div className="space-y-2 mb-5">
               {[
-                { label: 'ETH Sepolia', color: 'bg-blue-400', addr: user.wallet_address, copy: copyWallet, bal: '—', balLabel: 'ETH' },
-                { label: 'Base Sepolia', color: 'bg-blue-500', addr: user.wallet_address, copy: copyWallet, bal: '—', balLabel: 'ETH' },
-                { label: 'Stellar', color: 'bg-purple-400', addr: walletInfo?.stellar?.address, copy: () => copyStellar(walletInfo?.stellar?.address), bal: walletInfo?.stellar?.xlm != null ? Number(walletInfo.stellar.xlm).toFixed(2) : '—', balLabel: 'XLM' },
+                { label: 'ETH Sepolia', color: 'bg-blue-400', addr: user.wallet_address, copy: copyWallet, bal: ethSepoliaEth !== null ? ethSepoliaEth : '—', balLabel: 'ETH', loading: chainBalLoading },
+                { label: 'Base Sepolia', color: 'bg-blue-500', addr: user.wallet_address, copy: copyWallet, bal: baseSepoliaEth !== null ? baseSepoliaEth : '—', balLabel: 'ETH', loading: chainBalLoading },
+                { label: 'Stellar',     color: 'bg-purple-400', addr: walletInfo?.stellar?.address, copy: () => copyStellar(walletInfo?.stellar?.address), bal: walletInfo?.stellar?.xlm != null ? Number(walletInfo.stellar.xlm).toFixed(2) : '—', balLabel: 'XLM' },
               ].map((r) => (
                 <div key={r.label + r.balLabel} className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-3 border border-white/5">
                   <span className={`w-2 h-2 rounded-full ${r.color} flex-shrink-0`}></span>
@@ -471,7 +529,9 @@ const ProfilePage = () => {
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-extrabold">{r.bal} <span className="text-[10px] font-medium text-gray-500">{r.balLabel}</span></p>
+                    {r.loading ? <Skeleton className="h-4 w-12 bg-white/10" /> : (
+                      <p className="text-sm font-extrabold">{r.bal} <span className="text-[10px] font-medium text-gray-500">{r.balLabel}</span></p>
+                    )}
                   </div>
                 </div>
               ))}

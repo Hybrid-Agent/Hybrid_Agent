@@ -3,8 +3,36 @@ const asyncHandler = require("../utils/asyncHandler");
 const ApiError = require("../utils/ApiError");
 const dealModel = require("../models/dealModel");
 const stellarWallet = require("../services/stellarWallet");
+const config = require("../config");
 
 const fmt = (base) => (Number(base) / 1e6).toLocaleString(undefined, { maximumFractionDigits: 2 });
+
+// Server-side ERC-20 balanceOf (no CORS issues)
+async function erc20Balance(rpcUrl, tokenAddr, ownerAddr, decimals = 6) {
+  try {
+    const data = "0x70a08231" + ownerAddr.replace("0x", "").padStart(64, "0");
+    const res = await fetch(rpcUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_call", params: [{ to: tokenAddr, data }, "latest"] }),
+    });
+    const { result } = await res.json();
+    if (!result || result === "0x") return null;
+    return (Number(BigInt(result)) / 10 ** decimals).toFixed(2);
+  } catch { return null; }
+}
+
+async function ethBalance(rpcUrl, addr) {
+  try {
+    const res = await fetch(rpcUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_getBalance", params: [addr, "latest"] }),
+    });
+    const { result } = await res.json();
+    return (Number(BigInt(result)) / 1e18).toFixed(4);
+  } catch { return null; }
+}
 
 // GET /wallet  (auth) — the signed-in user's payout wallet + withdrawable balance.
 // Balance = funds owed to this wallet from COMPLETED escrow deals:
@@ -33,6 +61,18 @@ const get = asyncHandler(async (req, res) => {
   } catch (e) {
     stellar = { error: e.message };
   }
+
+  // Server-side multi-chain balances (avoids CORS in browser)
+  const ethSepoliaRpc = config.rpcUrl || "https://ethereum-sepolia-rpc.publicnode.com";
+  const baseRpc = config.base.rpcUrl || "https://sepolia.base.org";
+  const baseUsdcAddr = config.base.usdcAddress;
+
+  const [ethSepoliaEth, baseEth, baseUsdc] = await Promise.all([
+    ethBalance(ethSepoliaRpc, wallet),
+    ethBalance(baseRpc, wallet),
+    baseUsdcAddr ? erc20Balance(baseRpc, baseUsdcAddr, wallet) : Promise.resolve(null),
+  ]);
+
   res.json({
     address: req.user.wallet_address,
     balanceUsdc: fmt(total),
@@ -40,6 +80,10 @@ const get = asyncHandler(async (req, res) => {
     breakdown: { commissionUsdc: fmt(commission), proceedsUsdc: fmt(proceeds) },
     completedDeals: asAgent.length + asSeller.length,
     stellar,
+    chains: {
+      ethSepolia: { eth: ethSepoliaEth },
+      baseSepolia: { eth: baseEth, usdc: baseUsdc },
+    },
   });
 });
 
@@ -57,8 +101,6 @@ const withdraw = asyncHandler(async (req, res) => {
     to: to || req.user.wallet_address,
   });
 });
-
-const config = require("../config");
 
 // Keep track of recent funding to prevent spam
 const recentFunds = new Map();

@@ -100,62 +100,15 @@ const ProfilePage = () => {
     if (!wallet) return;
     setOnChainLoading(true);
     setChainBalLoading(true);
-
-    // Helpers — raw RPC fetches (avoids ethers provider detection timeout)
-    const getEthBal = async (rpcUrl, address) => {
-      try {
-        const res = await fetch(rpcUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [address, 'latest'] }),
-        });
-        const { result } = await res.json();
-        return parseFloat((Number(BigInt(result)) / 1e18).toFixed(6));
-      } catch { return null; }
-    };
-
-    const getErc20Bal = async (rpcUrl, tokenAddr, ownerAddr, decimals = 6) => {
-      try {
-        const data = '0x70a08231' + ownerAddr.replace('0x', '').padStart(64, '0');
-        const res = await fetch(rpcUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'eth_call', params: [{ to: tokenAddr, data }, 'latest'] }),
-        });
-        const { result } = await res.json();
-        return parseFloat((Number(BigInt(result)) / 10 ** decimals).toFixed(2));
-      } catch { return null; }
-    };
-
-    let cfg;
-    try { clearChainConfigCache(); cfg = await getChainConfig(); } catch { cfg = {}; }
-
-    // Fire all chain reads in parallel so one failure doesn't block the rest
-    const sepoliaRpc = cfg?.rpcUrl || 'https://ethereum-sepolia-rpc.publicnode.com';
-    const baseRpc    = cfg?.base?.rpcUrl || 'https://sepolia.base.org';
-    const baseUsdc   = cfg?.base?.contracts?.usdc;
-
-    const [ethUsdc, ethEth, baseEthBal, baseUsdcBal] = await Promise.all([
-      // Ethereum Sepolia USDC
-      (async () => {
-        try {
-          const { formatted } = await getUsdcBalance(wallet);
-          return parseFloat(formatted).toFixed(2);
-        } catch { return null; }
-      })(),
-      // Ethereum Sepolia native ETH
-      getEthBal(sepoliaRpc, wallet),
-      // Base Sepolia native ETH
-      getEthBal(baseRpc, wallet),
-      // Base Sepolia USDC
-      baseUsdc ? getErc20Bal(baseRpc, baseUsdc, wallet) : Promise.resolve(null),
-    ]);
-
-    setOnChainBalance(ethUsdc);
-    setEthSepoliaEth(ethEth !== null ? ethEth.toFixed(4) : null);
-    setBaseSepoliaEth(baseEthBal !== null ? baseEthBal.toFixed(4) : null);
-    setBaseSepoliaUsdc(baseUsdcBal !== null ? baseUsdcBal.toFixed(2) : null);
-
+    try {
+      // Ethereum Sepolia USDC via ethers provider (works — Alchemy has CORS)
+      clearChainConfigCache();
+      const { formatted } = await getUsdcBalance(wallet);
+      setOnChainBalance(parseFloat(formatted).toFixed(2));
+    } catch {
+      setOnChainBalance(null);
+    }
+    // Base / ETH native balances come from walletInfo.chains (backend-fetched, no CORS)
     setOnChainLoading(false);
     setChainBalLoading(false);
   }, [wallet]);
@@ -174,7 +127,15 @@ const ProfilePage = () => {
       const merged = new Map();
       [...asAgent, ...asSeller, ...asBuyer].forEach((d) => merged.set(d.deal_id, d));
       setDeals([...merged.values()].sort((a, b) => b.deal_id - a.deal_id));
-      try { setWalletInfo(await api.wallet()); } catch { /* ignore */ }
+      try {
+        const wi = await api.wallet();
+        setWalletInfo(wi);
+        if (wi?.chains) {
+          setEthSepoliaEth(wi.chains.ethSepolia?.eth ?? null);
+          setBaseSepoliaEth(wi.chains.baseSepolia?.eth ?? null);
+          setBaseSepoliaUsdc(wi.chains.baseSepolia?.usdc ?? null);
+        }
+      } catch { /* ignore */ }
     } catch {
       // Backend offline or no data yet — keep empty states.
       setListings([]);

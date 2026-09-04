@@ -105,6 +105,30 @@ async function markFunded(listingId, buyerAddress) {
   await syncIndexes(match);
 }
 
+// Find a purchase request belonging to the buyer that matches this escrow deal.
+async function getFundedForBuyerAndDeal(buyerId, dealId) {
+  const keys = await db.listKeys(`${BUYER_IDX}${buyerId}/`);
+  const all = await Promise.all(keys.map((k) => db.get(k)));
+  return all.find((pr) => pr && pr.deal_id === dealId && pr.status === "funded") || null;
+}
+
+// Mark the buyer's purchase request for this escrow deal as funded (they've now
+// sent funds for it). Updates any request whose listing matches this deal's
+// listing reference when known, else any request with the matching deal_id.
+async function markFundedByDeal(dealId, buyerId, buyerAddress) {
+  // Purchase requests are keyed by listing, so find them via the buyer index.
+  const buyerKeys = await db.listKeys(`${BUYER_IDX}${buyerId}/`);
+  const all = await Promise.all(buyerKeys.map((k) => db.get(k)));
+  const match = all.find((pr) => pr && pr.deal_id === dealId);
+  if (!match) return;
+  match.status = "funded";
+  if (buyerAddress) match.buyer_address = String(buyerAddress).toLowerCase();
+  match.updated_at = new Date().toISOString();
+  await db.put(recordKey(match.listing_id, match.buyer_id), match);
+  await syncIndexes(match);
+  return match;
+}
+
 async function getIncomingForAgent(agentId) {
   const userModel = require("./userModel");
 
@@ -166,6 +190,8 @@ module.exports = {
   recordStellarDeal,
   ensureForBuyer,
   markFunded,
+  markFundedByDeal,
+  getFundedForBuyerAndDeal,
   getByBuyer,
   getIncomingForAgent,
 };

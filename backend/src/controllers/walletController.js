@@ -2,6 +2,7 @@ const { ethers } = require("ethers");
 const asyncHandler = require("../utils/asyncHandler");
 const ApiError = require("../utils/ApiError");
 const dealModel = require("../models/dealModel");
+const purchaseModel = require("../models/purchaseModel");
 const stellarWallet = require("../services/stellarWallet");
 const privyRelay = require("../services/privyRelay");
 const config = require("../config");
@@ -172,6 +173,18 @@ const fundEscrowUsdcGas = asyncHandler(async (req, res) => {
     throw ApiError.internal("Sepolia escrow/USDC not configured");
   }
 
+  // Guard against double-funding: if this buyer already funded this escrow
+  // deal, don't let the relay blindly send a second one.
+  try {
+    const funded = await purchaseModel.getFundedForBuyerAndDeal(req.user.id, dealId);
+    if (funded) {
+      throw ApiError.conflict("This escrow deal is already funded. Your payment is secured — no action needed.");
+    }
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    /* ignore — purchase request may not exist yet */
+  }
+
   const result = await privyRelay.fundEscrowUsdcGas({
     email: req.user.email,
     caip2,
@@ -180,6 +193,13 @@ const fundEscrowUsdcGas = asyncHandler(async (req, res) => {
     amount,
     dealId,
   });
+
+  // Record that this buyer's escrow for the deal is now funded (EVM rails).
+  try {
+    await purchaseModel.markFundedByDeal(dealId, req.user.id, req.user.wallet_address);
+  } catch {
+    /* best-effort */
+  }
 
   res.json({ ok: true, rail, ...result });
 });

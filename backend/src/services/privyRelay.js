@@ -9,6 +9,7 @@
 //   2. "Server-side access to user wallets" enabled in the dashboard so the
 //      backend can act on the user's embedded wallet via the wallet RPC.
 const config = require("../config");
+const ApiError = require("../utils/ApiError");
 
 // We use the @privy-io/node PrivyClient to call the wallet RPC so that the
 // authorization signature (prepareRequest / canonicalize / ECDSA P-256) is
@@ -58,10 +59,60 @@ async function rpc(walletId, params) {
   const authCtx = config.privy.authorizationPrivateKey
     ? { authorization_private_keys: [config.privy.authorizationPrivateKey] }
     : {};
-  return await client.walletsService.rpc(walletId, {
-    authorization_context: authCtx,
-    ...params,
-  });
+  try {
+    return await client.walletsService.rpc(walletId, {
+      authorization_context: authCtx,
+      ...params,
+    });
+  } catch (err) {
+    throw translatePrivyError(err, walletId, params);
+  }
+}
+
+// Turn low-level Privy SDK errors into a clear user-facing message so the API
+// returns something actionable instead of a generic "internal error".
+function translatePrivyError(err, walletId, params) {
+  const status = err?.status || err?.statusCode;
+  const body = err?.body || err?.error || err?.message || "";
+  const text = typeof body === "string" ? body : JSON.stringify(body || {});
+
+  if (status === 401) {
+    if (/No valid authorization signatures|signing keys may be incorrect or expired/i.test(text)) {
+      throw new ApiError(
+        502,
+        "Relay signing key is invalid or expired. Please update PRIVY_AUTHORIZATION_PRIVATE_KEY in the backend environment and redeploy.",
+        { walletId, method: params?.method }
+      );
+    }
+    if (/No valid authorization keys|user signing keys available/i.test(text)) {
+      throw new ApiError(
+        409,
+        "Your wallet is not linked to the platform relays yet. Sign in to the app once (so the server signer is attached to your wallet), then try funding again.",
+        { walletId, method: params?.method }
+      );
+    }
+    throw new ApiError(401, "Privy authorization was rejected. Sign in to your wallet and try again.", { walletId });
+  }
+
+  if (/Insufficient Funds|insufficient funds|insufficient.*gas|exc.*gas|underpriced/i.test(text)) {
+    throw new ApiError(
+      402,
+      "Not enough USDC on your wallet to cover the escrow amount + gas. Top up your USDC balance on the selected network, or use the Stellar/XLM option.",
+      { walletId, method: params?.method }
+    );
+  }
+
+  if (/escrow already funded|already funded|Deal.*funded|reentrancy/i.test(text)) {
+    throw new ApiError(409, "This escrow deal is already funded.", { walletId, dealId: params?.params?.transaction?.data });
+  }
+
+  // Fallback: surface the underlying RPC/contract error message if available.
+  throw new ApiError(502, `Privy transaction failed: ${multiline(text)}`, { walletId, method: params?.method });
+}
+
+// Collapse error text to a single readable line.
+function multiline(text) {
+  return String(text || "").replace(/\s+/g, " ").slice(0, 300);
 }
 
 // Build the approve() call data for the escrow's USDC (the repo's configured token).
@@ -87,22 +138,23 @@ function fundCallData(dealId) {
  * @returns {{userOpHash:string, approveHash?:string, fundHash:string}}
  */
 async function fundEscrowUsdcGas({ email, caip2, usdcAddress, escrowAddress, amount, dealId }) {
-  if (!configured()) throw new Error("Privy is not configured on this backend");
+  if (!configured()) throw new ApiError(502, "Privy is not configured on this backend.");
   if (!config.privy.authorizationPrivateKey) {
-    throw new Error(
+    throw new ApiError(
+      502,
       "Server-side wallet access is not configured (PRIVY_AUTHORIZATION_PRIVATE_KEY missing). " +
         "Create an authorization key in the Privy Dashboard (Wallets -> Authorization keys) and " +
         "set PRIVY_AUTHORIZATION_PRIVATE_KEY in backend/.env."
     );
   }
   if (!ethers.isAddress(usdcAddress) || !ethers.isAddress(escrowAddress)) {
-    throw new Error("Invalid USDC / escrow address");
+    throw new ApiError(500, "Invalid USDC / escrow address on this network.");
   }
   const walletId = await embeddedWalletId(email);
   if (!walletId) {
-    throw new Error(
-      "Could not resolve your embedded wallet for server-side relay. " +
-        "Ensure 'Server-side access to user wallets' is enabled in the Privy Dashboard."
+    throw new ApiError(
+      409,
+      "We couldn't find an embedded wallet for your email. Complete wallet setup (sign in via Privy) on the platform first, then try funding again."
     );
   }
 

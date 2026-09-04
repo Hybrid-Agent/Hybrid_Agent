@@ -241,8 +241,15 @@ const ItemDetailsPage = () => {
       await loadPr();
       notifications.success('Escrow funded!', 'Your payment is secured in escrow. The agent will proceed with the sale.');
     } catch (err) {
-      notifications.error('Payment failed', err?.data?.error || err?.data?.message || err.message);
-      setBuyStep('');
+      const msg = err?.data?.error || err?.data?.message || err.message;
+      if (/already funded/i.test(msg)) {
+        setBuyStep('done');
+        await loadPr();
+        notifications.info('Escrow already funded', 'Your payment is already secured in escrow.');
+      } else {
+        notifications.error('Payment failed', msg);
+        setBuyStep('');
+      }
     }
   };
 
@@ -265,8 +272,15 @@ const ItemDetailsPage = () => {
       await loadPr();
       notifications.success('Escrow funded on Base!', 'Your USDC payment is secured on Base Sepolia. The agent will proceed.');
     } catch (err) {
-      notifications.error('Base payment failed', err?.data?.error || err?.data?.message || err.message);
-      setBuyStep('');
+      const msg = err?.data?.error || err?.data?.message || err.message;
+      if (/already funded/i.test(msg)) {
+        setBuyStep('done');
+        await loadPr();
+        notifications.info('Escrow already funded', 'Your payment is already secured in escrow.');
+      } else {
+        notifications.error('Base payment failed', msg);
+        setBuyStep('');
+      }
     }
   };
 
@@ -350,9 +364,21 @@ const ItemDetailsPage = () => {
                 ) : item.status === 'sold' ? (
                   <div className="text-center bg-gray-100 dark:bg-white/5 rounded-xl py-3 text-sm font-semibold text-gray-500">This item has been sold.</div>
                 ) : alreadyFunded ? (
-                  <div className="bg-teal-50 dark:bg-[#121212]/15 border border-teal-200 dark:border-teal-800 rounded-xl p-4 text-sm text-teal-700 dark:text-teal-300 font-semibold flex items-center gap-2">
-                    <FiCheck size={16} /> Escrow funded — your payment is secured.
-                    {fundTx && <a href={`${EXPLORERS[fundTxChain] ?? EXPLORERS.sepolia}${fundTx}`} target="_blank" rel="noreferrer" className="ml-auto text-xs flex items-center gap-1 hover:underline"><FiExternalLink size={12} /> Tx</a>}
+                  <div className="space-y-3">
+                    <div className="bg-teal-50 dark:bg-[#121212]/15 border border-teal-200 dark:border-teal-800 rounded-xl p-4">
+                      <p className="text-sm text-teal-700 dark:text-teal-300 font-semibold flex items-center gap-2">
+                        <FiCheck size={16} /> Escrow funded — your USDC payment is secured.
+                        {fundTx && <a href={`${EXPLORERS[fundTxChain] ?? EXPLORERS.sepolia}${fundTx}`} target="_blank" rel="noreferrer" className="ml-auto text-xs flex items-center gap-1 hover:underline"><FiExternalLink size={12} /> Tx</a>}
+                      </p>
+                      <div className="mt-3 space-y-2 text-[13px] text-gray-700 dark:text-gray-300">
+                        <p className="flex items-start gap-2"><FiClock className="text-teal-500 flex-shrink-0 mt-0.5" size={14} /><span><span className="font-semibold">What happens next:</span> the agent/owner ships or hands over the {isVehicle ? 'vehicle' : 'property'}.</span></p>
+                        <p className="flex items-start gap-2"><FiCheck className="text-teal-500 flex-shrink-0 mt-0.5" size={14} /><span>Once you confirm receipt on the app, escrow auto-splits: <span className="font-semibold">agent → commission · platform → fee · owner → remainder</span>.</span></p>
+                        <p className="flex items-start gap-2"><FiArrowRight className="text-teal-500 flex-shrink-0 mt-0.5" size={14} /><span>Keep it <span className="font-semibold">funded</span> — releasing funds early gives up your protection. For disputes, use in-app review/arbitration.</span></p>
+                      </div>
+                    </div>
+                    <button onClick={openChat} className="w-full flex items-center justify-center gap-2 border border-gray-300 dark:border-gray-600 hover:border-teal-500 font-bold py-3 rounded-xl transition-colors text-sm">
+                      <FiMessageSquare size={16} /> Chat with agent / owner
+                    </button>
                   </div>
                 ) : dealReady ? (
                   <div className="space-y-3">

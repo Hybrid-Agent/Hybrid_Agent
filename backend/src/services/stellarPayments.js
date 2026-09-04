@@ -16,6 +16,7 @@
 const { Keypair } = require("@stellar/stellar-sdk");
 const config = require("../config/soroban");
 const stellarWallet = require("./stellarWallet");
+const ApiError = require("../utils/ApiError");
 
 const INVOKE_FEE = "1000000"; // 1 XLM per tx (testnet default soroban fee)
 const TX_TIMEOUT = 60; // seconds
@@ -193,8 +194,9 @@ async function fundDeal({ buyerKp, dealId, priceUsdc7 }) {
   if (priceUsdc7 != null) {
     const bal = await stellarWallet.getBalances(buyerKp.publicKey());
     if (BigInt(bal.usdcRaw || "0") < BigInt(priceUsdc7)) {
-      throw new Error(
-        `Buyer Stellar wallet has insufficient USDC to fund the deal. ` +
+      throw new ApiError(
+        402,
+        `Insufficient USDC on your Stellar wallet to fund the deal. ` +
           `Required: ${Number(priceUsdc7) / 1e7} USDC, ` +
           `Available: ${Number(bal.usdcRaw || 0) / 1e7} USDC. ` +
           `Top up the wallet via the XLM on-ramp or deposit USDC directly.`
@@ -229,8 +231,9 @@ async function payUsdc({ buyerUser, sellerUser, agentPubkey, priceUsdc7, listing
   // Pre-flight: ensure buyer has enough USDC before creating the deal.
   const buyerBal = await stellarWallet.getBalances(buyerKp.publicKey());
   if (BigInt(buyerBal.usdcRaw || "0") < BigInt(priceUsdc7)) {
-    throw new Error(
-      `Buyer Stellar wallet has insufficient USDC. ` +
+    throw new ApiError(
+      402,
+      `Insufficient USDC on your Stellar wallet. ` +
         `Required: ${Number(priceUsdc7) / 1e7} USDC, ` +
         `Available: ${Number(buyerBal.usdcRaw || 0) / 1e7} USDC. ` +
         `Use the XLM payment option instead to auto-convert, or top up the wallet directly.`

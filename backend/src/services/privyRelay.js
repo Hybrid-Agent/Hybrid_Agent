@@ -10,9 +10,10 @@
 //      backend can act on the user's embedded wallet via the wallet RPC.
 const config = require("../config");
 
-// Privy wallet RPC endpoint (raw HTTP) — supports `sponsor_options.asset` which
-// the installed @privy-io/server-auth v1.32.5 sendTransaction type does not.
-const WALLET_RPC_URL = "https://api.privy.io/v1/wallets";
+// We use the @privy-io/node PrivyClient to call the wallet RPC so that the
+// authorization signature (prepareRequest / canonicalize / ECDSA P-256) is
+// handled entirely by the official SDK, ensuring the signed body always matches
+// what Privy's server verifies and preventing 401 errors.
 
 const { ethers } = require("ethers");
 
@@ -23,12 +24,6 @@ const ESCROW_ABI = ["function fundDeal(uint256 id)"];
 
 function configured() {
   return Boolean(config.privy.configured && config.privy.appId && config.privy.appSecret);
-}
-
-// Basic auth header: base64(appId:appSecret)
-function authHeader() {
-  const token = Buffer.from(`${config.privy.appId}:${config.privy.appSecret}`).toString("base64");
-  return `Basic ${token}`;
 }
 
 // Look up the buyer's Privy user and return their embedded (privy) wallet id.
@@ -47,56 +42,26 @@ async function embeddedWalletId(email) {
   return null;
 }
 
-async function rpc(walletId, body) {
-  const url = `${WALLET_RPC_URL}/${walletId}/rpc`;
-  const headers = {
-    Authorization: authHeader(),
-    "privy-app-id": config.privy.appId,
-    "Content-Type": "application/json",
-  };
-
-  // Server-side wallet access requires signing the request with the app's
-  // authorization private key -> `privy-authorization-signature` header.
-  // IMPORTANT: the `body` in the signed input must be the *exact same object*
-  // that is later JSON.stringify'd for the HTTP request so canonical ordering
-  // is identical and the signature verifies correctly.
-  if (config.privy.authorizationPrivateKey) {
-    const { generateAuthorizationSignature } = require("@privy-io/node");
-    const requestExpiry = String(Date.now() + 5 * 60 * 1000); // ms, ~5 min
-    const signedHeaders = {
-      "privy-app-id": config.privy.appId,
-      "privy-request-expiry": requestExpiry,
-    };
-    // Use the same `body` reference — do NOT copy/re-serialize it here.
-    const input = {
-      version: 1,
-      method: "POST",
-      url,
-      body,
-      headers: signedHeaders,
-    };
-    const signature = generateAuthorizationSignature({
-      authorizationPrivateKey: config.privy.authorizationPrivateKey,
-      input,
-    });
-    // Privy expects a comma-separated list of signatures (one per auth key).
-    headers["privy-authorization-signature"] = [signature].join(",");
-    headers["privy-request-expiry"] = requestExpiry;
-  }
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(body),
+// Call the Privy wallet RPC via the official @privy-io/node SDK.
+// The SDK's wallets.rpc() internally calls prepareRequest() which canonicalises
+// the body and signs it with the authorization private key, then passes both the
+// signed headers and the body to its own HTTP client in one atomic step.
+// This guarantees the bytes that are signed == the bytes that are sent, fixing
+// the 401 "No valid authorization signatures" errors from any JSON serialization
+// ordering mismatch between our manual canonicalize pass and JSON.stringify.
+async function rpc(walletId, params) {
+  const { PrivyClient: NodePrivyClient } = require("@privy-io/node");
+  const client = new NodePrivyClient({
+    appId: config.privy.appId,
+    appSecret: config.privy.appSecret,
   });
-  const data = await res.json().catch(() => null);
-  if (!res.ok) {
-    const err = new Error(data?.message || data?.error?.message || data?.error || `privy rpc failed (${res.status})`);
-    err.status = res.status;
-    err.data = data;
-    throw err;
-  }
-  return data;
+  const authCtx = config.privy.authorizationPrivateKey
+    ? { authorization_private_keys: [config.privy.authorizationPrivateKey] }
+    : {};
+  return await client.wallets.rpc(walletId, {
+    authorization_context: authCtx,
+    ...params,
+  });
 }
 
 // Build the approve() call data for the escrow's USDC (the repo's configured token).

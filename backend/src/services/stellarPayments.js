@@ -136,28 +136,50 @@ async function createDeal({ sellerKp, buyerPubkey, agentPubkey, priceUsdc7, list
     sourceKeypair: sellerKp,
   });
 
-  // Pull deal_id from the returned events (DealCreated publishes deal_id).
-  // NOTE: The Stellar SDK v13+ returns `result.events` as an object with
-  // `contractEventsXdr` and `transactionEventsXdr` sub-arrays, NOT a flat
-  // array. We flatten both to safely iterate regardless of SDK version.
+  // The create_deal contract function returns the deal_id directly as u64.
+  // Use result.returnValue (populated by the SDK from sorobanMeta.returnValue)
+  // as the primary and most reliable source. Fall back to scanning contract
+  // events only as a safety net for older SDK versions.
+  const { scValToNative } = require("@stellar/stellar-sdk");
   let dealId = null;
-  const eventsObj = result.events ?? {};
-  const contractEvents = Array.isArray(eventsObj)
-    ? eventsObj
-    : [
-        ...(eventsObj.contractEventsXdr?.flat() ?? []),
-        ...(eventsObj.transactionEventsXdr ?? []),
-      ];
-  for (const ev of contractEvents) {
+
+  // Primary: function return value (u64 ScVal)
+  if (result.returnValue != null) {
     try {
-      const native = require("@stellar/stellar-sdk").scValToNative(ev.value);
-      if (native && native.deal_id != null) dealId = Number(native.deal_id);
-      else if (Array.isArray(native)) dealId = Number(native[0]);
+      dealId = Number(scValToNative(result.returnValue));
     } catch {
-      /* skip */
+      /* fallthrough to event scan */
     }
-    if (dealId != null) break;
   }
+
+  // Fallback: scan contract events emitted by DealCreated.
+  // The Stellar SDK returns events as an object { contractEventsXdr, transactionEventsXdr }
+  // where contractEventsXdr is ContractEvent[][] (one inner array per tx).
+  // deal_id is a *topic* on the DealCreated event, so it's in body().value().topics()[0].
+  if (dealId == null) {
+    const eventsObj = result.events ?? {};
+    const contractEvents = Array.isArray(eventsObj)
+      ? eventsObj // old flat format
+      : (eventsObj.contractEventsXdr ?? []).flat(); // new nested format
+    for (const ev of contractEvents) {
+      try {
+        // ContractEvent XDR: topics are in ev.body().value().topics()
+        const topics = ev.body().value().topics();
+        if (Array.isArray(topics) && topics.length > 0) {
+          dealId = Number(scValToNative(topics[0]));
+        }
+      } catch {
+        // Also try ev.data() for older event formats
+        try {
+          const native = scValToNative(ev.body().value().data());
+          if (native && native.deal_id != null) dealId = Number(native.deal_id);
+          else if (typeof native === "bigint" || typeof native === "number") dealId = Number(native);
+        } catch { /* skip */ }
+      }
+      if (dealId != null) break;
+    }
+  }
+
   if (dealId == null) throw new Error("could not read deal_id from create_deal events");
 
   return { dealId, hash: result.hash };

@@ -36,19 +36,23 @@ export const Skeleton = ({ className = '' }) => (
   <div className={`shimmer bg-gray-200 dark:bg-white/10 rounded-lg ${className}`} />
 );
 
-// Branded full-page loader with a pulsing ring around the logo mark.
+// Branded full-page loader with a premium single loading effect.
 export const PageLoader = ({ label = 'Loading' }) => (
-  <div className="min-h-[60vh] flex flex-col items-center justify-center gap-5">
-    <div className="relative w-16 h-16 flex items-center justify-center">
-      <span className="absolute inset-0 rounded-full border-2 border-teal-500/60 animate-pulse-ring" />
-      <span className="absolute inset-0 rounded-full border-2 border-teal-500/40 animate-pulse-ring" style={{ animationDelay: '0.5s' }} />
-      <div className="w-12 h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center font-extrabold text-lg shadow-lg">
+  <div className="min-h-[60vh] flex flex-col items-center justify-center gap-6">
+    <div className="relative w-20 h-20 flex items-center justify-center">
+      {/* Soft glowing background pulse */}
+      <div className="absolute inset-0 bg-teal-500/20 blur-xl rounded-full animate-pulse"></div>
+      
+      {/* Sleek spinning indicator ring */}
+      <div className="absolute inset-0 border-4 border-transparent border-t-teal-500/80 border-r-teal-500/30 rounded-full animate-spin"></div>
+      
+      {/* Central premium logo mark */}
+      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 text-white flex items-center justify-center font-extrabold text-xl shadow-xl relative z-10">
         H
       </div>
     </div>
-    <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+    <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400 animate-pulse">
       {label}
-      <Dots />
     </p>
   </div>
 );

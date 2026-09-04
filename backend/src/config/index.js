@@ -55,6 +55,10 @@ const config = {
   privy: {
     appId: process.env.PRIVY_APP_ID || "",
     appSecret: process.env.PRIVY_APP_SECRET || "",
+    // Authorization private key (base64 PKCS8 DER, no PEM headers) that signs
+    // the `privy-authorization-signature` header for server-side wallet access.
+    // Created in the Privy Dashboard -> Wallets -> Authorization keys.
+    authorizationPrivateKey: process.env.PRIVY_AUTHORIZATION_PRIVATE_KEY || "",
   },
 
   // Transactional email via SendGrid API. Logs to console when unconfigured.

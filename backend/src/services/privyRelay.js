@@ -48,13 +48,34 @@ async function embeddedWalletId(email) {
 }
 
 async function rpc(walletId, body) {
-  const res = await fetch(`${WALLET_RPC_URL}/${walletId}/rpc`, {
+  const url = `${WALLET_RPC_URL}/${walletId}/rpc`;
+  const headers = {
+    Authorization: authHeader(),
+    "privy-app-id": config.privy.appId,
+    "Content-Type": "application/json",
+  };
+
+  // Server-side wallet access requires signing the request with the app's
+  // authorization private key -> `privy-authorization-signature` header.
+  if (config.privy.authorizationPrivateKey) {
+    const { formatRequestForAuthorizationSignature, generateAuthorizationSignature } = require("@privy-io/node");
+    const input = {
+      version: 1,
+      method: "POST",
+      url,
+      body,
+      headers: { "privy-app-id": config.privy.appId },
+    };
+    const signature = generateAuthorizationSignature({
+      authorizationPrivateKey: config.privy.authorizationPrivateKey,
+      input,
+    });
+    headers["privy-authorization-signature"] = signature;
+  }
+
+  const res = await fetch(url, {
     method: "POST",
-    headers: {
-      Authorization: authHeader(),
-      "privy-app-id": config.privy.appId,
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify(body),
   });
   const data = await res.json().catch(() => null);
@@ -91,6 +112,13 @@ function fundCallData(dealId) {
  */
 async function fundEscrowUsdcGas({ email, caip2, usdcAddress, escrowAddress, amount, dealId }) {
   if (!configured()) throw new Error("Privy is not configured on this backend");
+  if (!config.privy.authorizationPrivateKey) {
+    throw new Error(
+      "Server-side wallet access is not configured (PRIVY_AUTHORIZATION_PRIVATE_KEY missing). " +
+        "Create an authorization key in the Privy Dashboard (Wallets -> Authorization keys) and " +
+        "set PRIVY_AUTHORIZATION_PRIVATE_KEY in backend/.env."
+    );
+  }
   if (!ethers.isAddress(usdcAddress) || !ethers.isAddress(escrowAddress)) {
     throw new Error("Invalid USDC / escrow address");
   }

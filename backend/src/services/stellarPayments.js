@@ -74,11 +74,11 @@ async function invoke({ contractId, method, args, sourceKeypair }) {
     throw new Error(`soroban simulate ${method} failed: ${sim.error}`);
   }
   // assembleTransaction returns a TransactionBuilder in SDK v17; build() gives
-  // the signable Transaction.
+  // the signable Transaction. sendTransaction accepts the Transaction object.
   const built = sdkRpc.assembleTransaction(tx, sim).build();
   built.sign(sourceKeypair);
 
-  const sent = await rpc.sendTransaction(built.toXDR());
+  const sent = await rpc.sendTransaction(built);
   if (sent.status === "error") {
     throw new Error(`soroban ${method}: ${sent.errorResult?.join(" | ") || "transaction rejected"}`);
   }

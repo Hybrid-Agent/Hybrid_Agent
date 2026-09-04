@@ -137,8 +137,18 @@ async function createDeal({ sellerKp, buyerPubkey, agentPubkey, priceUsdc7, list
   });
 
   // Pull deal_id from the returned events (DealCreated publishes deal_id).
+  // NOTE: The Stellar SDK v13+ returns `result.events` as an object with
+  // `contractEventsXdr` and `transactionEventsXdr` sub-arrays, NOT a flat
+  // array. We flatten both to safely iterate regardless of SDK version.
   let dealId = null;
-  for (const ev of result.events || []) {
+  const eventsObj = result.events ?? {};
+  const contractEvents = Array.isArray(eventsObj)
+    ? eventsObj
+    : [
+        ...(eventsObj.contractEventsXdr?.flat() ?? []),
+        ...(eventsObj.transactionEventsXdr ?? []),
+      ];
+  for (const ev of contractEvents) {
     try {
       const native = require("@stellar/stellar-sdk").scValToNative(ev.value);
       if (native && native.deal_id != null) dealId = Number(native.deal_id);

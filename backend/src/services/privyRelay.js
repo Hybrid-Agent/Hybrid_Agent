@@ -57,10 +57,17 @@ async function rpc(walletId, body) {
 
   // Server-side wallet access requires signing the request with the app's
   // authorization private key -> `privy-authorization-signature` header.
+  // IMPORTANT: the `body` in the signed input must be the *exact same object*
+  // that is later JSON.stringify'd for the HTTP request so canonical ordering
+  // is identical and the signature verifies correctly.
   if (config.privy.authorizationPrivateKey) {
-    const { formatRequestForAuthorizationSignature, generateAuthorizationSignature } = require("@privy-io/node");
+    const { generateAuthorizationSignature } = require("@privy-io/node");
     const requestExpiry = String(Date.now() + 5 * 60 * 1000); // ms, ~5 min
-    const signedHeaders = { "privy-app-id": config.privy.appId, "privy-request-expiry": requestExpiry };
+    const signedHeaders = {
+      "privy-app-id": config.privy.appId,
+      "privy-request-expiry": requestExpiry,
+    };
+    // Use the same `body` reference — do NOT copy/re-serialize it here.
     const input = {
       version: 1,
       method: "POST",
@@ -72,7 +79,8 @@ async function rpc(walletId, body) {
       authorizationPrivateKey: config.privy.authorizationPrivateKey,
       input,
     });
-    headers["privy-authorization-signature"] = signature;
+    // Privy expects a comma-separated list of signatures (one per auth key).
+    headers["privy-authorization-signature"] = [signature].join(",");
     headers["privy-request-expiry"] = requestExpiry;
   }
 

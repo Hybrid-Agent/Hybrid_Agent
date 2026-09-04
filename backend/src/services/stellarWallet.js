@@ -25,7 +25,8 @@ const {
 const config = require("../config/soroban");
 
 const USDC_DECIMALS = 7;
-const FRIENDBOT_URL = process.env.SOROBAN_FRIENDBOT_URL || "https://friendbot.stellar.org";
+// Stellar testnet friendbot — GET https://friendbot.stellar.org?addr=<pubkey>
+const FRIENDBOT_URL = process.env.SOROBAN_FRIENDBOT_URL || 'https://friendbot.stellar.org';
 const XLM_RESERVE_STROOPS = 1_0000000; // ~1 XLM held back so the account stays alive
 
 function configured() {
@@ -90,11 +91,18 @@ async function readContract(contractId, method, ...nativeArgs) {
   return scValToNative(retval);
 }
 
-// Underlying classic asset the USDC SAC wraps (code + issuer) — used to create
-// trustlines and payments on the classic side.
+// Underlying classic asset the USDC SAC wraps — used to create trustlines.
+// Falls back to a well-known testnet USDC asset if the Soroban contract call fails.
 async function usdcClassicAsset() {
-  const [code, issuer] = await readContract(config.usdcAddress, "asset");
-  return new Asset(String(code), String(issuer));
+  // Try to read from the Soroban contract first
+  try {
+    const [code, issuer] = await readContract(config.usdcAddress, 'asset');
+    return new Asset(String(code), String(issuer));
+  } catch (e) {
+    // Fallback: known Stellar testnet USDC issuer (Circle testnet)
+    const TESTNET_USDC_ISSUER = 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5';
+    return new Asset('USDC', TESTNET_USDC_ISSUER);
+  }
 }
 
 async function getAccount(pubkey) {
@@ -182,10 +190,15 @@ async function activate(keypair) {
   const pubkey = keypair.publicKey();
   const account = await getAccount(pubkey);
   if (!account) {
+    // Use a direct HTTP GET to the Stellar testnet friendbot
     try {
-      await rpc().fundAddress(pubkey, FRIENDBOT_URL);
+      const friendbotRes = await fetch(`${FRIENDBOT_URL}?addr=${encodeURIComponent(pubkey)}`);
+      if (!friendbotRes.ok) {
+        const errBody = await friendbotRes.text().catch(() => '');
+        throw new Error(`friendbot HTTP ${friendbotRes.status}: ${errBody}`);
+      }
     } catch (e) {
-      throw new Error(`friendbot funding failed (is the Stellar network reachable?): ${e.message}`);
+      throw new Error(`Friendbot funding failed (is the Stellar testnet reachable?): ${e.message}`);
     }
   }
   await ensureUsdcTrustline(keypair);

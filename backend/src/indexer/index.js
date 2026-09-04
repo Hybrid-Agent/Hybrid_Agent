@@ -134,7 +134,10 @@ async function syncRange(fromBlock, toBlock) {
 }
 
 async function tick() {
-  const latest = await provider.getBlockNumber();
+  // Keep a small 2-block safety margin. Load-balanced public RPCs often route
+  // getBlockNumber and getLogs to different underlying nodes. If the getLogs node
+  // is slightly behind, it throws "block range extends beyond current head block".
+  const latest = Math.max(0, (await provider.getBlockNumber()) - 2);
   let from = Number(await getMeta(LAST_BLOCK_KEY, config.startBlock - 1)) + 1;
   if (from > latest) return;
 

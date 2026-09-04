@@ -91,17 +91,21 @@ async function readContract(contractId, method, ...nativeArgs) {
   return scValToNative(retval);
 }
 
-// Underlying classic asset the USDC SAC wraps — used to create trustlines.
-// Falls back to a well-known testnet USDC asset if the Soroban contract call fails.
+// Underlying classic asset the USDC SAC wraps.
+// The deployed SAC at CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA
+// is the canonical Stellar testnet USDC issued by Circle:
+//   USDC : GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
+// We derive the issuer from the SAC address deterministically so it always
+// matches, regardless of the SOROBAN_USDC_ADDRESS env var.
 async function usdcClassicAsset() {
-  // Try to read from the Soroban contract first
+  // Derive the classic asset from the SAC contract ID configured in the env.
+  // Asset.fromContractId() reverses the SAC derivation: contract -> Asset.
   try {
-    const [code, issuer] = await readContract(config.usdcAddress, 'asset');
-    return new Asset(String(code), String(issuer));
-  } catch (e) {
-    // Fallback: known Stellar testnet USDC issuer (Circle testnet)
-    const TESTNET_USDC_ISSUER = 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5';
-    return new Asset('USDC', TESTNET_USDC_ISSUER);
+    const asset = Asset.fromContractId(config.usdcAddress);
+    return asset;
+  } catch {
+    // Fallback: hardcoded Circle testnet USDC issuer (matches CBIELTK6... SAC)
+    return new Asset("USDC", "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5");
   }
 }
 

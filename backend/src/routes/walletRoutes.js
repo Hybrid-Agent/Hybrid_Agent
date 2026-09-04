@@ -8,6 +8,7 @@ router.use(requireAuth);
 router.get("/", ctrl.get);
 router.post("/withdraw", ctrl.withdraw);
 router.post("/fund-gas", ctrl.fundGas);
+router.post("/escrow/fund-usdc-gas", ctrl.fundEscrowUsdcGas);
 router.post("/stellar/activate", ctrl.stellarActivate);
 router.post("/stellar/withdraw", ctrl.stellarWithdraw);
 

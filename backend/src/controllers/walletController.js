@@ -3,6 +3,7 @@ const asyncHandler = require("../utils/asyncHandler");
 const ApiError = require("../utils/ApiError");
 const dealModel = require("../models/dealModel");
 const stellarWallet = require("../services/stellarWallet");
+const privyRelay = require("../services/privyRelay");
 const config = require("../config");
 
 const fmt = (base) => (Number(base) / 1e6).toLocaleString(undefined, { maximumFractionDigits: 2 });
@@ -149,6 +150,40 @@ const fundGas = asyncHandler(async (req, res) => {
   return res.json({ ok: true, txHash: tx.hash, skipped: false });
 });
 
+// POST /wallet/escrow/fund-usdc-gas  (auth)
+// Relay the buyer's escrow funding through Privy's wallet RPC with gas paid in
+// USDC ("User pays" mode). `rail` selects Sepolia ("sepolia", default) or Base
+// Sepolia ("base"). Requires Privy Dashboard: "User pays" gas sponsorship with
+// the chain/token enabled + "Server-side access to user wallets".
+const fundEscrowUsdcGas = asyncHandler(async (req, res) => {
+  const { dealId, amount, rail = "sepolia" } = req.body || {};
+  if (!dealId || !amount) throw ApiError.badRequest("dealId and amount are required");
+  if (!req.user.email) throw ApiError.badRequest("user has no email for the embedded wallet");
+
+  const isBase = rail === "base";
+  const cfg = isBase ? config.base : config;
+  const caip2 = `eip155:${cfg.chainId}`;
+
+  if (isBase) {
+    if (!cfg.hybridEscrowAddress || !cfg.usdcAddress) {
+      throw ApiError.internal("Base escrow/USDC not configured");
+    }
+  } else if (!cfg.hybridEscrowAddress || !cfg.usdcAddress) {
+    throw ApiError.internal("Sepolia escrow/USDC not configured");
+  }
+
+  const result = await privyRelay.fundEscrowUsdcGas({
+    email: req.user.email,
+    caip2,
+    usdcAddress: cfg.usdcAddress,
+    escrowAddress: cfg.hybridEscrowAddress,
+    amount,
+    dealId,
+  });
+
+  res.json({ ok: true, rail, ...result });
+});
+
 // POST /wallet/stellar/activate — fund the user's derived Stellar wallet
 // (testnet friendbot) and create its USDC trustline so it can hold XLM/USDC.
 const stellarActivate = asyncHandler(async (req, res) => {
@@ -179,4 +214,4 @@ const stellarWithdraw = asyncHandler(async (req, res) => {
   res.json({ ok: true, ...result });
 });
 
-module.exports = { get, withdraw, fundGas, stellarActivate, stellarWithdraw };
+module.exports = { get, withdraw, fundGas, fundEscrowUsdcGas, stellarActivate, stellarWithdraw };

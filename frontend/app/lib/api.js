@@ -67,6 +67,8 @@ export const api = {
   wallet: () => request('/wallet'),
   withdraw: (to) => request('/wallet/withdraw', { method: 'POST', body: { to } }),
   fundGas: (address) => request('/wallet/fund-gas', { method: 'POST', body: { address } }),
+  fundEscrowUsdcGas: (dealId, amount, rail) =>
+    request('/wallet/escrow/fund-usdc-gas', { method: 'POST', body: { dealId, amount, rail } }),
   activateStellar: () => request('/wallet/stellar/activate', { method: 'POST' }),
   withdrawStellar: (body) => request('/wallet/stellar/withdraw', { method: 'POST', body }),
   stellarQuote: (listingId) => request(`/listings/${listingId}/pay/stellar`),

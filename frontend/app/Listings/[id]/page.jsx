@@ -20,11 +20,7 @@ import { api } from '@/lib/api';
 import { formatUsdc, shortAddress } from '@/lib/format';
 import { pickEmbeddedWallet, getChainConfig } from '@/lib/wallet';
 
-// Minimal ABIs for the buyer's on-chain steps.
-const ERC20_ABI = [
-  'function approve(address spender, uint256 amount) returns (bool)',
-  'function allowance(address owner, address spender) view returns (uint256)',
-];
+// Minimal ABI for the buyer's on-chain steps.
 const ESCROW_ABI = [
   'function createDeal(address buyer, address seller, address agent, uint256 price, bytes32 listingRef, uint16 commissionBps) returns (uint256)',
   'function fundDeal(uint256 id)',
@@ -229,79 +225,47 @@ const ItemDetailsPage = () => {
     }
   };
 
-  // Step 3a (buyer): approve USDC + fund the escrow deal on Ethereum Sepolia
+  // Step 3a (buyer): fund the escrow deal on Ethereum Sepolia. Gas is paid in
+  // the buyer's USDC via Privy "User pays" (EIP-7702) — no ETH is needed.
   const fundDeal = async (dealId) => {
-    if (!wallet) { connectPrivy(); return; }
+    if (!isLoggedIn) { notifications.info('Sign in to fund', 'Log in to fund this escrow deal.'); return router.push('/Login'); }
+    const amount = (priceBase ?? 0n).toString();
+    if (amount === '0' || amount === '0n') { notifications.error('Payment failed', 'Invalid deal amount'); return; }
     setBuyStep('approving');
     try {
-      const cfg = await getChainConfig();
-      if (!cfg?.contracts?.usdc || !cfg?.contracts?.hybridEscrow) throw new Error('Contracts not configured');
-
-      await wallet.switchChain(cfg.chainId);
-      const provider = new ethers.BrowserProvider(await wallet.getEthereumProvider());
-      const signer = await provider.getSigner();
-
-      const usdc = new ethers.Contract(cfg.contracts.usdc, ERC20_ABI, signer);
-      const escrow = new ethers.Contract(cfg.contracts.hybridEscrow, ESCROW_ABI, signer);
-
-      notifications.info('Approving USDC…', 'Sign the approval transaction in your wallet.');
-
-      // JIT Gas Funding
-      try { await api.fundGas(signer.address); } catch (e) { console.warn('JIT fund failed', e); }
-
-      const approveTx = await usdc.approve(cfg.contracts.hybridEscrow, priceBase);
-      await approveTx.wait();
-
-      setBuyStep('funding');
-      notifications.info('Funding escrow…', 'Sign the funding transaction in your wallet.');
-      const fundTxRes = await escrow.fundDeal(dealId);
-      const receipt = await fundTxRes.wait();
-
-      setFundTx(receipt.hash);
+      notifications.info('Funding escrow…', 'Paying gas in USDC via your email wallet.');
+      const result = await api.fundEscrowUsdcGas(dealId, amount, 'sepolia');
+      setFundTx(result.fundHash || result.userOpHash);
       setFundTxChain('sepolia');
       setBuyStep('done');
       await loadPr();
       notifications.success('Escrow funded!', 'Your payment is secured in escrow. The agent will proceed with the sale.');
     } catch (err) {
-      notifications.error('Payment failed', err?.shortMessage || err.message);
+      notifications.error('Payment failed', err?.data?.error || err?.data?.message || err.message);
       setBuyStep('');
     }
   };
 
-  // Step 3b (buyer): approve USDC + fund the escrow deal on Base Sepolia
+  // Step 3b (buyer): fund the escrow deal on Base Sepolia. Gas paid in USDC.
   const fundDealOnBase = async (dealId) => {
-    if (!wallet) { connectPrivy(); return; }
+    if (!isLoggedIn) { notifications.info('Sign in to fund', 'Log in to fund this escrow deal.'); return router.push('/Login'); }
+    const amount = (priceBase ?? 0n).toString();
+    if (amount === '0' || amount === '0n') { notifications.error('Payment failed', 'Invalid deal amount'); return; }
     setBuyStep('approving');
     try {
       const cfg = await getChainConfig();
       const baseCfg = cfg?.base;
       if (!baseCfg?.configured) throw new Error('Base Sepolia escrow not configured on this platform yet.');
-      if (!baseCfg.contracts?.usdc || !baseCfg.contracts?.hybridEscrow) throw new Error('Base contracts not configured');
 
-      await wallet.switchChain(baseCfg.chainId);
-      const provider = new ethers.BrowserProvider(await wallet.getEthereumProvider());
-      const signer = await provider.getSigner();
-
-      const usdc = new ethers.Contract(baseCfg.contracts.usdc, ERC20_ABI, signer);
-      const escrow = new ethers.Contract(baseCfg.contracts.hybridEscrow, ESCROW_ABI, signer);
-
-      notifications.info('Approving USDC on Base…', 'Sign the approval transaction in your wallet.');
-
-      const approveTx = await usdc.approve(baseCfg.contracts.hybridEscrow, priceBase);
-      await approveTx.wait();
-
-      setBuyStep('funding');
-      notifications.info('Funding escrow on Base…', 'Sign the funding transaction in your wallet.');
-      const fundTxRes = await escrow.fundDeal(dealId);
-      const receipt = await fundTxRes.wait();
-
-      setFundTx(receipt.hash);
+      notifications.info('Funding escrow on Base…', 'Paying gas in USDC via your email wallet.');
+      const result = await api.fundEscrowUsdcGas(dealId, amount, 'base');
+      setFundTx(result.fundHash || result.userOpHash);
       setFundTxChain('base');
       setBuyStep('done');
       await loadPr();
       notifications.success('Escrow funded on Base!', 'Your USDC payment is secured on Base Sepolia. The agent will proceed.');
     } catch (err) {
-      notifications.error('Base payment failed', err?.shortMessage || err.message);
+      notifications.error('Base payment failed', err?.data?.error || err?.data?.message || err.message);
       setBuyStep('');
     }
   };

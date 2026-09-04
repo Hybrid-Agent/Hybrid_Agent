@@ -3,6 +3,7 @@ import Navbar from "./components/Molecules/navbar";
 import Footer from "./components/Molecules/Footer";
 import { ThemeProvider } from "./components/Atoms/ThemeProvider";
 import PrivyProviderWrapper from "./components/Atoms/PrivyProviderWrapper";
+import SignerBinder from "./components/Atoms/SignerBinder";
 import { AuthProvider } from "./components/Atoms/AuthProvider";
 import { NotificationProvider } from "./components/Atoms/NotificationProvider";
 import ChatNotifier from "./components/Atoms/ChatNotifier";
@@ -50,6 +51,7 @@ export default function RootLayout({ children }) {
               <NotificationProvider>
                 <RootToaster />
                 <ChatNotifier />
+                <SignerBinder />
                 <Navbar />
                 {children}
                 <Footer />

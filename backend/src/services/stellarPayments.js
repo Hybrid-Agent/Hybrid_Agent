@@ -79,11 +79,11 @@ async function invoke({ contractId, method, args, sourceKeypair }) {
   built.sign(sourceKeypair);
 
   const sent = await rpc.sendTransaction(built);
-  if (sent.status === "error") {
+  if (sent.status === "ERROR") {
     throw new Error(`soroban ${method}: ${sent.errorResult?.join(" | ") || "transaction rejected"}`);
   }
   const poll = await rpc.pollTransaction(sent.hash);
-  if (poll.status !== "success") {
+  if (poll.status !== "SUCCESS") {
     throw new Error(`soroban ${method}: tx ${sent.hash} status ${poll.status}`);
   }
   return { hash: sent.hash, ...poll };

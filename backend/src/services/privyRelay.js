@@ -59,18 +59,21 @@ async function rpc(walletId, body) {
   // authorization private key -> `privy-authorization-signature` header.
   if (config.privy.authorizationPrivateKey) {
     const { formatRequestForAuthorizationSignature, generateAuthorizationSignature } = require("@privy-io/node");
+    const requestExpiry = String(Date.now() + 5 * 60 * 1000); // ms, ~5 min
+    const signedHeaders = { "privy-app-id": config.privy.appId, "privy-request-expiry": requestExpiry };
     const input = {
       version: 1,
       method: "POST",
       url,
       body,
-      headers: { "privy-app-id": config.privy.appId },
+      headers: signedHeaders,
     };
     const signature = generateAuthorizationSignature({
       authorizationPrivateKey: config.privy.authorizationPrivateKey,
       input,
     });
     headers["privy-authorization-signature"] = signature;
+    headers["privy-request-expiry"] = requestExpiry;
   }
 
   const res = await fetch(url, {

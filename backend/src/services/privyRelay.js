@@ -58,7 +58,7 @@ async function rpc(walletId, params) {
   const authCtx = config.privy.authorizationPrivateKey
     ? { authorization_private_keys: [config.privy.authorizationPrivateKey] }
     : {};
-  return await client.wallets.rpc(walletId, {
+  return await client.walletsService.rpc(walletId, {
     authorization_context: authCtx,
     ...params,
   });

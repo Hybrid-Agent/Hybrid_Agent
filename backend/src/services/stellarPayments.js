@@ -187,7 +187,20 @@ async function createDeal({ sellerKp, buyerPubkey, agentPubkey, priceUsdc7, list
 
 // Buyer funds the deal (transfers USDC-on-Stellar from their wallet into the
 // escrow). Requires the buyer's signature.
-async function fundDeal({ buyerKp, dealId }) {
+// Pre-flight: verify the buyer has enough USDC — gives a clear user-facing
+// error instead of the opaque contract Error(Contract, #10) from the SAC.
+async function fundDeal({ buyerKp, dealId, priceUsdc7 }) {
+  if (priceUsdc7 != null) {
+    const bal = await stellarWallet.getBalances(buyerKp.publicKey());
+    if (BigInt(bal.usdcRaw || "0") < BigInt(priceUsdc7)) {
+      throw new Error(
+        `Buyer Stellar wallet has insufficient USDC to fund the deal. ` +
+          `Required: ${Number(priceUsdc7) / 1e7} USDC, ` +
+          `Available: ${Number(bal.usdcRaw || 0) / 1e7} USDC. ` +
+          `Top up the wallet via the XLM on-ramp or deposit USDC directly.`
+      );
+    }
+  }
   const result = await invoke({
     contractId: config.hybridEscrowAddress,
     method: "fund_deal",
@@ -212,6 +225,18 @@ async function ensureBothActivated(buyerUser, sellerUser) {
 // Pay with USDC on Stellar: create + fund the escrow deal (buyer's USDC).
 async function payUsdc({ buyerUser, sellerUser, agentPubkey, priceUsdc7, listingRef, commissionBps }) {
   const { buyerKp, sellerKp } = await ensureBothActivated(buyerUser, sellerUser);
+
+  // Pre-flight: ensure buyer has enough USDC before creating the deal.
+  const buyerBal = await stellarWallet.getBalances(buyerKp.publicKey());
+  if (BigInt(buyerBal.usdcRaw || "0") < BigInt(priceUsdc7)) {
+    throw new Error(
+      `Buyer Stellar wallet has insufficient USDC. ` +
+        `Required: ${Number(priceUsdc7) / 1e7} USDC, ` +
+        `Available: ${Number(buyerBal.usdcRaw || 0) / 1e7} USDC. ` +
+        `Use the XLM payment option instead to auto-convert, or top up the wallet directly.`
+    );
+  }
+
   const deal = await createDeal({
     sellerKp,
     buyerPubkey: buyerKp.publicKey(),
@@ -220,7 +245,7 @@ async function payUsdc({ buyerUser, sellerUser, agentPubkey, priceUsdc7, listing
     listingRef,
     commissionBps,
   });
-  const funded = await fundDeal({ buyerKp, dealId: deal.dealId });
+  const funded = await fundDeal({ buyerKp, dealId: deal.dealId, priceUsdc7 });
   return { dealId: deal.dealId, createHash: deal.hash, fundHash: funded.hash };
 }
 
@@ -262,8 +287,14 @@ async function payXlm({ buyerUser, sellerUser, agentPubkey, priceUsdc7, listingR
     amountStr: String(priceUsdc7 / 1e7),
   });
 
+  // Wait briefly for the Horizon classic payment to propagate to the Soroban
+  // SAC ledger state before simulating fund_deal. On testnet, Horizon and
+  // Soroban RPC are usually in sync within one ledger (~5 s) but we give it
+  // a bit more to be safe.
+  await new Promise((r) => setTimeout(r, 6000));
+
   // 4) buyer funds the escrow
-  const funded = await fundDeal({ buyerKp, dealId: deal.dealId });
+  const funded = await fundDeal({ buyerKp, dealId: deal.dealId, priceUsdc7 });
 
   return {
     dealId: deal.dealId,
